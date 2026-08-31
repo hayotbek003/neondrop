@@ -35,12 +35,11 @@ def register_view(request):
                 user.profile.telegram_username = tg.strip()
                 user.profile.save()
                 
-            # Log audit and cycle session key to prevent session fixation
+            # Log audit
             ip = get_client_ip(request)
             audit_logger.info(f"USER_REGISTRATION: username={user.username}, id={user.id}, email={user.email}, ip={ip}")
             
             login(request, user)
-            request.session.cycle_key()
             
             messages.success(request, f"Добро пожаловать в NEONDROP, {user.username}! Вам начислен приветственный баланс $100.00.")
             return redirect('cases:home')
@@ -64,7 +63,6 @@ def login_view(request):
         if form.is_valid():
             user = form.user
             login(request, user)
-            request.session.cycle_key()  # Session fixation defense
             
             audit_logger.info(f"USER_LOGIN_SUCCESS: username={user.username}, id={user.id}, ip={ip}")
             messages.success(request, f"С возвращением, {user.username}!")

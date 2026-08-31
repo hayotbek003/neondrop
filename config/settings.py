@@ -15,11 +15,16 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Quick-start development settings - unsuitable for production
 SECRET_KEY = os.environ.get(
     'DJANGO_SECRET_KEY',
-    'django-insecure-neondrop-cyberpunk-case-opening-secret-key-prod-change-me'
+    'django-insecure-neondrop-cyberpunk-case-opening-secret-key-prod-change-me-2026'
 )
 
 # DEBUG configuration
 DEBUG = os.environ.get('DJANGO_DEBUG', 'True').lower() in ('true', '1', 'yes')
+
+# Proxy SSL Header Configuration (CRITICAL for Render, Heroku, AWS, Cloudflare, etc.)
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+USE_X_FORWARDED_HOST = True
+USE_X_FORWARDED_PORT = True
 
 # ALLOWED_HOSTS configuration
 allowed_hosts_raw = os.environ.get('DJANGO_ALLOWED_HOSTS', '*')
@@ -27,6 +32,28 @@ if allowed_hosts_raw == '*':
     ALLOWED_HOSTS = ['*']
 else:
     ALLOWED_HOSTS = [h.strip() for h in allowed_hosts_raw.split(',') if h.strip()]
+    for default_host in ['neondrop-ujly.onrender.com', '.onrender.com', 'localhost', '127.0.0.1']:
+        if default_host not in ALLOWED_HOSTS:
+            ALLOWED_HOSTS.append(default_host)
+
+# CSRF Trusted Origins Configuration
+csrf_origins_env = os.environ.get('DJANGO_CSRF_TRUSTED_ORIGINS', '')
+CSRF_TRUSTED_ORIGINS = [
+    'https://*.onrender.com',
+    'https://neondrop-ujly.onrender.com',
+    'http://localhost:8000',
+    'http://127.0.0.1:8000',
+    'http://localhost',
+    'http://127.0.0.1',
+]
+if csrf_origins_env:
+    for origin in csrf_origins_env.split(','):
+        origin = origin.strip()
+        if origin:
+            if not origin.startswith(('http://', 'https://')):
+                origin = f'https://{origin}'
+            if origin not in CSRF_TRUSTED_ORIGINS:
+                CSRF_TRUSTED_ORIGINS.append(origin)
 
 # Application definition
 INSTALLED_APPS = [
@@ -89,7 +116,6 @@ DATABASES = {
 }
 
 # Cache & Rate Limiting Configuration
-# Uses Redis if REDIS_URL environment variable is provided, otherwise LocMemCache
 REDIS_URL = os.environ.get('REDIS_URL', '').strip()
 if REDIS_URL:
     CACHES = {
@@ -146,13 +172,6 @@ STORAGES = {
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
-CSRF_TRUSTED_ORIGINS = [
-    'https://*.onrender.com',
-    'https://neondrop-ujly.onrender.com',
-    'http://localhost:8000',
-    'http://127.0.0.1:8000',
-]
-
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # Authentication URLs
@@ -168,16 +187,24 @@ SESSION_COOKIE_AGE = 1209600  # 2 weeks
 
 CSRF_COOKIE_HTTPONLY = False  # Allows vanilla JS getCookie('csrftoken') to read CSRF
 CSRF_COOKIE_SAMESITE = 'Lax'
+CSRF_COOKIE_AGE = 31449600  # 1 year
 
-# Production Security Headers (Active when DEBUG=False or explicitly enabled in .env)
-SECURE_SSL_REDIRECT = os.environ.get('SECURE_SSL_REDIRECT', 'False').lower() in ('true', '1')
-SESSION_COOKIE_SECURE = os.environ.get('SESSION_COOKIE_SECURE', 'False').lower() in ('true', '1') or not DEBUG
-CSRF_COOKIE_SECURE = os.environ.get('CSRF_COOKIE_SECURE', 'False').lower() in ('true', '1') or not DEBUG
+# Cookie security - active in production or when explicitly enabled
+SESSION_COOKIE_SECURE = not DEBUG or os.environ.get('SESSION_COOKIE_SECURE', 'False').lower() in ('true', '1')
+CSRF_COOKIE_SECURE = not DEBUG or os.environ.get('CSRF_COOKIE_SECURE', 'False').lower() in ('true', '1')
+
+# Cookie domains default to exact request host
+CSRF_COOKIE_DOMAIN = None
+SESSION_COOKIE_DOMAIN = None
+
+# Security Headers
 SECURE_BROWSER_XSS_FILTER = True
 SECURE_CONTENT_TYPE_NOSNIFF = True
 X_FRAME_OPTIONS = 'DENY'
 
-if not DEBUG:
+SECURE_SSL_REDIRECT = os.environ.get('SECURE_SSL_REDIRECT', 'False').lower() in ('true', '1')
+
+if not DEBUG and SECURE_SSL_REDIRECT:
     SECURE_HSTS_SECONDS = 31536000  # 1 year
     SECURE_HSTS_INCLUDE_SUBDOMAINS = True
     SECURE_HSTS_PRELOAD = True
