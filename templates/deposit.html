@@ -4,9 +4,9 @@
 {% block title %}NEONDROP - Пополнение баланса через Telegram{% endblock %}
 
 {% block content %}
-<div class="container" style="padding-top: 35px; padding-bottom: 60px; max-width: 900px;">
+<div class="container" style="padding-top: 35px; padding-bottom: 60px; max-width: 860px;">
 
-  <div class="section-header">
+  <div class="section-header" style="margin-bottom: 24px;">
     <h1 class="section-title">ПОПОЛНЕНИЕ БАЛАНСА</h1>
     <a href="{% url 'users:profile' %}" class="btn-cyber-outline">&larr; В ПРОФИЛЬ</a>
   </div>
@@ -14,12 +14,16 @@
   <!-- Deposit Form Card -->
   <div class="panel-card" style="padding: 30px; margin-bottom: 35px;">
     
-    <div style="background: rgba(6, 182, 212, 0.1); border: 1px solid rgba(6, 182, 212, 0.3); border-radius: 12px; padding: 16px 20px; margin-bottom: 25px;">
-      <h4 style="font-family: var(--font-display); font-size: 14px; color: #38bdf8; margin-bottom: 6px;">ИНСТРУКЦИЯ ПО ОПЛАТЕ</h4>
-      <p style="font-size: 13px; color: #cbd5e1; line-height: 1.6;">
-        1. Укажите желаемую сумму пополнения.<br>
-        2. Нажмите кнопку <strong>«ПОПОЛНИТЬ ЧЕРЕЗ TELEGRAM»</strong>.<br>
-        3. Отправьте готовое сообщение нашему менеджеру в Telegram. После проверки администратором баланс будет автоматически начислен на ваш аккаунт!
+    <div style="background: rgba(6, 182, 212, 0.1); border: 1px solid rgba(6, 182, 212, 0.3); border-radius: 12px; padding: 18px 20px; margin-bottom: 25px;">
+      <h4 style="font-family: var(--font-display); font-size: 15px; color: #38bdf8; margin-bottom: 8px; display: flex; align-items: center; gap: 8px;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
+        ИНСТРУКЦИЯ ПО РУЧНОМУ ПОПОЛНЕНИЮ
+      </h4>
+      <p style="font-size: 13.5px; color: #cbd5e1; line-height: 1.6;">
+        1. Укажите сумму пополнения и нажмите <strong>«Пополнить через Telegram»</strong>.<br>
+        2. Откроется чат с администратором <strong>@{{ telegram_admin }}</strong> с автоматически заполненным сообщением.<br>
+        3. Отправьте сообщение и следуйте реквизитам администратора.<br>
+        4. После проверки перевода администратор подтвердит заявку, и баланс мгновенно зачислится на ваш аккаунт!
       </p>
     </div>
 
@@ -44,34 +48,47 @@
         <label for="depositAmount" style="font-family: var(--font-sub); font-size: 13px; font-weight: 700; color: #94a3b8; text-transform: uppercase; margin-bottom: 6px; display: block;">
           СУММА ПОПОЛНЕНИЯ ($):
         </label>
-        <input type="number" step="1" min="1" max="50000" id="depositAmount" name="amount" value="25" class="input-cyber" style="font-size: 20px; font-family: var(--font-display); font-weight: 800; color: #38bdf8;" required>
+        <input type="number" step="any" min="1" max="50000" id="depositAmount" name="amount" value="25" class="input-cyber" style="font-size: 20px; font-family: var(--font-display); font-weight: 800; color: #38bdf8;" required>
       </div>
 
-      <button type="submit" id="depositBtn" class="btn-neon" style="width: 100%; font-size: 16px; padding: 14px 0;">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 00-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.36-.01-1.04-.2-1.55-.37-.63-.2-1.12-.31-1.08-.66.02-.18.27-.36.75-.55 2.92-1.27 4.86-2.11 5.83-2.52 2.78-1.16 3.35-1.36 3.73-1.36.08 0 .27.02.39.12.1.08.13.19.14.27-.01.06.01.24 0 .38z"></path></svg>
+      <button type="submit" id="depositBtn" class="btn-neon" style="width: 100%; font-size: 16px; padding: 15px 0;">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" style="margin-right: 6px;"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 00-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.36-.01-1.04-.2-1.55-.37-.63-.2-1.12-.31-1.08-.66.02-.18.27-.36.75-.55 2.92-1.27 4.86-2.11 5.83-2.52 2.78-1.16 3.35-1.36 3.73-1.36.08 0 .27.02.39.12.1.08.13.19.14.27-.01.06.01.24 0 .38z"></path></svg>
         ПОПОЛНИТЬ ЧЕРЕЗ TELEGRAM
       </button>
     </form>
+
+    <!-- Success Feedback Area -->
+    <div id="depositSuccessNotice" style="display: none; margin-top: 20px; background: rgba(34, 197, 94, 0.12); border: 1px solid #22c55e; border-radius: 12px; padding: 18px; text-align: center;">
+      <p style="color: #4ade80; font-weight: 700; font-size: 15px; margin-bottom: 10px;">
+        ✓ Заявка успешно создана!
+      </p>
+      <p style="color: #cbd5e1; font-size: 13px; margin-bottom: 14px;">
+        Если чат Telegram не открылся автоматически, нажмите кнопку ниже:
+      </p>
+      <a id="directTgLink" href="#" target="_blank" rel="noopener noreferrer" class="btn-neon btn-neon-green" style="font-size: 14px; padding: 10px 24px; display: inline-flex;">
+        ОТКРЫТЬ ДИАЛОГ В TELEGRAM
+      </a>
+    </div>
 
   </div>
 
   <!-- Recent Transactions Table -->
   <div class="panel-card">
     <h3 class="panel-title">ИСТОРИЯ ЗАЯВОК НА ПОПОЛНЕНИЕ</h3>
-    <div style="display: flex; flex-direction: column; gap: 10px;">
+    <div id="txListContainer" style="display: flex; flex-direction: column; gap: 10px;">
       {% for tx in transactions %}
-        <div style="display: flex; align-items: center; justify-content: space-between; background: #090c14; padding: 12px 18px; border-radius: 10px; border: 1px solid var(--border-color); flex-wrap: wrap; gap: 10px;">
+        <div class="winner-row" style="display: flex; align-items: center; justify-content: space-between; background: #090c14; padding: 14px 18px; border-radius: 10px; border: 1px solid var(--border-color); flex-wrap: wrap; gap: 10px;">
           <div>
             <div style="font-family: var(--font-display); font-size: 15px; font-weight: 800; color: #fff;">
               Заявка #{{ tx.id }} &bull; ${{ tx.amount|floatformat:2 }}
             </div>
-            <div style="font-size: 12px; color: #64748b; margin-top: 2px;">
+            <div style="font-size: 12px; color: #64748b; margin-top: 3px;">
               {{ tx.created_at|date:"d.m.Y H:i" }} &bull; {{ tx.get_payment_method_display }}
             </div>
           </div>
 
           <div>
-            {% if tx.status == 'approved' %}
+            {% if tx.status == 'completed' %}
               <span style="background: rgba(34, 197, 94, 0.15); color: #4ade80; border: 1px solid #22c55e; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 700;">
                 ✓ Зачислен
               </span>
@@ -101,6 +118,9 @@ document.addEventListener('DOMContentLoaded', () => {
   const amountInput = document.getElementById('depositAmount');
   const presets = document.querySelectorAll('.preset-amt');
   const depositForm = document.getElementById('depositForm');
+  const depositBtn = document.getElementById('depositBtn');
+  const successNotice = document.getElementById('depositSuccessNotice');
+  const directTgLink = document.getElementById('directTgLink');
 
   presets.forEach(btn => {
     btn.addEventListener('click', () => {
@@ -113,7 +133,16 @@ document.addEventListener('DOMContentLoaded', () => {
   if (depositForm) {
     depositForm.addEventListener('submit', async (e) => {
       e.preventDefault();
-      const amount = amountInput.value;
+      const amount = parseFloat(amountInput.value);
+
+      if (isNaN(amount) || amount < 1) {
+        alert('Пожалуйста, укажите корректную сумму пополнения от $1.00');
+        return;
+      }
+
+      depositBtn.disabled = true;
+      depositBtn.style.opacity = '0.7';
+      depositBtn.innerHTML = 'Создание заявки...';
 
       try {
         const formData = new FormData();
@@ -129,14 +158,25 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const data = await res.json();
         if (data.success && data.telegram_url) {
-          // Open Telegram pre-filled URL in new tab
-          window.open(data.telegram_url, '_blank');
-          window.location.reload();
+          // Show persistent action button
+          if (directTgLink) directTgLink.href = data.telegram_url;
+          if (successNotice) successNotice.style.display = 'block';
+
+          // Try opening Telegram deep link
+          const tgWindow = window.open(data.telegram_url, '_blank');
+          if (!tgWindow || tgWindow.closed || typeof tgWindow.closed === 'undefined') {
+            // Fallback for mobile Safari / popup blockers
+            window.location.href = data.telegram_url;
+          }
         } else {
           alert(data.error || 'Ошибка при создании заявки');
         }
       } catch (err) {
-        alert('Ошибка связи с сервером');
+        alert('Ошибка связи с сервером. Попробуйте позже.');
+      } finally {
+        depositBtn.disabled = false;
+        depositBtn.style.opacity = '1';
+        depositBtn.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" style="margin-right: 6px;"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 00-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.36-.01-1.04-.2-1.55-.37-.63-.2-1.12-.31-1.08-.66.02-.18.27-.36.75-.55 2.92-1.27 4.86-2.11 5.83-2.52 2.78-1.16 3.35-1.36 3.73-1.36.08 0 .27.02.39.12.1.08.13.19.14.27-.01.06.01.24 0 .38z"></path></svg> ПОПОЛНИТЬ ЧЕРЕЗ TELEGRAM';
       }
     });
   }

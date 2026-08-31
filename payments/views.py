@@ -15,11 +15,12 @@ audit_logger = logging.getLogger('neondrop.audit')
 
 @login_required
 def deposit_view(request):
+    tg_admin = getattr(settings, 'TELEGRAM_BOT_USERNAME', 'neondrop_admin').lstrip('@')
     transactions = Transaction.objects.filter(user=request.user, transaction_type='deposit').order_by('-created_at')[:20]
     return render(request, 'deposit.html', {
         'transactions': transactions,
         'active_tab': 'deposit',
-        'telegram_bot': getattr(settings, 'TELEGRAM_BOT_USERNAME', 'YOUR_TELEGRAM_USERNAME'),
+        'telegram_admin': tg_admin,
     })
 
 @rate_limit(key_prefix='deposit_req', limit=10, period=60, by_user=True)
@@ -36,6 +37,12 @@ def create_deposit_request_api(request):
     except Exception:
         return JsonResponse({'success': False, 'error': 'Некорректная сумма пополнения.'}, status=400)
 
+    # Format amount cleanly
+    if amount == amount.to_integral():
+        amount_display = f"${int(amount)}"
+    else:
+        amount_display = f"${amount:.2f}"
+
     # Create pending transaction record (NO AUTOMATIC BALANCE CREDIT)
     tx = Transaction.objects.create(
         user=request.user,
@@ -47,29 +54,29 @@ def create_deposit_request_api(request):
         payment_method='telegram',
         telegram_username=request.user.profile.telegram_username,
         ip_address=ip,
-        description=f"Заявка на пополнение через Telegram на сумму ${amount:.2f}"
+        description=f"Заявка на пополнение через Telegram на сумму {amount_display}"
     )
 
     audit_logger.info(
         f"DEPOSIT_REQUEST_CREATED: user={request.user.username} (id={request.user.id}) | "
-        f"amount=${amount} | tx_id={tx.id} | ip={ip}"
+        f"amount={amount_display} | tx_id={tx.id} | ip={ip}"
     )
 
-    # Format Telegram direct message URL
-    tg_bot = getattr(settings, 'TELEGRAM_BOT_USERNAME', 'YOUR_TELEGRAM_USERNAME')
+    # Format Telegram administrator direct link with exact required pre-filled text
+    tg_admin = getattr(settings, 'TELEGRAM_BOT_USERNAME', 'neondrop_admin').lstrip('@')
+    
     msg_template = (
-        f"Здравствуйте! Хочу пополнить баланс.\n"
-        f"Пользователь: {request.user.username}\n"
-        f"Сумма: ${amount:.2f}\n"
-        f"ID: {request.user.id}\n"
-        f"Номер заявки: #{tx.id}"
+        f"Здравствуйте! Хочу пополнить баланс NEONDROP.\n\n"
+        f"Мой логин: {request.user.username}\n"
+        f"Мой ID: {request.user.id}\n"
+        f"Сумма пополнения: {amount_display}"
     )
     encoded_msg = urllib.parse.quote(msg_template)
-    telegram_url = f"https://t.me/{tg_bot}?text={encoded_msg}"
+    telegram_url = f"https://t.me/{tg_admin}?text={encoded_msg}"
 
     return JsonResponse({
         'success': True,
         'transaction_id': tx.id,
         'telegram_url': telegram_url,
-        'message': 'Заявка успешно создана. Перейдите в Telegram для оплаты.'
+        'message': 'Заявка успешно создана. Перейдите в Telegram для отправки сообщения администратору.'
     })

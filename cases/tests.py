@@ -159,12 +159,27 @@ class NeonDropSecurityTests(TestCase):
         """Deposit creation does not alter balance automatically; admin approval credits balance atomically."""
         self.client.login(username='SecurityUser', password='StrongPassword123!')
         
+        # Negative / Zero amounts are rejected
+        res_neg = self.client.post(reverse('payments:create_request'), {'amount': '-25'})
+        self.assertEqual(res_neg.status_code, 400)
+        res_zero = self.client.post(reverse('payments:create_request'), {'amount': '0'})
+        self.assertEqual(res_zero.status_code, 400)
+
         # 1. Create deposit request for $50.00
         res = self.client.post(reverse('payments:create_request'), {'amount': '50'})
         self.assertEqual(res.status_code, 200)
         data = res.json()
         self.assertTrue(data['success'])
         self.assertIn('telegram_url', data)
+        self.assertIn('https://t.me/neondrop_admin?text=', data['telegram_url'])
+        
+        import urllib.parse
+        decoded_url = urllib.parse.unquote(data['telegram_url'])
+        self.assertIn("Здравствуйте! Хочу пополнить баланс NEONDROP.", decoded_url)
+        self.assertIn("Мой логин: SecurityUser", decoded_url)
+        self.assertIn(f"Мой ID: {self.user.id}", decoded_url)
+        self.assertIn("Сумма пополнения: $50", decoded_url)
+        
         tx_id = data['transaction_id']
 
         # Balance remains unchanged at this stage
