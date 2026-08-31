@@ -210,7 +210,7 @@ if not DEBUG and SECURE_SSL_REDIRECT:
     SECURE_HSTS_PRELOAD = True
 
 # Telegram Administrator Integration
-TELEGRAM_BOT_USERNAME = os.environ.get('TELEGRAM_BOT_USERNAME', 'neondrop_admin').lstrip('@')
+TELEGRAM_BOT_USERNAME = os.environ.get('neondrop_admin', 'neondrop_admin').lstrip('@')
 
 # Logging & Audit Configuration
 LOGS_DIR = BASE_DIR / 'logs'
