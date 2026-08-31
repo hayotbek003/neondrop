@@ -16,7 +16,7 @@ from config.security import rate_limit, get_client_ip
 security_logger = logging.getLogger('neondrop.security')
 audit_logger = logging.getLogger('neondrop.audit')
 
-@rate_limit(key_prefix='register', limit=5, period=3600, by_user=False)
+@rate_limit(key_prefix='register', limit=10, period=60, by_user=False, methods=('POST',))
 @require_http_methods(["GET", "POST"])
 def register_view(request):
     if request.user.is_authenticated:
@@ -51,7 +51,7 @@ def register_view(request):
         
     return render(request, 'register.html', {'form': form})
 
-@rate_limit(key_prefix='login', limit=5, period=60, by_user=False)
+@rate_limit(key_prefix='login', limit=10, period=60, by_user=False, methods=('POST',))
 @require_http_methods(["GET", "POST"])
 def login_view(request):
     if request.user.is_authenticated:

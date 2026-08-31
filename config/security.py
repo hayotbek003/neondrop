@@ -1,7 +1,7 @@
 import functools
 import logging
 import hashlib
-from typing import Optional, Callable
+from typing import Optional, Callable, Sequence
 from django.core.cache import cache
 from django.http import JsonResponse, HttpResponse
 from django.shortcuts import render
@@ -20,17 +20,21 @@ def get_client_ip(request) -> str:
         ip = request.META.get('REMOTE_ADDR', '127.0.0.1')
     return ip
 
-def rate_limit(key_prefix: str, limit: int, period: int = 60, by_user: bool = True):
+def rate_limit(key_prefix: str, limit: int, period: int = 60, by_user: bool = True, methods: Optional[Sequence[str]] = None):
     """
     Rate limiting decorator using Django Cache.
     :param key_prefix: Unique action identifier (e.g. 'login', 'open_case')
     :param limit: Maximum allowed requests within the period
     :param period: Time window in seconds
     :param by_user: If True and request.user is authenticated, uses user ID; otherwise IP.
+    :param methods: If provided, only requests with these HTTP methods are rate-limited (e.g. ('POST',)).
     """
     def decorator(view_func: Callable):
         @functools.wraps(view_func)
         def _wrapped_view(request, *args, **kwargs):
+            if methods and request.method not in methods:
+                return view_func(request, *args, **kwargs)
+
             ip = get_client_ip(request)
             if by_user and request.user.is_authenticated:
                 identifier = f"user:{request.user.id}"
