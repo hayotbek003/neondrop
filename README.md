@@ -137,11 +137,11 @@ python manage.py runserver
 В файле `config/settings.py` укажите свой Telegram-юзернейм:
 
 ```python
-TELEGRAM_BOT_USERNAME = 'YOUR_TELEGRAM_USERNAME'
+TELEGRAM_BOT_USERNAME = 'neondrop_admin'
 ```
 
 При нажатии «Пополнить через Telegram» формируется ссылка:
-`https://t.me/YOUR_TELEGRAM_USERNAME?text=...`
+`https://t.me/neondrop_admin?text=...`
 
 Администратор может подтвердить платеж в админке Django:
 - Перейти в **Админ-панель -> Транзакции / Пополнения**
