@@ -1,0 +1,734 @@
+/* ==========================================================================
+   NEONDROP COMPONENTS: LIVE DROPS, HERO, CASES, SKINS, LEADERBOARD, STEPS
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   1. LIVE DROPS RIBBON (TOP TICKER)
+   -------------------------------------------------------------------------- */
+.live-drops-bar {
+  background: rgba(11, 14, 23, 0.95);
+  border-bottom: 1px solid var(--border-color);
+  padding: 8px 0;
+  overflow: hidden;
+  position: relative;
+}
+
+.live-drops-track {
+  display: flex;
+  gap: 12px;
+  animation: liveTickerScroll 45s linear infinite;
+  width: max-content;
+}
+
+.live-drops-track:hover {
+  animation-play-state: paused;
+}
+
+@keyframes liveTickerScroll {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+.drop-item-chip {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #121624;
+  border-radius: 8px;
+  padding: 4px 10px;
+  border-bottom: 2px solid #4b69ff;
+  transition: transform 0.2s, box-shadow 0.2s;
+  flex-shrink: 0;
+}
+
+.drop-item-chip:hover {
+  transform: translateY(-2px);
+}
+
+.drop-chip-user-avatar {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.drop-chip-weapon-icon {
+  width: 38px;
+  height: 24px;
+}
+
+.drop-chip-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.drop-chip-name {
+  font-size: 11px;
+  font-weight: 600;
+  color: #e2e8f0;
+  max-width: 110px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.drop-chip-price {
+  font-family: var(--font-display);
+  font-size: 11px;
+  font-weight: 700;
+  color: #38bdf8;
+}
+
+/* --------------------------------------------------------------------------
+   2. HERO BANNER
+   -------------------------------------------------------------------------- */
+.hero-section {
+  position: relative;
+  padding: 45px 0 35px;
+  background: radial-gradient(circle at 65% 50%, rgba(236, 72, 153, 0.15) 0%, rgba(168, 85, 247, 0.08) 35%, transparent 70%);
+  border-radius: 20px;
+  margin-top: 20px;
+  margin-bottom: 35px;
+  border: 1px solid rgba(236, 72, 153, 0.2);
+  overflow: hidden;
+}
+
+.hero-grid {
+  display: grid;
+  grid-template-columns: 1.1fr 1fr;
+  align-items: center;
+  gap: 30px;
+}
+
+.hero-content {
+  padding-left: 30px;
+}
+
+.hero-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(236, 72, 153, 0.12);
+  border: 1px solid rgba(236, 72, 153, 0.4);
+  color: #f472b6;
+  font-family: var(--font-sub);
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  padding: 4px 14px;
+  border-radius: 20px;
+  margin-bottom: 16px;
+}
+
+.hero-title {
+  font-family: var(--font-display);
+  font-size: 38px;
+  font-weight: 900;
+  line-height: 1.15;
+  text-transform: uppercase;
+  margin-bottom: 14px;
+  letter-spacing: 1px;
+}
+
+.hero-title .highlight-gradient {
+  background: linear-gradient(135deg, #ffffff 0%, #ec4899 50%, #a855f7 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  display: block;
+}
+
+.hero-title .sub-highlight {
+  color: #ffffff;
+  text-shadow: 0 0 20px rgba(168, 85, 247, 0.5);
+  font-size: 32px;
+}
+
+.hero-desc {
+  color: #94a3b8;
+  font-size: 15px;
+  max-width: 480px;
+  margin-bottom: 24px;
+}
+
+.hero-artwork {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+}
+
+.hero-crate-svg {
+  width: 100%;
+  max-width: 420px;
+  height: auto;
+  filter: drop-shadow(0 0 40px rgba(236, 72, 153, 0.5));
+  animation: heroCrateFloat 4s ease-in-out infinite alternate;
+}
+
+@keyframes heroCrateFloat {
+  0% { transform: translateY(0px) rotate(0deg); }
+  100% { transform: translateY(-10px) rotate(1deg); }
+}
+
+/* --------------------------------------------------------------------------
+   3. STATISTICS BAR
+   -------------------------------------------------------------------------- */
+.stats-bar {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+  margin-bottom: 45px;
+}
+
+.stat-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 14px;
+  padding: 20px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  transition: all 0.25s ease;
+}
+
+.stat-card:hover {
+  border-color: rgba(168, 85, 247, 0.4);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+}
+
+.stat-icon-wrapper {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(168, 85, 247, 0.1);
+  border: 1px solid rgba(168, 85, 247, 0.3);
+  font-size: 22px;
+  flex-shrink: 0;
+}
+
+.stat-icon-wrapper.icon-cases { color: #ec4899; border-color: rgba(236, 72, 153, 0.3); background: rgba(236, 72, 153, 0.1); }
+.stat-icon-wrapper.icon-users { color: #06b6d4; border-color: rgba(6, 182, 212, 0.3); background: rgba(6, 182, 212, 0.1); }
+.stat-icon-wrapper.icon-contracts { color: #a855f7; border-color: rgba(168, 85, 247, 0.3); background: rgba(168, 85, 247, 0.1); }
+.stat-icon-wrapper.icon-online { color: #22c55e; border-color: rgba(34, 197, 94, 0.3); background: rgba(34, 197, 94, 0.1); }
+
+.stat-val {
+  font-family: var(--font-display);
+  font-size: 20px;
+  font-weight: 800;
+  color: #ffffff;
+  letter-spacing: 0.5px;
+  line-height: 1.2;
+}
+
+.stat-lbl {
+  font-family: var(--font-sub);
+  font-size: 13px;
+  font-weight: 600;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+/* --------------------------------------------------------------------------
+   4. CASE GRID & CASE CARDS
+   -------------------------------------------------------------------------- */
+.section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+}
+
+.section-title {
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.section-title::before {
+  content: '';
+  display: inline-block;
+  width: 4px;
+  height: 20px;
+  background: var(--neon-pink);
+  border-radius: 2px;
+  box-shadow: 0 0 10px var(--neon-pink);
+}
+
+.cases-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 20px;
+  margin-bottom: 45px;
+}
+
+.case-card {
+  background: #0f121d;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  padding: 18px 14px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.case-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: var(--case-accent, #ec4899);
+  box-shadow: 0 0 12px var(--case-accent, #ec4899);
+  opacity: 0.8;
+  transition: opacity 0.3s;
+}
+
+.case-card:hover {
+  transform: translateY(-6px);
+  border-color: var(--case-accent, #ec4899);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.6), 0 0 20px rgba(236, 72, 153, 0.2);
+  background: #141827;
+}
+
+.case-card-img-wrapper {
+  width: 140px;
+  height: 110px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 14px;
+  transition: transform 0.3s ease;
+}
+
+.case-card:hover .case-card-img-wrapper {
+  transform: scale(1.08);
+}
+
+.case-card-img {
+  width: 100%;
+  height: 100%;
+}
+
+.case-card-name {
+  font-family: var(--font-display);
+  font-size: 14px;
+  font-weight: 700;
+  color: #fff;
+  margin-bottom: 8px;
+  text-align: center;
+  letter-spacing: 0.5px;
+}
+
+.case-card-price {
+  font-family: var(--font-display);
+  font-size: 14px;
+  font-weight: 700;
+  color: #38bdf8;
+  background: rgba(56, 189, 248, 0.1);
+  border: 1px solid rgba(56, 189, 248, 0.25);
+  padding: 4px 14px;
+  border-radius: 20px;
+  margin-bottom: 12px;
+}
+
+.case-card-btn {
+  width: 100%;
+  font-family: var(--font-sub);
+  font-size: 14px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  padding: 8px 0;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.05);
+  color: #cbd5e1;
+  border: 1px solid var(--border-color);
+  text-align: center;
+  transition: all 0.2s;
+}
+
+.case-card:hover .case-card-btn {
+  background: linear-gradient(135deg, #a855f7, #ec4899);
+  color: #fff;
+  border-color: transparent;
+  box-shadow: 0 0 15px rgba(236, 72, 153, 0.4);
+}
+
+/* --------------------------------------------------------------------------
+   5. ITEM CARD COMPONENT (CS:GO SKINS)
+   -------------------------------------------------------------------------- */
+.item-card {
+  background: #0e121d;
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 14px 12px;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.25s ease;
+}
+
+.item-card::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: var(--item-rarity-color, #4b69ff);
+  box-shadow: 0 0 10px var(--item-rarity-color, #4b69ff);
+}
+
+.item-card:hover {
+  transform: translateY(-4px);
+  border-color: var(--item-rarity-color, #4b69ff);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+  background: #141928;
+}
+
+.item-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.item-rarity-badge {
+  font-family: var(--font-sub);
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--item-rarity-color, #4b69ff);
+}
+
+.item-chance-badge {
+  font-family: var(--font-display);
+  font-size: 10px;
+  font-weight: 600;
+  color: #64748b;
+}
+
+.item-card-img-wrapper {
+  width: 100%;
+  height: 85px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 6px 0 10px;
+}
+
+.item-card-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.item-card-weapon {
+  font-family: var(--font-sub);
+  font-size: 12px;
+  font-weight: 600;
+  color: #94a3b8;
+  text-transform: uppercase;
+}
+
+.item-card-skin {
+  font-family: var(--font-display);
+  font-size: 13px;
+  font-weight: 700;
+  color: #fff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-bottom: 6px;
+}
+
+.item-card-price {
+  font-family: var(--font-display);
+  font-size: 13px;
+  font-weight: 800;
+  color: #38bdf8;
+  margin-top: auto;
+}
+
+/* --------------------------------------------------------------------------
+   6. TOP WINNERS & HOW IT WORKS (SPLIT SECTION)
+   -------------------------------------------------------------------------- */
+.split-bottom-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  margin-bottom: 50px;
+}
+
+.panel-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  padding: 24px;
+}
+
+.panel-title {
+  font-family: var(--font-display);
+  font-size: 16px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  color: #fff;
+  text-transform: uppercase;
+  margin-bottom: 20px;
+}
+
+/* Top Winners List */
+.top-winners-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.winner-row {
+  display: grid;
+  grid-template-columns: 28px 36px 1fr 60px 90px;
+  align-items: center;
+  background: #0b0e17;
+  padding: 8px 14px;
+  border-radius: 10px;
+  border: 1px solid var(--border-color);
+  gap: 12px;
+}
+
+.winner-rank {
+  font-family: var(--font-display);
+  font-size: 14px;
+  font-weight: 800;
+  color: #94a3b8;
+}
+
+.winner-row:nth-child(1) .winner-rank { color: #fde047; text-shadow: 0 0 8px #eab308; }
+.winner-row:nth-child(2) .winner-rank { color: #cbd5e1; }
+.winner-row:nth-child(3) .winner-rank { color: #d97706; }
+
+.winner-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.winner-username {
+  font-family: var(--font-sub);
+  font-size: 15px;
+  font-weight: 700;
+  color: #fff;
+}
+
+.winner-weapon-thumb {
+  width: 48px;
+  height: 28px;
+}
+
+.winner-amount {
+  font-family: var(--font-display);
+  font-size: 14px;
+  font-weight: 700;
+  color: #22c55e;
+  text-align: right;
+}
+
+/* How It Works Steps */
+.how-it-works-steps {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 30px;
+  position: relative;
+}
+
+.step-node {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  z-index: 2;
+  flex: 1;
+}
+
+.step-circle {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: #090c14;
+  border: 2px solid var(--neon-purple);
+  box-shadow: 0 0 15px rgba(168, 85, 247, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  color: #fff;
+  margin-bottom: 12px;
+}
+
+.step-title {
+  font-family: var(--font-sub);
+  font-size: 13px;
+  font-weight: 700;
+  color: #e2e8f0;
+  text-transform: uppercase;
+  max-width: 90px;
+}
+
+.step-connector {
+  flex: 1;
+  height: 2px;
+  background: dashed rgba(168, 85, 247, 0.4);
+  border-top: 2px dashed rgba(168, 85, 247, 0.5);
+  margin-top: -24px;
+  z-index: 1;
+}
+
+/* --------------------------------------------------------------------------
+   7. FILTER CHIPS & TABS
+   -------------------------------------------------------------------------- */
+.filter-tabs-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+}
+
+.filter-chip {
+  font-family: var(--font-sub);
+  font-size: 14px;
+  font-weight: 700;
+  text-transform: uppercase;
+  padding: 8px 18px;
+  border-radius: 8px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  color: #94a3b8;
+  letter-spacing: 0.5px;
+  transition: all 0.2s ease;
+}
+
+.filter-chip:hover {
+  color: #fff;
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.filter-chip.active {
+  background: rgba(168, 85, 247, 0.15);
+  border-color: var(--neon-purple);
+  color: #fff;
+  box-shadow: 0 0 15px rgba(168, 85, 247, 0.3);
+}
+
+/* --------------------------------------------------------------------------
+   8. WINNING REVEAL MODAL
+   -------------------------------------------------------------------------- */
+.modal-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(5, 7, 12, 0.85);
+  backdrop-filter: blur(8px);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+
+.modal-backdrop.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.modal-win-card {
+  background: #0f1320;
+  border: 2px solid var(--win-rarity-color, #ec4899);
+  box-shadow: 0 0 50px rgba(236, 72, 153, 0.4), 0 20px 40px rgba(0, 0, 0, 0.8);
+  border-radius: 20px;
+  padding: 35px 30px;
+  width: 90%;
+  max-width: 440px;
+  text-align: center;
+  transform: scale(0.85);
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  position: relative;
+}
+
+.modal-backdrop.active .modal-win-card {
+  transform: scale(1);
+}
+
+.win-title {
+  font-family: var(--font-display);
+  font-size: 24px;
+  font-weight: 900;
+  color: #fff;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+  letter-spacing: 1px;
+}
+
+.win-item-img-box {
+  width: 220px;
+  height: 150px;
+  margin: 15px auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.win-item-name {
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 800;
+  color: #fff;
+  margin-bottom: 4px;
+}
+
+.win-item-rarity {
+  font-family: var(--font-sub);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--win-rarity-color, #ec4899);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 12px;
+}
+
+.win-item-price {
+  font-family: var(--font-display);
+  font-size: 24px;
+  font-weight: 900;
+  color: #38bdf8;
+  margin-bottom: 24px;
+}
+
+.win-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+}

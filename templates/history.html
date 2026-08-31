@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+{% load static humanize %}
+
+{% block title %}NEONDROP - Полная история открытий{% endblock %}
+
+{% block content %}
+<div class="container" style="padding-top: 30px; padding-bottom: 60px;">
+
+  <div class="section-header">
+    <h1 class="section-title">ИСТОРИЯ ОТКРЫТИЙ</h1>
+    <a href="{% url 'users:profile' %}" class="btn-cyber-outline">&larr; В ПРОФИЛЬ</a>
+  </div>
+
+  <div class="panel-card" style="padding: 20px;">
+    <div style="display: flex; flex-direction: column; gap: 12px;">
+      {% for op in openings %}
+        <div style="display: grid; grid-template-columns: 140px 1fr 120px 200px; align-items: center; background: #090c14; padding: 14px 20px; border-radius: 10px; border: 1px solid var(--border-color); gap: 16px;">
+          
+          <!-- Case -->
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <svg style="width: 40px; height: 32px;"><use href="#icon-case-{{ op.case.color_theme }}"></use></svg>
+            <div>
+              <div style="font-family: var(--font-display); font-size: 13px; font-weight: 700; color: #fff;">{{ op.case.name }}</div>
+              <div style="font-size: 11px; color: #64748b;">${{ op.price|floatformat:2 }}</div>
+            </div>
+          </div>
+
+          <!-- Won Item -->
+          <div style="display: flex; align-items: center; gap: 14px;">
+            <svg style="width: 54px; height: 36px;"><use href="#icon-{{ op.item.image_url|default:'generic_weapon' }}"></use></svg>
+            <div>
+              <div style="font-family: var(--font-display); font-size: 14px; font-weight: 700; color: #fff;">{{ op.item.name }}</div>
+              <div style="font-size: 11px; font-weight: 600; color: {{ op.item.rarity_color }};">{{ op.item.rarity_display_ru }}</div>
+            </div>
+          </div>
+
+          <!-- Value -->
+          <div style="font-family: var(--font-display); font-size: 15px; font-weight: 800; color: #22c55e;">
+            +${{ op.item.value|floatformat:2 }}
+          </div>
+
+          <!-- Date & Provably Fair Hash -->
+          <div style="text-align: right;">
+            <div style="font-size: 12px; color: #94a3b8;">{{ op.created_at|date:"d.m.Y H:i" }}</div>
+            <div style="font-family: monospace; font-size: 10px; color: #64748b; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;" title="Seed: {{ op.server_seed }}">
+              Hash: {{ op.server_seed_hash|slice:":12" }}...
+            </div>
+          </div>
+
+        </div>
+      {% empty %}
+        <div style="text-align: center; padding: 50px; color: #94a3b8;">
+          <p>История открытий пуста.</p>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+
+</div>
+{% endblock %}

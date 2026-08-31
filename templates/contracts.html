@@ -1,0 +1,89 @@
+{% extends 'base.html' %}
+{% load static humanize %}
+
+{% block title %}NEONDROP - Контракты Обмена CS:GO{% endblock %}
+
+{% block content %}
+<div class="container" style="padding-top: 30px; padding-bottom: 60px;">
+
+  <div class="section-header">
+    <h1 class="section-title">КОНТРАКТЫ ОБМЕНА</h1>
+  </div>
+
+  <!-- Contract Creation Summary Panel -->
+  <div class="panel-card" style="padding: 24px 30px; margin-bottom: 30px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 20px;">
+    <div>
+      <div style="font-family: var(--font-sub); font-size: 12px; font-weight: 700; color: #94a3b8; text-transform: uppercase;">ВЫБРАНО ПРЕДМЕТОВ:</div>
+      <div id="contractSelectedCount" style="font-family: var(--font-display); font-size: 24px; font-weight: 900; color: #fff;">0 / 10</div>
+    </div>
+
+    <div>
+      <div style="font-family: var(--font-sub); font-size: 12px; font-weight: 700; color: #94a3b8; text-transform: uppercase;">ОБЩАЯ СТОИМОСТЬ:</div>
+      <div id="contractTotalValue" style="font-family: var(--font-display); font-size: 24px; font-weight: 900; color: #38bdf8;">$0.00</div>
+    </div>
+
+    <button id="createContractBtn" class="btn-neon" style="padding: 12px 30px;" disabled>
+      ВЫБЕРИТЕ ОТ 3 ДО 10 ПРЕДМЕТОВ
+    </button>
+  </div>
+
+  <!-- Available Inventory Items Grid -->
+  <div class="panel-card" style="padding: 24px;">
+    <h3 class="panel-title">ВЫБЕРИТЕ ПРЕДМЕТЫ ИЗ ИНВЕНТАРЯ</h3>
+    
+    <div class="cases-grid" style="grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));">
+      {% for inv in inventory_items %}
+        <div class="item-card contract-inv-card" data-id="{{ inv.id }}" data-value="{{ inv.item.value }}" style="cursor: pointer; --item-rarity-color: {{ inv.item.rarity_color }};">
+          <div class="item-card-header">
+            <span class="item-rarity-badge">{{ inv.item.rarity_display_ru }}</span>
+          </div>
+          <div class="item-card-img-wrapper">
+            <svg class="item-card-img"><use href="#icon-{{ inv.item.image_url|default:'generic_weapon' }}"></use></svg>
+          </div>
+          <div class="item-card-weapon">{{ inv.item.weapon_type }}</div>
+          <div class="item-card-skin">{{ inv.item.skin_name }}</div>
+          <div class="item-card-price">${{ inv.item.value|floatformat:2 }}</div>
+        </div>
+      {% empty %}
+        <div style="grid-column: 1 / -1; text-align: center; padding: 40px; color: #64748b;">
+          <p>В инвентаре нет предметов для создания контракта.</p>
+          <a href="{% url 'cases:cases_list' %}" class="btn-neon" style="margin-top: 15px; display: inline-block;">ОТКРЫТЬ КЕЙСЫ</a>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+
+</div>
+
+<!-- Contract Reward Modal -->
+<div class="modal-backdrop" id="contractRewardModal">
+  <div class="modal-win-card" style="--win-rarity-color: #a855f7;">
+    <h2 class="win-title">КОНТРАКТ ВЫПОЛНЕН!</h2>
+    <div class="win-item-img-box">
+      <svg style="width: 100%; height: 100%;"><use id="contractWinSvgUse" href="#icon-generic_weapon"></use></svg>
+    </div>
+    <div class="win-item-name" id="contractWinName">M4A4 | The Emperor</div>
+    <div class="win-item-rarity" id="contractWinRarity">ТАЙНОЕ</div>
+    <div class="win-item-price" id="contractWinPrice">$55.00</div>
+
+    <div class="win-actions">
+      <button onclick="window.location.reload();" class="btn-neon">
+        ОТЛИЧНО!
+      </button>
+    </div>
+  </div>
+</div>
+
+<style>
+.contract-inv-card.selected {
+  border-color: #a855f7 !important;
+  box-shadow: 0 0 18px rgba(168, 85, 247, 0.7) !important;
+  background: #1e152e !important;
+  transform: translateY(-4px);
+}
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/contracts.js' %}"></script>
+{% endblock %}

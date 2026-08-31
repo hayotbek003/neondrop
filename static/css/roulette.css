@@ -1,0 +1,217 @@
+/* ==========================================================================
+   NEONDROP CS:GO STYLE HORIZONTAL ROULETTE STYLES
+   ========================================================================== */
+
+.roulette-container {
+  width: 100%;
+  max-width: 1100px;
+  margin: 30px auto 40px;
+  background: #090c14;
+  border-radius: 16px;
+  border: 2px solid rgba(168, 85, 247, 0.3);
+  box-shadow: 0 0 40px rgba(0, 0, 0, 0.8), 0 0 20px rgba(168, 85, 247, 0.15);
+  position: relative;
+  overflow: hidden;
+  padding: 18px 0;
+}
+
+/* Center Selector Indicator (The Needle) */
+.roulette-needle {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 4px;
+  transform: translateX(-50%);
+  background: #ffd700;
+  box-shadow: 0 0 15px #ffd700, 0 0 30px #ffd700;
+  z-index: 50;
+  pointer-events: none;
+}
+
+.roulette-needle::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 0;
+  border-left: 10px solid transparent;
+  border-right: 10px solid transparent;
+  border-top: 14px solid #ffd700;
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.8));
+}
+
+.roulette-needle::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 0;
+  border-left: 10px solid transparent;
+  border-right: 10px solid transparent;
+  border-bottom: 14px solid #ffd700;
+  filter: drop-shadow(0 -2px 4px rgba(0,0,0,0.8));
+}
+
+/* Roulette Viewport & Track */
+.roulette-viewport {
+  width: 100%;
+  overflow: hidden;
+  position: relative;
+  mask-image: linear-gradient(to right, transparent 0%, black 15%, black 85%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to right, transparent 0%, black 15%, black 85%, transparent 100%);
+}
+
+.roulette-track {
+  display: flex;
+  width: max-content;
+  will-change: transform;
+  transform: translateX(0px);
+}
+
+/* Roulette Item Card */
+.roulette-item {
+  width: 160px;
+  height: 180px;
+  background: #0f1322;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  margin: 0 4px;
+  padding: 12px 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  position: relative;
+  flex-shrink: 0;
+  border-bottom: 3px solid var(--r-color, #4b69ff);
+  transition: transform 0.2s;
+}
+
+.roulette-item.winner-landed {
+  border-color: #ffd700;
+  box-shadow: 0 0 25px rgba(255, 215, 0, 0.6);
+  transform: scale(1.04);
+  z-index: 10;
+}
+
+.roulette-item-img-box {
+  width: 110px;
+  height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.roulette-item-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.roulette-item-weapon {
+  font-family: var(--font-sub);
+  font-size: 11px;
+  font-weight: 700;
+  color: #94a3b8;
+  text-transform: uppercase;
+}
+
+.roulette-item-skin {
+  font-family: var(--font-display);
+  font-size: 12px;
+  font-weight: 700;
+  color: #ffffff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 140px;
+  text-align: center;
+}
+
+.roulette-item-price {
+  font-family: var(--font-display);
+  font-size: 12px;
+  font-weight: 800;
+  color: #38bdf8;
+}
+
+/* Spinner Status Bar */
+.roulette-status-bar {
+  text-align: center;
+  margin-top: 15px;
+}
+
+.roulette-status-text {
+  font-family: var(--font-display);
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: #ec4899;
+  text-shadow: 0 0 10px rgba(236, 72, 153, 0.6);
+  animation: textPulse 1.2s ease-in-out infinite alternate;
+}
+
+@keyframes textPulse {
+  0% { opacity: 0.6; }
+  100% { opacity: 1; }
+}
+
+/* Case Detail Showcase */
+.case-hero-showcase {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 40px 0 20px;
+  position: relative;
+}
+
+.case-hero-glow-box {
+  width: 260px;
+  height: 200px;
+  margin-bottom: 20px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.case-hero-glow-box::after {
+  content: '';
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(circle, var(--case-theme-glow, rgba(236, 72, 153, 0.4)) 0%, transparent 70%);
+  z-index: -1;
+}
+
+.case-hero-title {
+  font-family: var(--font-display);
+  font-size: 32px;
+  font-weight: 900;
+  text-transform: uppercase;
+  color: #fff;
+  letter-spacing: 2px;
+  margin-bottom: 8px;
+}
+
+.case-hero-price {
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 800;
+  color: #38bdf8;
+  margin-bottom: 20px;
+}
+
+.case-hero-actions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 30px;
+}

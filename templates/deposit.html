@@ -1,0 +1,145 @@
+{% extends 'base.html' %}
+{% load static humanize %}
+
+{% block title %}NEONDROP - Пополнение баланса через Telegram{% endblock %}
+
+{% block content %}
+<div class="container" style="padding-top: 35px; padding-bottom: 60px; max-width: 900px;">
+
+  <div class="section-header">
+    <h1 class="section-title">ПОПОЛНЕНИЕ БАЛАНСА</h1>
+    <a href="{% url 'users:profile' %}" class="btn-cyber-outline">&larr; В ПРОФИЛЬ</a>
+  </div>
+
+  <!-- Deposit Form Card -->
+  <div class="panel-card" style="padding: 30px; margin-bottom: 35px;">
+    
+    <div style="background: rgba(6, 182, 212, 0.1); border: 1px solid rgba(6, 182, 212, 0.3); border-radius: 12px; padding: 16px 20px; margin-bottom: 25px;">
+      <h4 style="font-family: var(--font-display); font-size: 14px; color: #38bdf8; margin-bottom: 6px;">ИНСТРУКЦИЯ ПО ОПЛАТЕ</h4>
+      <p style="font-size: 13px; color: #cbd5e1; line-height: 1.6;">
+        1. Укажите желаемую сумму пополнения.<br>
+        2. Нажмите кнопку <strong>«ПОПОЛНИТЬ ЧЕРЕЗ TELEGRAM»</strong>.<br>
+        3. Отправьте готовое сообщение нашему менеджеру в Telegram. После проверки администратором баланс будет автоматически начислен на ваш аккаунт!
+      </p>
+    </div>
+
+    <!-- Quick Presets -->
+    <div style="margin-bottom: 20px;">
+      <label style="font-family: var(--font-sub); font-size: 13px; font-weight: 700; color: #94a3b8; text-transform: uppercase; margin-bottom: 10px; display: block;">
+        ВЫБЕРИТЕ СУММУ ИЛИ ВВЕДИТЕ СВОЮ:
+      </label>
+      <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+        <button type="button" class="filter-chip preset-amt" data-val="5">$5.00</button>
+        <button type="button" class="filter-chip preset-amt" data-val="10">$10.00</button>
+        <button type="button" class="filter-chip preset-amt active" data-val="25">$25.00</button>
+        <button type="button" class="filter-chip preset-amt" data-val="50">$50.00</button>
+        <button type="button" class="filter-chip preset-amt" data-val="100">$100.00</button>
+        <button type="button" class="filter-chip preset-amt" data-val="250">$250.00</button>
+      </div>
+    </div>
+
+    <!-- Amount Input Form -->
+    <form id="depositForm" style="display: flex; flex-direction: column; gap: 18px;">
+      <div>
+        <label for="depositAmount" style="font-family: var(--font-sub); font-size: 13px; font-weight: 700; color: #94a3b8; text-transform: uppercase; margin-bottom: 6px; display: block;">
+          СУММА ПОПОЛНЕНИЯ ($):
+        </label>
+        <input type="number" step="1" min="1" max="50000" id="depositAmount" name="amount" value="25" class="input-cyber" style="font-size: 20px; font-family: var(--font-display); font-weight: 800; color: #38bdf8;" required>
+      </div>
+
+      <button type="submit" id="depositBtn" class="btn-neon" style="width: 100%; font-size: 16px; padding: 14px 0;">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 00-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.36-.01-1.04-.2-1.55-.37-.63-.2-1.12-.31-1.08-.66.02-.18.27-.36.75-.55 2.92-1.27 4.86-2.11 5.83-2.52 2.78-1.16 3.35-1.36 3.73-1.36.08 0 .27.02.39.12.1.08.13.19.14.27-.01.06.01.24 0 .38z"></path></svg>
+        ПОПОЛНИТЬ ЧЕРЕЗ TELEGRAM
+      </button>
+    </form>
+
+  </div>
+
+  <!-- Recent Transactions Table -->
+  <div class="panel-card">
+    <h3 class="panel-title">ИСТОРИЯ ЗАЯВОК НА ПОПОЛНЕНИЕ</h3>
+    <div style="display: flex; flex-direction: column; gap: 10px;">
+      {% for tx in transactions %}
+        <div style="display: flex; align-items: center; justify-content: space-between; background: #090c14; padding: 12px 18px; border-radius: 10px; border: 1px solid var(--border-color); flex-wrap: wrap; gap: 10px;">
+          <div>
+            <div style="font-family: var(--font-display); font-size: 15px; font-weight: 800; color: #fff;">
+              Заявка #{{ tx.id }} &bull; ${{ tx.amount|floatformat:2 }}
+            </div>
+            <div style="font-size: 12px; color: #64748b; margin-top: 2px;">
+              {{ tx.created_at|date:"d.m.Y H:i" }} &bull; {{ tx.get_payment_method_display }}
+            </div>
+          </div>
+
+          <div>
+            {% if tx.status == 'approved' %}
+              <span style="background: rgba(34, 197, 94, 0.15); color: #4ade80; border: 1px solid #22c55e; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 700;">
+                ✓ Зачислен
+              </span>
+            {% elif tx.status == 'rejected' %}
+              <span style="background: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid #ef4444; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 700;">
+                ✗ Отклонен
+              </span>
+            {% else %}
+              <span style="background: rgba(234, 179, 8, 0.15); color: #fde047; border: 1px solid #eab308; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 700;">
+                ⏳ Ожидает проверки
+              </span>
+            {% endif %}
+          </div>
+        </div>
+      {% empty %}
+        <p style="color: #64748b; font-size: 13px; text-align: center; padding: 20px 0;">У вас пока нет транзакций.</p>
+      {% endfor %}
+    </div>
+  </div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const amountInput = document.getElementById('depositAmount');
+  const presets = document.querySelectorAll('.preset-amt');
+  const depositForm = document.getElementById('depositForm');
+
+  presets.forEach(btn => {
+    btn.addEventListener('click', () => {
+      presets.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      amountInput.value = btn.getAttribute('data-val');
+    });
+  });
+
+  if (depositForm) {
+    depositForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const amount = amountInput.value;
+
+      try {
+        const formData = new FormData();
+        formData.append('amount', amount);
+
+        const res = await fetch('/deposit/api/create-request/', {
+          method: 'POST',
+          headers: {
+            'X-CSRFToken': getCookie('csrftoken')
+          },
+          body: formData
+        });
+
+        const data = await res.json();
+        if (data.success && data.telegram_url) {
+          // Open Telegram pre-filled URL in new tab
+          window.open(data.telegram_url, '_blank');
+          window.location.reload();
+        } else {
+          alert(data.error || 'Ошибка при создании заявки');
+        }
+      } catch (err) {
+        alert('Ошибка связи с сервером');
+      }
+    });
+  }
+});
+</script>
+{% endblock %}

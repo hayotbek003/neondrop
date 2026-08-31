@@ -1,0 +1,133 @@
+{% extends 'base.html' %}
+{% load static humanize %}
+
+{% block title %}NEONDROP - Апгрейд Скинов{% endblock %}
+
+{% block content %}
+<div class="container" style="padding-top: 30px; padding-bottom: 60px;">
+
+  <div class="section-header">
+    <h1 class="section-title">АПГРЕЙД СКИНОВ</h1>
+  </div>
+
+  <!-- Upgrade Arena -->
+  <div class="panel-card" style="margin-bottom: 35px; padding: 30px;">
+    
+    <div style="display: grid; grid-template-columns: 1fr 220px 1fr; align-items: center; gap: 20px;" class="upgrade-arena-grid">
+      
+      <!-- Source Item Slot -->
+      <div style="display: flex; flex-direction: column; align-items: center;">
+        <span style="font-family: var(--font-sub); font-size: 13px; font-weight: 700; color: #94a3b8; margin-bottom: 10px; text-transform: uppercase;">ВАШ ПРЕДМЕТ</span>
+        <div id="sourceSlotDisplay" style="width: 200px; height: 210px; background: #090c14; border: 2px dashed var(--border-color); border-radius: 14px; display: flex; align-items: center; justify-content: center; text-align: center; color: #64748b; font-size: 13px; padding: 14px;">
+          Выберите скин из инвентаря ниже
+        </div>
+      </div>
+
+      <!-- Center Wheel & Chance Gauge -->
+      <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative;">
+        
+        <div style="position: relative; width: 140px; height: 140px;">
+          <svg viewBox="0 0 100 100" style="width: 100%; height: 100%; transform: rotate(-90deg);">
+            <circle cx="50" cy="50" r="45" fill="none" stroke="#161a29" stroke-width="8" />
+            <circle id="upgradeCircleGauge" cx="50" cy="50" r="45" fill="none" stroke="#ec4899" stroke-width="8" stroke-dasharray="0 283" stroke-linecap="round" style="transition: stroke-dasharray 0.3s;" />
+          </svg>
+          
+          <div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+            <div id="upgradeChanceDisplay" style="font-family: var(--font-display); font-size: 20px; font-weight: 900; color: #fff;">0.00%</div>
+            <div style="font-family: var(--font-sub); font-size: 10px; font-weight: 700; color: #ec4899; text-transform: uppercase;">ШАНС</div>
+          </div>
+
+          <!-- Spinner Needle -->
+          <div id="upgradeWheelNeedle" style="position: absolute; top: 50%; left: 50%; width: 4px; height: 60px; background: #ffd700; transform-origin: top center; transform: rotate(0deg); margin-left: -2px; border-radius: 2px; box-shadow: 0 0 10px #ffd700; pointer-events: none;"></div>
+        </div>
+
+        <button id="executeUpgradeBtn" class="btn-neon" style="margin-top: 20px; width: 100%; font-size: 13px; padding: 10px 0;" disabled>
+          УЛУЧШИТЬ СКИН
+        </button>
+      </div>
+
+      <!-- Target Item Slot -->
+      <div style="display: flex; flex-direction: column; align-items: center;">
+        <span style="font-family: var(--font-sub); font-size: 13px; font-weight: 700; color: #94a3b8; margin-bottom: 10px; text-transform: uppercase;">ЖЕЛАЕМЫЙ СКИН</span>
+        <div id="targetSlotDisplay" style="width: 200px; height: 210px; background: #090c14; border: 2px dashed var(--border-color); border-radius: 14px; display: flex; align-items: center; justify-content: center; text-align: center; color: #64748b; font-size: 13px; padding: 14px;">
+          Выберите желаемый скин справа
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Outcome Result Banner -->
+    <div id="upgradeOutcomeBox" style="display: none; margin-top: 25px; padding: 14px; border-radius: 10px; text-align: center; font-size: 15px;"></div>
+
+  </div>
+
+  <!-- Item Selection Tables -->
+  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;" class="upgrade-pickers-grid">
+    
+    <!-- User Inventory Items -->
+    <div class="panel-card">
+      <h3 class="panel-title">1. ВАШ ИНВЕНТАРЬ</h3>
+      <div class="cases-grid" style="grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 10px; max-height: 420px; overflow-y: auto;">
+        {% for inv in inventory_items %}
+          <div class="item-card upgrade-inv-item" data-id="{{ inv.id }}" data-value="{{ inv.item.value }}" data-name="{{ inv.item.name }}" style="cursor: pointer; padding: 8px; --item-rarity-color: {{ inv.item.rarity_color }};">
+            <div style="font-size: 9px; color: {{ inv.item.rarity_color }}; font-weight: 700;">{{ inv.item.rarity_display_ru }}</div>
+            <div style="height: 60px; display: flex; align-items: center; justify-content: center;">
+              <svg style="width: 100%; height: 100%;"><use href="#icon-{{ inv.item.image_url|default:'generic_weapon' }}"></use></svg>
+            </div>
+            <div style="font-family: var(--font-display); font-size: 11px; font-weight: 700; color: #fff; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;">{{ inv.item.name }}</div>
+            <div style="font-family: var(--font-display); font-size: 11px; color: #38bdf8; font-weight: 800;">${{ inv.item.value|floatformat:2 }}</div>
+          </div>
+        {% empty %}
+          <p style="grid-column: 1 / -1; color: #64748b; font-size: 13px; text-align: center; padding: 30px;">Инвентарь пуст. Откройте кейс!</p>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- Target Items Catalog -->
+    <div class="panel-card">
+      <h3 class="panel-title">2. ЦЕЛЕВЫЕ СКИНЫ</h3>
+      <div class="cases-grid" style="grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 10px; max-height: 420px; overflow-y: auto;">
+        {% for it in target_items %}
+          <div class="item-card upgrade-target-item" data-id="{{ it.id }}" data-value="{{ it.value }}" data-name="{{ it.name }}" style="cursor: pointer; padding: 8px; --item-rarity-color: {{ it.rarity_color }};">
+            <div style="font-size: 9px; color: {{ it.rarity_color }}; font-weight: 700;">{{ it.rarity_display_ru }}</div>
+            <div style="height: 60px; display: flex; align-items: center; justify-content: center;">
+              <svg style="width: 100%; height: 100%;"><use href="#icon-{{ it.image_url|default:'generic_weapon' }}"></use></svg>
+            </div>
+            <div style="font-family: var(--font-display); font-size: 11px; font-weight: 700; color: #fff; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;">{{ it.name }}</div>
+            <div style="font-family: var(--font-display); font-size: 11px; color: #38bdf8; font-weight: 800;">${{ it.value|floatformat:2 }}</div>
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+
+  </div>
+
+</div>
+
+<style>
+.upgrade-inv-item.selected, .upgrade-target-item.selected {
+  border-color: #ec4899 !important;
+  box-shadow: 0 0 15px rgba(236, 72, 153, 0.6) !important;
+  background: #1c152b !important;
+}
+.upgrade-result-banner.win {
+  background: rgba(34, 197, 94, 0.2);
+  border: 1px solid #22c55e;
+  color: #4ade80;
+}
+.upgrade-result-banner.lose {
+  background: rgba(239, 68, 68, 0.2);
+  border: 1px solid #ef4444;
+  color: #f87171;
+}
+@media (max-width: 768px) {
+  .upgrade-arena-grid, .upgrade-pickers-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/upgrade.js' %}"></script>
+{% endblock %}

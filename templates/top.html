@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+{% load static humanize %}
+
+{% block title %}NEONDROP - Топ игроков платформы{% endblock %}
+
+{% block content %}
+<div class="container" style="padding-top: 30px; padding-bottom: 60px;">
+
+  <div class="section-header">
+    <div>
+      <h1 class="section-title">ТАБЛИЦА ЛИДЕРОВ</h1>
+      <p style="color: #94a3b8; font-size: 14px; margin-top: 4px;">Самые удачливые игроки по сумме выигранных скинов</p>
+    </div>
+  </div>
+
+  <div class="panel-card" style="padding: 20px;">
+    <div style="display: flex; flex-direction: column; gap: 10px;">
+      {% for prof in top_profiles %}
+        <div class="winner-row" style="grid-template-columns: 32px 40px 1fr 140px; padding: 12px 18px;">
+          <span class="winner-rank">#{{ forloop.counter }}</span>
+          <img src="{{ prof.display_avatar }}" alt="{{ prof.user.username }}" class="winner-avatar" style="width: 36px; height: 36px;">
+          <div>
+            <div class="winner-username">{{ prof.user.username }}</div>
+            <div style="font-size: 11px; color: #64748b;">Открыто кейсов: {{ prof.total_opened }}</div>
+          </div>
+          <span class="winner-amount">+${{ prof.total_winnings|floatformat:2|intcomma }}</span>
+        </div>
+      {% empty %}
+        <p style="color: #64748b; text-align: center; padding: 30px;">Таблица лидеров формируется...</p>
+      {% endfor %}
+    </div>
+  </div>
+
+</div>
+{% endblock %}

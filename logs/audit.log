@@ -1,0 +1,23 @@
+[2026-08-31 22:40:31,743] [AUDIT] BALANCE_MUTATION: user=SecurityUser (id=1) | type=item_sell | delta=+18.73 | before=$100.00 -> after=$118.73 | ref=inv:1 | tx_id=1 | ip=127.0.0.1
+[2026-08-31 22:40:35,705] [AUDIT] BALANCE_MUTATION: user=SecurityUser (id=1) | type=case_open | delta=-10.00 | before=$100.00 -> after=$90.00 | ref=case:1 | tx_id=1 | ip=127.0.0.1
+[2026-08-31 22:40:35,707] [AUDIT] CASE_OPEN_SUCCESS: user=SecurityUser (id=1) | case=Cyber Security Case ($10.00) | won=P90 | Asiimov ($15.23) | roll=0.52450060 | hash=cdac9e0150ed0a6a94f1a27f8331b4a5b72a7865a4c895bfde4f46ecc19a8256 | opening_id=1
+[2026-08-31 22:40:37,352] [AUDIT] DEPOSIT_REQUEST_CREATED: user=SecurityUser (id=1) | amount=$50 | tx_id=1 | ip=127.0.0.1
+[2026-08-31 22:40:37,356] [AUDIT] BALANCE_MUTATION: user=SecurityUser (id=1) | type=deposit | delta=+50.00 | before=$100.00 -> after=$150.00 | ref=deposit_approved:1 | tx_id=2 | ip=admin_panel
+[2026-08-31 22:40:39,185] [AUDIT] BALANCE_MUTATION: user=SecurityUser (id=1) | type=case_open | delta=-10.00 | before=$100.00 -> after=$90.00 | ref=case:1 | tx_id=1 | ip=127.0.0.1
+[2026-08-31 22:40:39,226] [AUDIT] CASE_OPEN_SUCCESS: user=SecurityUser (id=1) | case=Cyber Security Case ($10.00) | won=P90 | Asiimov ($15.23) | roll=0.25367475 | hash=0f599029424b5293c5bffe28cc90951867009d1ada06fb933dfdd1c9a8f97668 | opening_id=1
+[2026-08-31 22:42:04,283] [AUDIT] BALANCE_MUTATION: user=SecurityUser (id=1) | type=item_sell | delta=+18.73 | before=$100.00 -> after=$118.73 | ref=inv:1 | tx_id=1 | ip=127.0.0.1
+[2026-08-31 22:42:04,284] [AUDIT] ITEM_SELL_SUCCESS: user=SecurityUser (id=1) | item=USP-S | Cortex | sold_for=$18.73 | tx_id=1
+[2026-08-31 22:42:07,623] [AUDIT] BALANCE_MUTATION: user=SecurityUser (id=1) | type=case_open | delta=-10.00 | before=$100.00 -> after=$90.00 | ref=case:1 | tx_id=1 | ip=127.0.0.1
+[2026-08-31 22:42:07,625] [AUDIT] CASE_OPEN_SUCCESS: user=SecurityUser (id=1) | case=Cyber Security Case ($10.00) | won=P90 | Asiimov ($15.23) | roll=0.84661770 | hash=fe2a76fcdfa3f3bafd27f4c59d7f63d42749c9e43643627be1eca264ef3788ad | opening_id=1
+[2026-08-31 22:42:09,351] [AUDIT] DEPOSIT_REQUEST_CREATED: user=SecurityUser (id=1) | amount=$50 | tx_id=1 | ip=127.0.0.1
+[2026-08-31 22:42:09,354] [AUDIT] BALANCE_MUTATION: user=SecurityUser (id=1) | type=deposit | delta=+50.00 | before=$100.00 -> after=$150.00 | ref=deposit_approved:1 | tx_id=2 | ip=admin_panel
+[2026-08-31 22:42:10,949] [AUDIT] BALANCE_MUTATION: user=SecurityUser (id=1) | type=case_open | delta=-10.00 | before=$100.00 -> after=$90.00 | ref=case:1 | tx_id=1 | ip=127.0.0.1
+[2026-08-31 22:42:10,951] [AUDIT] CASE_OPEN_SUCCESS: user=SecurityUser (id=1) | case=Cyber Security Case ($10.00) | won=P90 | Asiimov ($15.23) | roll=0.75906351 | hash=9ee7b14b06532f37ca7b9ffcc47729d6543c71e320daf2bf9b9b12833267e4d0 | opening_id=1
+[2026-08-31 22:43:02,014] [AUDIT] BALANCE_MUTATION: user=SecurityUser (id=1) | type=item_sell | delta=+18.73 | before=$100.00 -> after=$118.73 | ref=inv:1 | tx_id=1 | ip=127.0.0.1
+[2026-08-31 22:43:02,015] [AUDIT] ITEM_SELL_SUCCESS: user=SecurityUser (id=1) | item=USP-S | Cortex | sold_for=$18.73 | tx_id=1
+[2026-08-31 22:43:05,194] [AUDIT] BALANCE_MUTATION: user=SecurityUser (id=1) | type=case_open | delta=-10.00 | before=$100.00 -> after=$90.00 | ref=case:1 | tx_id=1 | ip=127.0.0.1
+[2026-08-31 22:43:05,196] [AUDIT] CASE_OPEN_SUCCESS: user=SecurityUser (id=1) | case=Cyber Security Case ($10.00) | won=P90 | Asiimov ($15.23) | roll=0.29648748 | hash=9507f6190608e72f372e114816b20a56e3abc4e01d76639d1cfee4149e9336e1 | opening_id=1
+[2026-08-31 22:43:06,837] [AUDIT] DEPOSIT_REQUEST_CREATED: user=SecurityUser (id=1) | amount=$50 | tx_id=1 | ip=127.0.0.1
+[2026-08-31 22:43:06,842] [AUDIT] BALANCE_MUTATION: user=SecurityUser (id=1) | type=deposit | delta=+50.00 | before=$100.00 -> after=$150.00 | ref=deposit_approved:1 | tx_id=2 | ip=admin_panel
+[2026-08-31 22:43:08,506] [AUDIT] BALANCE_MUTATION: user=SecurityUser (id=1) | type=case_open | delta=-10.00 | before=$100.00 -> after=$90.00 | ref=case:1 | tx_id=1 | ip=127.0.0.1
+[2026-08-31 22:43:08,509] [AUDIT] CASE_OPEN_SUCCESS: user=SecurityUser (id=1) | case=Cyber Security Case ($10.00) | won=P90 | Asiimov ($15.23) | roll=0.16967011 | hash=f816dbc568398284c8c17a0ee9832b2966e8c4505fb84ef2ca6a99bc3c5a71db | opening_id=1

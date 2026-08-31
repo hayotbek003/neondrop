@@ -1,0 +1,148 @@
+{% extends 'base.html' %}
+{% load static humanize %}
+
+{% block title %}NEONDROP - Мой Инвентарь{% endblock %}
+
+{% block content %}
+<div class="container" style="padding-top: 24px; padding-bottom: 60px;">
+  
+  <div class="section-header" style="flex-wrap: wrap; gap: 14px; margin-bottom: 16px;">
+    <div>
+      <h1 class="section-title">ИНВЕНТАРЬ</h1>
+      <p style="color: #94a3b8; font-size: 13px; margin-top: 2px;">
+        Стоимость: <strong style="color: #38bdf8; font-family: var(--font-display);">${{ total_value|floatformat:2|intcomma }}</strong> &bull; Всего: <strong style="color: #fff;">{{ total_count }}</strong> шт.
+      </p>
+    </div>
+
+    {% if total_count > 0 %}
+      <button id="sellAllBtn" class="btn-neon-green" style="font-size: 12px; padding: 8px 18px;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+        ПРОДАТЬ ВСЁ (${{ total_value|floatformat:2 }})
+      </button>
+    {% endif %}
+  </div>
+
+  <!-- Filter Chips Bar -->
+  <div class="filter-tabs-bar">
+    <button type="button" class="filter-chip active inv-filter-btn" data-rarity="all">ВСЕ</button>
+    <button type="button" class="filter-chip inv-filter-btn" data-rarity="knife">★ НОЖИ</button>
+    <button type="button" class="filter-chip inv-filter-btn" data-rarity="covert">ТАЙНОЕ</button>
+    <button type="button" class="filter-chip inv-filter-btn" data-rarity="classified">ЗАСЕКРЕЧЕННОЕ</button>
+    <button type="button" class="filter-chip inv-filter-btn" data-rarity="restricted">ЗАПРЕЩЕННОЕ</button>
+    <button type="button" class="filter-chip inv-filter-btn" data-rarity="mil_spec">АРМЕЙСКОЕ</button>
+  </div>
+
+  <!-- Inventory Items Grid -->
+  <div class="cases-grid" id="inventoryGrid" style="grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));">
+    {% for inv in items %}
+      <div class="item-card inv-item-card" id="inv-item-{{ inv.id }}" data-rarity="{{ inv.item.rarity }}" style="--item-rarity-color: {{ inv.item.rarity_color }};">
+        <div class="item-card-header">
+          <span class="item-rarity-badge">{{ inv.item.rarity_display_ru }}</span>
+          <span class="item-chance-badge">{{ inv.get_source_display }}</span>
+        </div>
+        <div class="item-card-img-wrapper">
+          <svg class="item-card-img"><use href="#icon-{{ inv.item.image_url|default:'generic_weapon' }}"></use></svg>
+        </div>
+        <div class="item-card-weapon">{{ inv.item.weapon_type }}</div>
+        <div class="item-card-skin">{{ inv.item.skin_name }}</div>
+        
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 8px;">
+          <span class="item-card-price">${{ inv.item.value|floatformat:2 }}</span>
+          <button class="btn-cyber-outline btn-sell-single" data-id="{{ inv.id }}" data-price="{{ inv.item.value }}" style="font-size: 10px; padding: 3px 8px;">
+            Продать
+          </button>
+        </div>
+      </div>
+    {% empty %}
+      <div style="grid-column: 1 / -1; text-align: center; padding: 50px 16px; background: var(--bg-card); border-radius: 14px; border: 1px solid var(--border-color);">
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="1.5" style="margin-bottom: 10px;"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path></svg>
+        <h3 style="color: #fff; margin-bottom: 6px; font-size: 16px;">Ваш инвентарь пуст</h3>
+        <p style="color: #94a3b8; font-size: 13px; margin-bottom: 16px;">Открывайте кейсы или создавайте контракты, чтобы пополнить коллекцию!</p>
+        <a href="{% url 'cases:cases_list' %}" class="btn-neon">ОТКРЫТЬ КЕЙСЫ</a>
+      </div>
+    {% endfor %}
+  </div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  // Client-side filter chips
+  const filterBtns = document.querySelectorAll('.inv-filter-btn');
+  const invCards = document.querySelectorAll('.inv-item-card');
+
+  filterBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      filterBtns.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      const targetRarity = btn.getAttribute('data-rarity');
+
+      invCards.forEach(card => {
+        if (targetRarity === 'all' || card.getAttribute('data-rarity') === targetRarity) {
+          card.style.display = 'flex';
+        } else {
+          card.style.display = 'none';
+        }
+      });
+    });
+  });
+
+  // Individual Sell
+  document.querySelectorAll('.btn-sell-single').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const id = btn.getAttribute('data-id');
+      try {
+        const res = await fetch(`/inventory/sell/${id}/`, {
+          method: 'POST',
+          headers: {
+            'X-CSRFToken': getCookie('csrftoken')
+          }
+        });
+        const data = await res.json();
+        if (data.success) {
+          window.updateUserBalance(data.new_balance);
+          const card = document.getElementById(`inv-item-${id}`);
+          if (card) {
+            card.style.transition = 'all 0.3s';
+            card.style.opacity = '0';
+            card.style.transform = 'scale(0.8)';
+            setTimeout(() => card.remove(), 300);
+          }
+        } else {
+          alert(data.error || 'Ошибка при продаже');
+        }
+      } catch (e) {
+        alert('Ошибка связи с сервером');
+      }
+    });
+  });
+
+  // Sell All
+  const sellAllBtn = document.getElementById('sellAllBtn');
+  if (sellAllBtn) {
+    sellAllBtn.addEventListener('click', async () => {
+      if (!confirm('Вы уверены, что хотите продать все предметы из инвентаря?')) return;
+      try {
+        const res = await fetch('/inventory/sell-all/', {
+          method: 'POST',
+          headers: {
+            'X-CSRFToken': getCookie('csrftoken')
+          }
+        });
+        const data = await res.json();
+        if (data.success) {
+          window.updateUserBalance(data.new_balance);
+          window.location.reload();
+        } else {
+          alert(data.error || 'Ошибка при продаже');
+        }
+      } catch (e) {
+        alert('Ошибка связи с сервером');
+      }
+    });
+  }
+});
+</script>
+{% endblock %}

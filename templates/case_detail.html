@@ -1,0 +1,106 @@
+{% extends 'base.html' %}
+{% load static humanize %}
+
+{% block title %}NEONDROP - {{ case.name }} (${{ case.price|floatformat:2 }}){% endblock %}
+
+{% block content %}
+<div class="container" style="padding-top: 24px; padding-bottom: 60px;">
+
+  <!-- Breadcrumb -->
+  <div style="margin-bottom: 20px;">
+    <a href="{% url 'cases:cases_list' %}" style="color: #94a3b8; font-family: var(--font-sub); font-size: 13px; font-weight: 700; display: inline-flex; align-items: center; gap: 6px;">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"></polyline></svg>
+      НАЗАД К КЕЙСАМ
+    </a>
+  </div>
+
+  <!-- ==================== TOP CASE SHOWCASE ==================== -->
+  <div class="case-hero-showcase">
+    <div class="case-hero-glow-box" style="--case-theme-glow: {{ case.accent_color }};">
+      <svg viewBox="0 0 200 160" style="width: 100%; height: 100%; filter: drop-shadow(0 0 35px {{ case.accent_color }});">
+        <use href="#icon-case-{{ case.color_theme }}"></use>
+      </svg>
+    </div>
+
+    <h1 class="case-hero-title">{{ case.name }}</h1>
+    <div class="case-hero-price">${{ case.price|floatformat:2 }}</div>
+
+    <div class="case-hero-actions">
+      {% if user.is_authenticated %}
+        <button id="openCaseBtn" data-case-slug="{{ case.slug }}" class="btn-neon" style="font-size: 16px; padding: 14px 45px;">
+          <span>ОТКРЫТЬ КЕЙС</span>
+        </button>
+      {% else %}
+        <a href="{% url 'users:login' %}?next={{ request.path }}" class="btn-neon">
+          <span>ВОЙДИТЕ ДЛЯ ОТКРЫТИЯ</span>
+        </a>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- ==================== CS:GO ROULETTE VIEWPORT ==================== -->
+  <div class="roulette-container" id="rouletteContainer" style="display: none;">
+    <div class="roulette-needle"></div>
+    <div class="roulette-viewport" id="rouletteViewport">
+      <div class="roulette-track" id="rouletteTrack">
+        <!-- Dynamically injected items during spin -->
+      </div>
+    </div>
+    <div class="roulette-status-bar" id="rouletteStatusBar" style="display: none;">
+      <div class="roulette-status-text">ОТКРЫВАЕМ КЕЙС...</div>
+    </div>
+  </div>
+
+  <!-- ==================== СОДЕРЖИМОЕ КЕЙСА ==================== -->
+  <div class="section-header" style="margin-top: 40px;">
+    <h2 class="section-title">СОДЕРЖИМОЕ КЕЙСА</h2>
+  </div>
+
+  <div class="cases-grid" style="grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));">
+    {% for entry in items_with_chances %}
+      <div class="item-card" style="--item-rarity-color: {{ entry.item.rarity_color }};">
+        <div class="item-card-header">
+          <span class="item-rarity-badge">{{ entry.item.rarity_display_ru }}</span>
+          <span class="item-chance-badge">{{ entry.chance_percent }}%</span>
+        </div>
+        <div class="item-card-img-wrapper">
+          <svg class="item-card-img"><use href="#icon-{{ entry.item.image_url|default:'generic_weapon' }}"></use></svg>
+        </div>
+        <div class="item-card-weapon">{{ entry.item.weapon_type }}</div>
+        <div class="item-card-skin">{{ entry.item.skin_name }}</div>
+        <div class="item-card-price">${{ entry.item.value|floatformat:2 }}</div>
+      </div>
+    {% endfor %}
+  </div>
+
+</div>
+
+<!-- ==================== WINNING ITEM REVEAL MODAL ==================== -->
+<div class="modal-backdrop" id="winModal">
+  <div class="modal-win-card">
+    <h2 class="win-title">ПОЗДРАВЛЯЕМ!</h2>
+    <div class="win-item-img-box">
+      <svg style="width: 100%; height: 100%;"><use id="winItemSvgUse" href="#icon-generic_weapon"></use></svg>
+    </div>
+    <div class="win-item-name"><span id="winItemWeapon">AK-47</span> | <span id="winItemSkin">Neon Rider</span></div>
+    <div class="win-item-rarity" id="winItemRarity">ТАЙНОЕ</div>
+    <div class="win-item-price" id="winItemPrice">$42.31</div>
+
+    <div class="win-actions">
+      <button id="modalSellBtn" class="btn-neon-green" style="font-size: 13px; padding: 10px 20px;">
+        ПРОДАТЬ ПРЕДМЕТ
+      </button>
+      <button id="closeWinModalBtn" class="btn-cyber-outline" style="font-size: 13px;">
+        ЗАБРАТЬ В ИНВЕНТАРЬ
+      </button>
+      <button onclick="window.location.reload();" class="btn-neon" style="font-size: 13px; padding: 10px 20px;">
+        ОТКРЫТЬ ЕЩЁ
+      </button>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/roulette.js' %}"></script>
+{% endblock %}

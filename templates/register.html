@@ -1,0 +1,86 @@
+{% extends 'base.html' %}
+
+{% block title %}NEONDROP - Регистрация аккаунта{% endblock %}
+
+{% block content %}
+<div class="container" style="padding: 50px 20px; display: flex; justify-content: center;">
+  <div class="panel-card" style="width: 100%; max-width: 480px; padding: 35px 30px;">
+    
+    <div style="text-align: center; margin-bottom: 25px;">
+      <h1 class="hero-title" style="font-size: 26px; margin-bottom: 8px;">РЕГИСТРАЦИЯ</h1>
+      <p style="color: #94a3b8; font-size: 14px;">Создайте аккаунт и получите бонус $100.00 на первый депозит!</p>
+    </div>
+
+    <form method="post">
+      {% csrf_token %}
+
+      {% if form.non_field_errors %}
+        <div class="alert-cyber alert-error" style="margin-bottom: 16px;">
+          {% for error in form.non_field_errors %}
+            <span>{{ error }}</span>
+          {% endfor %}
+        </div>
+      {% endif %}
+
+      <div style="margin-bottom: 16px;">
+        <label style="font-family: var(--font-sub); font-size: 13px; font-weight: 700; color: #94a3b8; text-transform: uppercase; margin-bottom: 6px; display: block;">
+          ИМЯ ПОЛЬЗОВАТЕЛЯ:
+        </label>
+        {{ form.username }}
+        {% if form.username.errors %}
+          <div style="color: #f87171; font-size: 12px; margin-top: 4px;">{{ form.username.errors.0 }}</div>
+        {% endif %}
+      </div>
+
+      <div style="margin-bottom: 16px;">
+        <label style="font-family: var(--font-sub); font-size: 13px; font-weight: 700; color: #94a3b8; text-transform: uppercase; margin-bottom: 6px; display: block;">
+          EMAIL:
+        </label>
+        {{ form.email }}
+        {% if form.email.errors %}
+          <div style="color: #f87171; font-size: 12px; margin-top: 4px;">{{ form.email.errors.0 }}</div>
+        {% endif %}
+      </div>
+
+      <div style="margin-bottom: 16px;">
+        <label style="font-family: var(--font-sub); font-size: 13px; font-weight: 700; color: #94a3b8; text-transform: uppercase; margin-bottom: 6px; display: block;">
+          TELEGRAM USERNAME (ДЛЯ ПОПОЛНЕНИЙ):
+        </label>
+        {{ form.telegram_username }}
+        {% if form.telegram_username.errors %}
+          <div style="color: #f87171; font-size: 12px; margin-top: 4px;">{{ form.telegram_username.errors.0 }}</div>
+        {% endif %}
+      </div>
+
+      <div style="margin-bottom: 16px;">
+        <label style="font-family: var(--font-sub); font-size: 13px; font-weight: 700; color: #94a3b8; text-transform: uppercase; margin-bottom: 6px; display: block;">
+          ПАРОЛЬ:
+        </label>
+        {{ form.password }}
+        {% if form.password.errors %}
+          <div style="color: #f87171; font-size: 12px; margin-top: 4px;">{{ form.password.errors.0 }}</div>
+        {% endif %}
+      </div>
+
+      <div style="margin-bottom: 24px;">
+        <label style="font-family: var(--font-sub); font-size: 13px; font-weight: 700; color: #94a3b8; text-transform: uppercase; margin-bottom: 6px; display: block;">
+          ПОДТВЕРЖДЕНИЕ ПАРОЛЯ:
+        </label>
+        {{ form.password_confirm }}
+        {% if form.password_confirm.errors %}
+          <div style="color: #f87171; font-size: 12px; margin-top: 4px;">{{ form.password_confirm.errors.0 }}</div>
+        {% endif %}
+      </div>
+
+      <button type="submit" class="btn-neon" style="width: 100%; font-size: 15px; padding: 12px 0; margin-bottom: 20px;">
+        ЗАРЕГИСТРИРОВАТЬСЯ
+      </button>
+
+      <div style="text-align: center; color: #64748b; font-size: 14px;">
+        Уже есть аккаунт? <a href="{% url 'users:login' %}" style="color: #ec4899; font-weight: 700;">Войти</a>
+      </div>
+    </form>
+
+  </div>
+</div>
+{% endblock %}

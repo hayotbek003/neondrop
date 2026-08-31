@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+
+{% block title %}404 - Страница не найдена | NEONDROP{% endblock %}
+
+{% block content %}
+<div class="container" style="padding: 80px 20px; text-align: center;">
+  <div class="panel-card" style="max-width: 500px; margin: 0 auto; padding: 40px 30px;">
+    <div style="font-family: var(--font-display); font-size: 72px; font-weight: 900; color: #ec4899; text-shadow: 0 0 25px rgba(236, 72, 153, 0.6); margin-bottom: 10px;">
+      404
+    </div>
+    <h2 style="font-family: var(--font-display); font-size: 20px; color: #fff; margin-bottom: 12px; text-transform: uppercase;">
+      СТРАНИЦА НЕ НАЙДЕНА
+    </h2>
+    <p style="color: #94a3b8; font-size: 14px; margin-bottom: 24px; line-height: 1.6;">
+      Запрашиваемая страница не существует или была перемещена.
+    </p>
+    <a href="{% url 'cases:home' %}" class="btn-neon">НА ГЛАВНУЮ</a>
+  </div>
+</div>
+{% endblock %}

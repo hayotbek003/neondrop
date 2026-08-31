@@ -1,0 +1,71 @@
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block title %}NEONDROP - Битва #{{ battle.id }} ({{ battle.case.name }}){% endblock %}
+
+{% block content %}
+<div class="container" style="padding-top: 30px; padding-bottom: 60px;">
+
+  <div class="section-header">
+    <div>
+      <a href="{% url 'battles:index' %}" class="btn-cyber-outline" style="font-size: 12px; margin-bottom: 8px; display: inline-block;">&larr; НАЗАД К БИТВАМ</a>
+      <h1 class="section-title">БИТВА #{{ battle.id }}: {{ battle.case.name }} x{{ battle.rounds_count }}</h1>
+    </div>
+
+    <div>
+      {% if battle.status == 'finished' %}
+        <span style="background: rgba(34, 197, 94, 0.15); color: #4ade80; border: 1px solid #22c55e; padding: 6px 16px; border-radius: 20px; font-weight: 700;">
+          Победитель: {% if battle.winner %}{{ battle.winner.username }}{% else %}CyberBot{% endif %}
+        </span>
+      {% else %}
+        <span style="background: rgba(234, 179, 8, 0.15); color: #fde047; border: 1px solid #eab308; padding: 6px 16px; border-radius: 20px; font-weight: 700;">
+          {{ battle.get_status_display }}
+        </span>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Players Arena Grid -->
+  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px;">
+    {% for p in players %}
+      <div class="panel-card" style="border: 2px solid {% if battle.winner and p.user == battle.winner %}#22c55e{% else %}var(--border-color){% endif %};">
+        
+        <!-- Player Header -->
+        <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border-color); padding-bottom: 15px; margin-bottom: 15px;">
+          <div style="display: flex; align-items: center; gap: 12px;">
+            {% if p.is_bot %}
+              <div style="width: 40px; height: 40px; border-radius: 50%; background: #24143a; border: 1px solid #a855f7; display: flex; align-items: center; justify-content: center; font-size: 18px;">🤖</div>
+              <strong style="font-family: var(--font-display); color: #fff;">{{ p.bot_name }}</strong>
+            {% else %}
+              <img src="{{ p.user.profile.display_avatar }}" alt="{{ p.user.username }}" style="width: 40px; height: 40px; border-radius: 50%; border: 1px solid #ec4899; object-fit: cover;">
+              <strong style="font-family: var(--font-display); color: #fff;">{{ p.user.username }}</strong>
+            {% endif %}
+          </div>
+
+          <div style="text-align: right;">
+            <div style="font-size: 11px; color: #94a3b8;">ВЫИГРЫШ</div>
+            <div style="font-family: var(--font-display); font-size: 18px; font-weight: 900; color: #38bdf8;">${{ p.total_loot_value|floatformat:2 }}</div>
+          </div>
+        </div>
+
+        <!-- Dropped Items in Rounds -->
+        <div style="display: flex; flex-direction: column; gap: 10px;">
+          {% for drop in p.round_drops.all %}
+            <div style="display: flex; align-items: center; justify-content: space-between; background: #090c14; padding: 10px 14px; border-radius: 8px; border-left: 3px solid {{ drop.item.rarity_color }};">
+              <div style="display: flex; align-items: center; gap: 10px;">
+                <svg style="width: 36px; height: 24px;"><use href="#icon-{{ drop.item.image_url|default:'generic_weapon' }}"></use></svg>
+                <span style="font-size: 13px; color: #fff; font-weight: 600;">{{ drop.item.name }}</span>
+              </div>
+              <span style="font-family: var(--font-display); font-size: 13px; font-weight: 800; color: #22c55e;">${{ drop.item.value|floatformat:2 }}</span>
+            </div>
+          {% empty %}
+            <p style="color: #64748b; font-size: 13px; text-align: center; padding: 15px;">Ожидание раундов...</p>
+          {% endfor %}
+        </div>
+
+      </div>
+    {% endfor %}
+  </div>
+
+</div>
+{% endblock %}

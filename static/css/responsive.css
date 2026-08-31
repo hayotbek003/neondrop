@@ -1,0 +1,800 @@
+/* ==========================================================================
+   NEONDROP MOBILE-FIRST RESPONSIVE DESIGN SYSTEM
+   Targets: iPhone, Android (360px, 375px, 390px, 412px, 430px, 768px, 1024px+)
+   ========================================================================== */
+
+/* Prevent horizontal overflow globally */
+html, body {
+  max-width: 100vw;
+  overflow-x: hidden;
+  position: relative;
+  width: 100%;
+}
+
+.main-content-wrapper {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+/* ==========================================================================
+   1. MOBILE DRAWER (OFF-CANVAS SIDEBAR)
+   ========================================================================== */
+.mobile-hamburger-btn {
+  display: none;
+  flex-direction: column;
+  justify-content: space-between;
+  width: 28px;
+  height: 20px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  z-index: 101;
+}
+
+.mobile-hamburger-btn span {
+  display: block;
+  height: 2.5px;
+  width: 100%;
+  background: #ffffff;
+  border-radius: 2px;
+  transition: all 0.3s ease;
+  box-shadow: 0 0 6px rgba(236, 72, 153, 0.4);
+}
+
+.mobile-drawer-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(5, 7, 12, 0.75);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  z-index: 9998;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.mobile-drawer-backdrop.open {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.mobile-drawer {
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: min(310px, 85vw);
+  background: #0c0f1b;
+  border-right: 1px solid rgba(168, 85, 247, 0.3);
+  box-shadow: 10px 0 40px rgba(0, 0, 0, 0.8), 0 0 25px rgba(168, 85, 247, 0.15);
+  z-index: 9999;
+  transform: translateX(-100%);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  display: flex;
+  flex-direction: column;
+  padding: 20px 16px 40px;
+}
+
+.mobile-drawer.open {
+  transform: translateX(0);
+}
+
+.mobile-drawer-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.drawer-close-btn {
+  background: none;
+  border: none;
+  color: #94a3b8;
+  font-size: 28px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0 4px;
+}
+
+.drawer-close-btn:hover {
+  color: #ef4444;
+}
+
+.drawer-user-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: rgba(168, 85, 247, 0.1);
+  border: 1px solid rgba(168, 85, 247, 0.3);
+  border-radius: 12px;
+  padding: 10px 12px;
+  margin-bottom: 20px;
+}
+
+.drawer-user-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 2px solid #ec4899;
+  object-fit: cover;
+}
+
+.drawer-user-info {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+}
+
+.drawer-user-name {
+  font-family: var(--font-display);
+  font-size: 14px;
+  font-weight: 700;
+  color: #fff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.drawer-user-balance {
+  font-family: var(--font-display);
+  font-size: 14px;
+  font-weight: 800;
+  color: #38bdf8;
+}
+
+.btn-topup-mini {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #a855f7, #ec4899);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 900;
+  font-size: 16px;
+  box-shadow: 0 0 10px rgba(236, 72, 153, 0.5);
+}
+
+.drawer-auth-buttons {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.drawer-section-title {
+  font-family: var(--font-sub);
+  font-size: 11px;
+  font-weight: 700;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  margin: 14px 0 8px 6px;
+}
+
+.drawer-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.drawer-link {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  color: #cbd5e1;
+  font-family: var(--font-sub);
+  font-size: 15px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  transition: all 0.2s ease;
+}
+
+.drawer-link svg {
+  width: 20px;
+  height: 20px;
+  color: #94a3b8;
+  flex-shrink: 0;
+  transition: color 0.2s;
+}
+
+.drawer-link:hover, .drawer-link.active {
+  background: rgba(236, 72, 153, 0.15);
+  color: #fff;
+}
+
+.drawer-link:hover svg, .drawer-link.active svg {
+  color: #ec4899;
+  filter: drop-shadow(0 0 6px #ec4899);
+}
+
+.drawer-logout-btn {
+  background: none;
+  border: none;
+  width: 100%;
+  color: #ef4444 !important;
+  cursor: pointer;
+}
+
+.drawer-logout-btn svg {
+  color: #ef4444 !important;
+}
+
+/* ==========================================================================
+   2. FIXED MOBILE BOTTOM NAVIGATION BAR
+   ========================================================================== */
+.mobile-bottom-nav {
+  display: none;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: calc(60px + env(safe-area-inset-bottom, 0px));
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  background: rgba(10, 13, 22, 0.96);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  z-index: 9990;
+  justify-content: space-around;
+  align-items: center;
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.6);
+}
+
+.mobile-nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  color: #94a3b8;
+  font-family: var(--font-sub);
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  flex: 1;
+  padding: 6px 0;
+  transition: all 0.2s ease;
+  text-decoration: none;
+}
+
+.mobile-nav-item svg {
+  width: 22px;
+  height: 22px;
+  stroke-width: 2;
+  transition: all 0.2s ease;
+}
+
+.mobile-nav-item.active, .mobile-nav-item:hover {
+  color: #ec4899;
+  text-shadow: 0 0 10px rgba(236, 72, 153, 0.6);
+}
+
+.mobile-nav-item.active svg {
+  color: #ec4899;
+  filter: drop-shadow(0 0 8px #ec4899);
+  transform: translateY(-2px);
+}
+
+/* ==========================================================================
+   3. MOBILE-SPECIFIC LAYOUT OVERRIDES (max-width: 768px)
+   ========================================================================== */
+@media (max-width: 768px) {
+  body {
+    padding-bottom: calc(75px + env(safe-area-inset-bottom, 0px));
+  }
+
+  .container {
+    padding: 0 12px;
+  }
+
+  /* Header adjustments */
+  .site-header {
+    height: 58px;
+    padding: 0 6px;
+  }
+
+  .main-nav {
+    display: none !important;
+  }
+
+  .desktop-logout-form {
+    display: none !important;
+  }
+
+  .mobile-hamburger-btn {
+    display: flex;
+  }
+
+  .mobile-bottom-nav {
+    display: flex;
+  }
+
+  .logo-text {
+    font-size: 18px;
+    letter-spacing: 1px;
+  }
+
+  .logo-badge {
+    font-size: 9px;
+    padding: 1px 4px;
+  }
+
+  .balance-pill {
+    padding: 3px 6px 3px 10px;
+    gap: 8px;
+  }
+
+  .balance-amount {
+    font-size: 13px;
+  }
+
+  .btn-topup-plus {
+    width: 24px;
+    height: 24px;
+    font-size: 14px;
+  }
+
+  .user-menu-trigger {
+    padding: 2px;
+    border-radius: 50%;
+  }
+
+  .user-avatar-sm {
+    width: 28px;
+    height: 28px;
+  }
+
+  .user-name-sm {
+    display: none;
+  }
+
+  .btn-login {
+    padding: 6px 12px;
+    font-size: 12px;
+  }
+
+  .btn-register {
+    padding: 6px 14px;
+    font-size: 12px;
+  }
+
+  /* ------------------------------------------------------------------------
+     HOME PAGE HERO (PANEL 5 REFERENCE: Clean vertical card with big case art)
+     ------------------------------------------------------------------------ */
+  .hero-section {
+    padding: 22px 14px 20px;
+    margin-top: 12px;
+    margin-bottom: 20px;
+    border-radius: 16px;
+    background: radial-gradient(circle at 50% 30%, rgba(236, 72, 153, 0.18) 0%, rgba(168, 85, 247, 0.08) 50%, #0c0f1a 100%);
+    border: 1px solid rgba(236, 72, 153, 0.25);
+    text-align: center;
+  }
+
+  .hero-grid {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .hero-content {
+    padding-left: 0;
+    width: 100%;
+  }
+
+  .hero-tag {
+    font-size: 11px;
+    padding: 3px 10px;
+    margin-bottom: 10px;
+  }
+
+  .hero-title {
+    font-size: 22px;
+    line-height: 1.2;
+    margin-bottom: 10px;
+    letter-spacing: 0.5px;
+  }
+
+  .hero-title .highlight-gradient {
+    font-size: 22px;
+  }
+
+  .hero-title .sub-highlight {
+    font-size: 18px;
+  }
+
+  .hero-desc {
+    font-size: 12px;
+    margin: 0 auto 16px;
+    max-width: 100%;
+    color: #94a3b8;
+    line-height: 1.4;
+  }
+
+  .hero-artwork {
+    width: 100%;
+    max-width: 220px;
+    margin: 0 auto;
+  }
+
+  .hero-crate-svg {
+    max-width: 180px;
+    filter: drop-shadow(0 0 25px rgba(236, 72, 153, 0.5));
+  }
+
+  .btn-neon {
+    font-size: 13px;
+    padding: 10px 22px;
+    width: 100%;
+    max-width: 280px;
+  }
+
+  /* ------------------------------------------------------------------------
+     STATISTICS BAR (2x2 Compact Grid)
+     ------------------------------------------------------------------------ */
+  .stats-bar {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 8px !important;
+    margin-bottom: 24px !important;
+  }
+
+  .stat-card {
+    padding: 10px 8px !important;
+    gap: 8px !important;
+    border-radius: 10px !important;
+  }
+
+  .stat-icon-wrapper {
+    width: 34px !important;
+    height: 34px !important;
+    font-size: 16px !important;
+    border-radius: 8px !important;
+  }
+
+  .stat-icon-wrapper svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  .stat-val {
+    font-size: 14px !important;
+  }
+
+  .stat-lbl {
+    font-size: 9px !important;
+    letter-spacing: 0.5px !important;
+  }
+
+  /* ------------------------------------------------------------------------
+     CASE CATEGORIES & FILTER CHIPS (Horizontal Scroll)
+     ------------------------------------------------------------------------ */
+  .filter-tabs-bar {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    padding-bottom: 6px;
+    margin-bottom: 16px;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    flex-wrap: nowrap;
+  }
+
+  .filter-tabs-bar::-webkit-scrollbar {
+    display: none;
+  }
+
+  .filter-chip {
+    flex-shrink: 0;
+    padding: 6px 14px;
+    font-size: 12px;
+    border-radius: 6px;
+  }
+
+  /* ------------------------------------------------------------------------
+     CASE GRID (STRICT 2 COLUMNS ON MOBILE)
+     ------------------------------------------------------------------------ */
+  .cases-grid {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 10px !important;
+    margin-bottom: 28px !important;
+    width: 100%;
+  }
+
+  .case-card {
+    padding: 12px 8px !important;
+    border-radius: 12px !important;
+    min-width: 0;
+  }
+
+  .case-card-img-wrapper {
+    width: 100% !important;
+    max-width: 110px !important;
+    height: 80px !important;
+    margin-bottom: 8px !important;
+  }
+
+  .case-card-name {
+    font-size: 12px !important;
+    margin-bottom: 6px !important;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    width: 100%;
+  }
+
+  .case-card-price {
+    font-size: 12px !important;
+    padding: 2px 10px !important;
+    margin-bottom: 8px !important;
+  }
+
+  .case-card-btn {
+    font-size: 11px !important;
+    padding: 6px 0 !important;
+    border-radius: 6px !important;
+  }
+
+  /* ------------------------------------------------------------------------
+     CASE DETAIL & ROULETTE (PANEL 7 & 8 REFERENCE)
+     ------------------------------------------------------------------------ */
+  .case-hero-showcase {
+    padding: 15px 0 10px;
+  }
+
+  .case-hero-glow-box {
+    width: 180px;
+    height: 140px;
+    margin-bottom: 12px;
+  }
+
+  .case-hero-title {
+    font-size: 22px;
+    margin-bottom: 4px;
+  }
+
+  .case-hero-price {
+    font-size: 18px;
+    margin-bottom: 16px;
+  }
+
+  .roulette-container {
+    margin: 15px auto 25px;
+    padding: 10px 0;
+    border-radius: 12px;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+
+  .roulette-needle {
+    width: 3px;
+  }
+
+  .roulette-needle::before {
+    border-left: 7px solid transparent;
+    border-right: 7px solid transparent;
+    border-top: 10px solid #ffd700;
+  }
+
+  .roulette-needle::after {
+    border-left: 7px solid transparent;
+    border-right: 7px solid transparent;
+    border-bottom: 10px solid #ffd700;
+  }
+
+  .roulette-item {
+    width: 105px !important;
+    height: 130px !important;
+    margin: 0 3px !important;
+    padding: 6px 4px !important;
+    border-radius: 8px !important;
+  }
+
+  .roulette-item-weapon {
+    font-size: 9px !important;
+  }
+
+  .roulette-item-img-box {
+    width: 70px !important;
+    height: 50px !important;
+  }
+
+  .roulette-item-skin {
+    font-size: 10px !important;
+    max-width: 95px !important;
+  }
+
+  .roulette-item-price {
+    font-size: 10px !important;
+  }
+
+  /* ------------------------------------------------------------------------
+     ITEM CARDS (CS:GO SKINS IN 2-COLUMN GRID)
+     ------------------------------------------------------------------------ */
+  .item-card {
+    padding: 10px 8px !important;
+    border-radius: 10px !important;
+    min-width: 0;
+  }
+
+  .item-rarity-badge {
+    font-size: 9px !important;
+  }
+
+  .item-chance-badge {
+    font-size: 9px !important;
+  }
+
+  .item-card-img-wrapper {
+    height: 60px !important;
+    margin: 4px 0 6px !important;
+  }
+
+  .item-card-weapon {
+    font-size: 10px !important;
+  }
+
+  .item-card-skin {
+    font-size: 11px !important;
+  }
+
+  .item-card-price {
+    font-size: 11px !important;
+  }
+
+  /* ------------------------------------------------------------------------
+     TOP WINNERS & HOW IT WORKS (SPLIT SECTIONS ON MOBILE)
+     ------------------------------------------------------------------------ */
+  .split-bottom-grid {
+    grid-template-columns: 1fr !important;
+    gap: 16px !important;
+    margin-bottom: 30px !important;
+  }
+
+  .panel-card {
+    padding: 16px 12px !important;
+    border-radius: 14px !important;
+  }
+
+  .winner-row {
+    grid-template-columns: 22px 30px 1fr 70px !important;
+    padding: 8px 10px !important;
+    gap: 8px !important;
+  }
+
+  .winner-rank {
+    font-size: 12px !important;
+  }
+
+  .winner-avatar {
+    width: 28px !important;
+    height: 28px !important;
+  }
+
+  .winner-username {
+    font-size: 13px !important;
+  }
+
+  .winner-amount {
+    font-size: 12px !important;
+  }
+
+  .winner-weapon-thumb {
+    display: none !important;
+  }
+
+  .how-it-works-steps {
+    flex-direction: column;
+    gap: 16px;
+    margin-top: 15px;
+  }
+
+  .step-node {
+    flex-direction: row;
+    align-items: center;
+    text-align: left;
+    gap: 12px;
+    width: 100%;
+  }
+
+  .step-circle {
+    width: 42px;
+    height: 42px;
+    font-size: 16px;
+    margin-bottom: 0;
+    flex-shrink: 0;
+  }
+
+  .step-title {
+    max-width: 100%;
+    font-size: 13px;
+  }
+
+  .step-connector {
+    display: none;
+  }
+
+  /* ------------------------------------------------------------------------
+     MODAL POPUP RESPONSIVENESS
+     ------------------------------------------------------------------------ */
+  .modal-win-card {
+    padding: 24px 16px !important;
+    width: 92% !important;
+    border-radius: 16px !important;
+  }
+
+  .win-title {
+    font-size: 20px !important;
+  }
+
+  .win-item-img-box {
+    width: 150px !important;
+    height: 100px !important;
+  }
+
+  .win-item-name {
+    font-size: 15px !important;
+  }
+
+  .win-item-price {
+    font-size: 20px !important;
+    margin-bottom: 18px !important;
+  }
+
+  .win-actions {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .win-actions button {
+    width: 100%;
+  }
+
+  /* Footer */
+  .footer-grid {
+    grid-template-columns: 1fr !important;
+    gap: 20px !important;
+  }
+}
+
+/* ==========================================================================
+   4. ULTRA-COMPACT SCREENS (360px - 390px)
+   ========================================================================== */
+@media (max-width: 390px) {
+  .hero-title {
+    font-size: 19px !important;
+  }
+  .hero-title .highlight-gradient {
+    font-size: 19px !important;
+  }
+  .hero-title .sub-highlight {
+    font-size: 16px !important;
+  }
+  .case-card-name {
+    font-size: 11px !important;
+  }
+  .case-card-price {
+    font-size: 11px !important;
+  }
+  .stat-val {
+    font-size: 13px !important;
+  }
+  .roulette-item {
+    width: 95px !important;
+    height: 120px !important;
+  }
+}

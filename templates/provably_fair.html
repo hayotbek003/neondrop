@@ -1,0 +1,103 @@
+{% extends 'base.html' %}
+
+{% block title %}NEONDROP - Доказуемая честность (Provably Fair){% endblock %}
+
+{% block content %}
+<div class="container" style="padding-top: 30px; padding-bottom: 60px; max-width: 900px;">
+
+  <div class="section-header">
+    <h1 class="section-title">ДОКАЗУЕМАЯ ЧЕСТНОСТЬ (PROVABLY FAIR)</h1>
+  </div>
+
+  <div class="panel-card" style="padding: 24px 30px; margin-bottom: 30px;">
+    <h3 style="font-family: var(--font-display); font-size: 16px; color: #38bdf8; margin-bottom: 12px;">КАК РАБОТАЕТ АЛГОРИТМ?</h3>
+    <p style="color: #cbd5e1; font-size: 14px; line-height: 1.7; margin-bottom: 16px;">
+      В NEONDROP результат каждого открытия кейса, апгрейда и сражения генерируется с использованием криптографических функций SHA-256 и HMAC.
+    </p>
+    <ul style="color: #94a3b8; font-size: 13px; line-height: 1.8; margin-left: 20px;">
+      <li><strong>Server Seed:</strong> 64-символьный криптографический ключ, генерируемый сервером. Перед каждым открытием хэш ключа (SHA-256) передается клиенту, гарантируя неизменность результата.</li>
+      <li><strong>Client Seed:</strong> Случайная строка, передаваемая браузером пользователя. Сервер не знает её заранее.</li>
+      <li><strong>Nonce:</strong> Порядковый номер открытия пользователя, предотвращающий повторение комбинаций.</li>
+    </ul>
+  </div>
+
+  <!-- Interactive Verification Tool -->
+  <div class="panel-card" style="padding: 30px;">
+    <h3 class="panel-title">ПРОВЕРКА ХЭША И РЕЗУЛЬТАТА ВЫПАДЕНИЯ</h3>
+
+    <form id="verifySeedForm" style="display: flex; flex-direction: column; gap: 16px;">
+      <div>
+        <label style="font-family: var(--font-sub); font-size: 13px; font-weight: 700; color: #94a3b8; text-transform: uppercase; margin-bottom: 6px; display: block;">SERVER SEED (ОТКРЫТЫЙ СЕРВЕРНЫЙ КЛЮЧ):</label>
+        <input type="text" id="verifyServerSeed" class="input-cyber" placeholder="Введите Server Seed из истории открытий" required>
+      </div>
+
+      <div>
+        <label style="font-family: var(--font-sub); font-size: 13px; font-weight: 700; color: #94a3b8; text-transform: uppercase; margin-bottom: 6px; display: block;">CLIENT SEED (КЛИЕНТСКИЙ КЛЮЧ):</label>
+        <input type="text" id="verifyClientSeed" class="input-cyber" placeholder="Введите Client Seed" required>
+      </div>
+
+      <div>
+        <label style="font-family: var(--font-sub); font-size: 13px; font-weight: 700; color: #94a3b8; text-transform: uppercase; margin-bottom: 6px; display: block;">NONCE (НОМЕР):</label>
+        <input type="number" id="verifyNonce" value="1" min="1" class="input-cyber" style="width: 120px;" required>
+      </div>
+
+      <button type="submit" class="btn-neon" style="width: 200px; margin-top: 10px;">
+        ПРОВЕРИТЬ
+      </button>
+    </form>
+
+    <!-- Verification Output -->
+    <div id="verifyResultBox" style="display: none; margin-top: 25px; background: #090c14; padding: 20px; border-radius: 10px; border: 1px solid var(--border-color);">
+      <div style="margin-bottom: 10px;">
+        <span style="color: #94a3b8; font-size: 12px;">РАССЧИТАННЫЙ SHA256 HASH:</span>
+        <div id="resHash" style="font-family: monospace; color: #4ade80; font-size: 13px; word-break: break-all;"></div>
+      </div>
+
+      <div style="margin-bottom: 10px;">
+        <span style="color: #94a3b8; font-size: 12px;">ВЫПАВШЕЕ ЧИСЛО (0.00000000 - 1.00000000):</span>
+        <div id="resRollFloat" style="font-family: var(--font-display); color: #38bdf8; font-size: 18px; font-weight: 800;"></div>
+      </div>
+
+      <div>
+        <span style="color: #94a3b8; font-size: 12px;">ПРОЦЕНТНОЕ ЗНАЧЕНИЕ:</span>
+        <div id="resRollPercent" style="font-family: var(--font-display); color: #f472b6; font-size: 18px; font-weight: 800;"></div>
+      </div>
+    </div>
+
+  </div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const form = document.getElementById('verifySeedForm');
+  const resultBox = document.getElementById('verifyResultBox');
+
+  if (form) {
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const serverSeed = document.getElementById('verifyServerSeed').value;
+      const clientSeed = document.getElementById('verifyClientSeed').value;
+      const nonce = document.getElementById('verifyNonce').value;
+
+      try {
+        const res = await fetch(`/api/verify-seed/?server_seed=${encodeURIComponent(serverSeed)}&client_seed=${encodeURIComponent(clientSeed)}&nonce=${nonce}`);
+        const data = await res.json();
+        if (data.success) {
+          document.getElementById('resHash').textContent = data.server_seed_hash;
+          document.getElementById('resRollFloat').textContent = data.roll_float.toFixed(8);
+          document.getElementById('resRollPercent').textContent = `${data.roll_percent.toFixed(4)}%`;
+          resultBox.style.display = 'block';
+        } else {
+          alert(data.error || 'Ошибка проверки');
+        }
+      } catch (err) {
+        alert('Ошибка связи с сервером');
+      }
+    });
+  }
+});
+</script>
+{% endblock %}

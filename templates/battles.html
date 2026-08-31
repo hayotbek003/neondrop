@@ -1,0 +1,128 @@
+{% extends 'base.html' %}
+{% load static humanize %}
+
+{% block title %}NEONDROP - Битвы Кейсов CS:GO{% endblock %}
+
+{% block content %}
+<div class="container" style="padding-top: 30px; padding-bottom: 60px;">
+
+  <div class="section-header">
+    <div>
+      <h1 class="section-title">СРАЖЕНИЯ КЕЙСОВ</h1>
+      <p style="color: #94a3b8; font-size: 14px; margin-top: 4px;">Сражайтесь 1 на 1 против других игроков или бота. Победитель забирает всё!</p>
+    </div>
+
+    <button id="openCreateBattleModalBtn" class="btn-neon">
+      + СОЗДАТЬ БИТВУ
+    </button>
+  </div>
+
+  <!-- Open Waiting Battles List -->
+  <div class="panel-card" style="margin-bottom: 30px;">
+    <h3 class="panel-title">ОТКРЫТЫЕ БИТВЫ</h3>
+    
+    <div style="display: flex; flex-direction: column; gap: 12px;">
+      {% for b in open_battles %}
+        <div style="display: flex; align-items: center; justify-content: space-between; background: #090c14; padding: 14px 20px; border-radius: 12px; border: 1px solid var(--border-color); flex-wrap: wrap; gap: 14px;">
+          
+          <div style="display: flex; align-items: center; gap: 14px;">
+            <svg style="width: 44px; height: 34px;"><use href="#icon-case-{{ b.case.color_theme }}"></use></svg>
+            <div>
+              <div style="font-family: var(--font-display); font-size: 14px; font-weight: 700; color: #fff;">{{ b.case.name }} x{{ b.rounds_count }}</div>
+              <div style="font-size: 12px; color: #64748b;">Создатель: {{ b.creator.username }}</div>
+            </div>
+          </div>
+
+          <div style="font-family: var(--font-display); font-size: 16px; font-weight: 800; color: #38bdf8;">
+            Вход: ${{ b.total_cost|floatformat:2 }}
+          </div>
+
+          <div>
+            {% if b.creator == user %}
+              <a href="{% url 'battles:detail' b.id %}" class="btn-cyber-outline">В БИТВУ</a>
+            {% else %}
+              <button class="btn-neon btn-join-battle" data-id="{{ b.id }}" style="padding: 8px 20px; font-size: 13px;">
+                ВСТУПИТЬ
+              </button>
+            {% endif %}
+          </div>
+
+        </div>
+      {% empty %}
+        <p style="color: #64748b; font-size: 13px; text-align: center; padding: 25px;">Сейчас нет открытых битв. Создайте свою!</p>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- Finished Battles List -->
+  <div class="panel-card">
+    <h3 class="panel-title">НЕДАВНИЕ ЗАВЕРШЕННЫЕ БИТВЫ</h3>
+    <div style="display: flex; flex-direction: column; gap: 10px;">
+      {% for b in finished_battles %}
+        <div style="display: flex; align-items: center; justify-content: space-between; background: #090c14; padding: 12px 18px; border-radius: 10px; border: 1px solid var(--border-color); flex-wrap: wrap; gap: 10px;">
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <svg style="width: 36px; height: 28px;"><use href="#icon-case-{{ b.case.color_theme }}"></use></svg>
+            <span style="font-family: var(--font-display); font-size: 13px; color: #fff;">{{ b.case.name }} x{{ b.rounds_count }}</span>
+          </div>
+
+          <div style="font-size: 13px; color: #cbd5e1;">
+            Победитель: <strong style="color: #22c55e;">{% if b.winner %}{{ b.winner.username }}{% else %}CyberBot AI{% endif %}</strong>
+          </div>
+
+          <a href="{% url 'battles:detail' b.id %}" class="btn-cyber-outline" style="font-size: 12px; padding: 4px 12px;">Смотреть</a>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+
+</div>
+
+<!-- Create Battle Modal -->
+<div class="modal-backdrop" id="createBattleModal">
+  <div class="modal-win-card" style="max-width: 500px; text-align: left;">
+    <h2 class="win-title" style="text-align: center; margin-bottom: 20px;">СОЗДАНИЕ БИТВЫ</h2>
+
+    <form id="submitBattleForm">
+      <div style="margin-bottom: 16px;">
+        <label style="font-family: var(--font-sub); font-size: 13px; font-weight: 700; color: #94a3b8; text-transform: uppercase; margin-bottom: 6px; display: block;">ВЫБЕРИТЕ КЕЙС:</label>
+        <select name="case_id" class="input-cyber" required>
+          {% for c in available_cases %}
+            <option value="{{ c.id }}">{{ c.name }} — ${{ c.price|floatformat:2 }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div style="margin-bottom: 16px;">
+        <label style="font-family: var(--font-sub); font-size: 13px; font-weight: 700; color: #94a3b8; text-transform: uppercase; margin-bottom: 6px; display: block;">КОЛИЧЕСТВО РАУНДОВ:</label>
+        <select name="rounds_count" class="input-cyber">
+          <option value="1">1 Кейс</option>
+          <option value="2">2 Кейса</option>
+          <option value="3">3 Кейса</option>
+          <option value="5">5 Кейсов</option>
+        </select>
+      </div>
+
+      <div style="margin-bottom: 24px;">
+        <label style="font-family: var(--font-sub); font-size: 13px; font-weight: 700; color: #94a3b8; text-transform: uppercase; margin-bottom: 6px; display: block;">СОПЕРНИК:</label>
+        <div style="display: flex; gap: 15px;">
+          <label style="color: #fff; font-size: 14px; display: flex; align-items: center; gap: 6px;">
+            <input type="radio" name="vs_bot" value="false" checked> Игрок (PvP)
+          </label>
+          <label style="color: #fff; font-size: 14px; display: flex; align-items: center; gap: 6px;">
+            <input type="radio" name="vs_bot" value="true"> Бот (Мгновенно)
+          </label>
+        </div>
+      </div>
+
+      <div style="display: flex; gap: 10px; justify-content: flex-end;">
+        <button type="button" id="closeCreateBattleModalBtn" class="btn-cyber-outline">ОТМЕНА</button>
+        <button type="submit" class="btn-neon">СОЗДАТЬ</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/battles.js' %}"></script>
+{% endblock %}
