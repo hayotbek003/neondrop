@@ -249,12 +249,12 @@ def open_case_api(request, slug):
         f"roll={roll_float:.8f} | hash={server_seed_hash} | opening_id={opening.id}"
     )
 
-    # 8. Build Roulette Tape (45 items with winning item placed at fixed index)
-    WIN_INDEX = 35
+    # 8. Build Roulette Tape (65 items with winning item placed at fixed index 50)
+    WIN_INDEX = 50
     tape = []
     all_items = [ci.item for ci in case_items]
     
-    for i in range(45):
+    for i in range(65):
         if i == WIN_INDEX:
             tape_item = won_item
         else:

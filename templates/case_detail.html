@@ -35,6 +35,18 @@
           <span>ВОЙДИТЕ ДЛЯ ОТКРЫТИЯ</span>
         </a>
       {% endif %}
+
+      <!-- Sound & Volume Control Panel -->
+      <div class="sound-control-panel" id="soundControlPanel">
+        <button type="button" id="soundToggleBtn" class="btn-sound-toggle" title="Включить / Выключить звук">
+          <span id="soundIcon">🔊</span>
+          <span id="soundLabel">Звук</span>
+        </button>
+        <div class="volume-slider-wrapper">
+          <input type="range" id="volumeSlider" min="0" max="100" value="80" class="volume-slider" title="Громкость звука">
+          <span id="volumePercent" class="volume-percent-label">80%</span>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -87,14 +99,14 @@
     <div class="win-item-price" id="winItemPrice">$42.31</div>
 
     <div class="win-actions">
-      <button id="modalSellBtn" class="btn-neon-green" style="font-size: 13px; padding: 10px 20px;">
-        ПРОДАТЬ ПРЕДМЕТ
+      <button id="closeWinModalBtn" class="btn-neon" style="font-size: 14px; padding: 10px 22px;">
+        ЗАБРАТЬ
       </button>
-      <button id="closeWinModalBtn" class="btn-cyber-outline" style="font-size: 13px;">
-        ЗАБРАТЬ В ИНВЕНТАРЬ
+      <button id="modalSellBtn" class="btn-neon-green" style="font-size: 14px; padding: 10px 20px;">
+        ПРОДАТЬ
       </button>
-      <button onclick="window.location.reload();" class="btn-neon" style="font-size: 13px; padding: 10px 20px;">
-        ОТКРЫТЬ ЕЩЁ
+      <button id="modalOpenAgainBtn" class="btn-cyber-outline" style="font-size: 14px; padding: 10px 18px;">
+        ЕЩЁ РАЗ
       </button>
     </div>
   </div>
