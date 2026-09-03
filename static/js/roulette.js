@@ -274,6 +274,10 @@ document.addEventListener('DOMContentLoaded', () => {
       btn.classList.toggle('active', parseInt(btn.getAttribute('data-qty')) === selectedQuantity);
     });
 
+    if (rouletteTracksWrapper) {
+      rouletteTracksWrapper.setAttribute('data-qty', selectedQuantity.toString());
+    }
+
     const paidQuantity = Math.max(0, selectedQuantity - freeOpeningsAvailable);
     const totalCost = paidQuantity * unitPrice;
 
@@ -387,13 +391,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
       // Instantly position all tracks to winning targets
       const lanes = rouletteTracksWrapper.querySelectorAll('.roulette-lane');
-      lanes.forEach((lane, idx) => {
+      lanes.forEach((lane) => {
         const track = lane.querySelector('.roulette-track');
         const targetOffset = parseFloat(lane.getAttribute('data-target-offset')) || 0;
         track.style.transition = 'none';
         track.style.transform = `translate3d(-${targetOffset}px, 0, 0)`;
 
-        const winningIndex = parseInt(lane.getAttribute('data-winning-index')) || 50;
+        const winningIndex = parseInt(lane.getAttribute('data-winning-index'), 10) || 50;
         const winCard = track.children[winningIndex];
         if (winCard) winCard.classList.add('winner-landed');
       });
@@ -405,6 +409,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // ==================== BUILD MULTI LANES ====================
   function buildMultiRouletteLanes(results) {
     rouletteTracksWrapper.innerHTML = '';
+    rouletteTracksWrapper.setAttribute('data-qty', results.length.toString());
 
     results.forEach((res, laneIndex) => {
       const lane = document.createElement('div');
@@ -449,6 +454,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const firstLane = lanes[0];
     const track = firstLane.querySelector('.roulette-track');
     const firstCard = track.children[0];
+    if (!firstCard) return;
+
     const cardStyle = window.getComputedStyle(firstCard);
     const cardWidth = firstCard.offsetWidth;
     const cardMargin = parseFloat(cardStyle.marginLeft) + parseFloat(cardStyle.marginRight);
@@ -457,9 +464,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Calculate landing offsets for each lane with individual micro-jitter
     const laneConfigs = [];
-    lanes.forEach((lane, idx) => {
-      const winningIndex = parseInt(lane.getAttribute('data-winning-index')) || 50;
-      const jitter = (Math.random() - 0.5) * (cardWidth * 0.6);
+    lanes.forEach((lane) => {
+      const winningIndex = parseInt(lane.getAttribute('data-winning-index'), 10) || 50;
+      const jitter = (Math.random() - 0.5) * (cardWidth * 0.5);
       const targetOffset = (winningIndex * totalCardWidth) + (totalCardWidth / 2) - (viewportWidth / 2) + jitter;
       lane.setAttribute('data-target-offset', targetOffset.toString());
       laneConfigs.push({
@@ -470,14 +477,15 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     });
 
-    const totalDuration = 7400 + (Math.random() * 300 - 150);
+    const totalDuration = 6200 + (Math.random() * 200 - 100);
     const startTime = performance.now();
     let lastPassedIndex = -1;
 
+    // Easing curve: Fast start, long spin, smooth deceleration with gentle settle
     function customEase(p) {
       if (p <= 0) return 0;
       if (p >= 1) return 1;
-      return 1 - Math.pow(1 - p, 4.2);
+      return 1 - Math.pow(1 - p, 4.4);
     }
 
     function animate(currentTime) {
@@ -528,7 +536,7 @@ document.addEventListener('DOMContentLoaded', () => {
     setTimeout(() => {
       showMultiWinModal(results);
       resetOpenButton();
-    }, 800);
+    }, 700);
   }
 
   // ==================== MULTI WIN MODAL ====================
@@ -564,11 +572,11 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     if (results.length > 1) {
-      winModalTitle.textContent = `ПОЗДРАВЛЯЕМ! (${results.length} КЕЙСОВ)`;
-      winModalSubtitle.textContent = `Вы открыли ${results.length} кейсов и выиграли предметы:`;
+      winModalTitle.textContent = `🎉 ПОЗДРАВЛЯЕМ! (×${results.length})`;
+      winModalSubtitle.textContent = `Вы открыли ${results.length} кейсов и выиграли:`;
     } else {
-      winModalTitle.textContent = 'ПОЗДРАВЛЯЕМ!';
-      winModalSubtitle.textContent = 'Вы выиграли предмет:';
+      winModalTitle.textContent = '🎉 ВЫ ВЫИГРАЛИ!';
+      winModalSubtitle.textContent = 'Ваш выигрыш:';
     }
 
     if (winTotalValueDisplay) {
@@ -576,7 +584,11 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     if (modalSellAllBtn) {
-      modalSellAllBtn.textContent = `ПРОДАТЬ ВСЕ ЗА $${totalValue.toFixed(2)}`;
+      if (results.length === 1) {
+        modalSellAllBtn.textContent = `ПРОДАТЬ ЗА $${totalValue.toFixed(2)}`;
+      } else {
+        modalSellAllBtn.textContent = `ПРОДАТЬ ВСЕ ЗА $${totalValue.toFixed(2)}`;
+      }
       modalSellAllBtn.onclick = () => sellBatchWonItems(invIds);
     }
 
@@ -594,7 +606,6 @@ document.addEventListener('DOMContentLoaded', () => {
   async function sellBatchWonItems(invIds) {
     if (!invIds.length) return;
     try {
-      // Sell all items sequentially or via bulk API
       let lastBalance = null;
       for (const id of invIds) {
         const res = await fetch(`/inventory/sell/${id}/`, {

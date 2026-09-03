@@ -77,11 +77,11 @@
 
     <div class="case-hero-actions">
       {% if user.is_authenticated %}
-        <button id="openCaseBtn" data-case-slug="{{ case.slug }}" data-free-openings="{{ free_openings_count }}" class="btn-neon" style="font-size: 16px; padding: 14px 45px;">
+        <button id="openCaseBtn" data-case-slug="{{ case.slug }}" data-free-openings="{{ free_openings_count }}" class="btn-neon btn-open-main">
           <span id="openBtnText">ОТКРЫТЬ ×1</span>
         </button>
       {% else %}
-        <a href="{% url 'users:login' %}?next={{ request.path }}" class="btn-neon">
+        <a href="{% url 'users:login' %}?next={{ request.path }}" class="btn-neon btn-open-main">
           <span>ВОЙДИТЕ ДЛЯ ОТКРЫТИЯ</span>
         </a>
       {% endif %}
