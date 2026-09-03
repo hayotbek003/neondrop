@@ -66,11 +66,11 @@ def create_contract_api(request):
     max_output_value = total_input_value * Decimal('3.50')
     
     # 4. Find candidate pool
-    candidates = list(Item.objects.filter(active=True, value__gte=min_output_value, value__lte=max_output_value))
+    candidates = list(Item.objects.filter(value__gte=min_output_value, value__lte=max_output_value))
     if not candidates:
-        candidates = list(Item.objects.filter(active=True, value__gte=min_output_value * Decimal('0.50')))
+        candidates = list(Item.objects.filter(value__gte=min_output_value * Decimal('0.50')))
     if not candidates:
-        candidates = list(Item.objects.filter(active=True))
+        candidates = list(Item.objects.all())
 
     # 5. Provably Fair Selection
     server_seed = generate_server_seed()

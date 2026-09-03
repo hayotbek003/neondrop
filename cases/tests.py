@@ -230,3 +230,17 @@ class NeonDropSecurityTests(TestCase):
         data = api_res.json()
         self.assertTrue(data['success'])
         self.assertEqual(len(data['items']), 2)
+
+    def test_upgrade_and_contract_views_render_without_fielderror(self):
+        """Verify /upgrade/ and /contracts/ query items without Item.active FieldError."""
+        self.client.login(username='SecurityUser', password='StrongPassword123!')
+
+        # Test Upgrade page
+        upgrade_res = self.client.get(reverse('upgrades:index'))
+        self.assertEqual(upgrade_res.status_code, 200)
+        self.assertContains(upgrade_res, 'АПГРЕЙД')
+
+        # Test Contracts page
+        contract_res = self.client.get(reverse('contracts:index'))
+        self.assertEqual(contract_res.status_code, 200)
+        self.assertContains(contract_res, 'КОНТРАКТ')

@@ -21,7 +21,7 @@ audit_logger = logging.getLogger('neondrop.audit')
 @login_required
 def index_view(request):
     inventory_items = InventoryItem.objects.filter(user=request.user, is_sold=False).select_related('item').order_by('-item__value')
-    target_items = Item.objects.filter(active=True).order_by('value')
+    target_items = Item.objects.all().order_by('value')
     
     context = {
         'inventory_items': inventory_items,
@@ -43,7 +43,7 @@ def calculate_chance_api(request):
         
     try:
         inv_item = InventoryItem.objects.get(id=input_inv_id, user=request.user, is_sold=False)
-        target_item = Item.objects.get(id=target_item_id, active=True)
+        target_item = Item.objects.get(id=target_item_id)
     except (InventoryItem.DoesNotExist, Item.DoesNotExist):
         return JsonResponse({'success': False, 'error': 'Выбранные предметы недоступны.'}, status=400)
         
@@ -75,7 +75,7 @@ def execute_upgrade_api(request):
     # 1. Lock and validate source inventory item
     try:
         inv_item = InventoryItem.objects.select_for_update().get(id=input_inv_id, user=request.user, is_sold=False)
-        target_item = Item.objects.get(id=target_item_id, active=True)
+        target_item = Item.objects.get(id=target_item_id)
     except InventoryItem.DoesNotExist:
         return JsonResponse({'success': False, 'error': 'Исходный скин не найден в вашем инвентаре.'}, status=400)
     except Item.DoesNotExist:
