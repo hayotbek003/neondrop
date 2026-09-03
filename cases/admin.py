@@ -95,10 +95,10 @@ class PromoCodeAdmin(admin.ModelAdmin):
 
     @admin.display(description="Использовано / Лимит")
     def usage_display(self, obj):
-        pct = (obj.used_count / obj.max_uses) * 100 if obj.max_uses > 0 else 0
+        pct = int(round((obj.used_count / obj.max_uses) * 100)) if obj.max_uses > 0 else 0
         color = '#22c55e' if pct < 80 else '#ef4444'
         return format_html(
-            '<strong>{} / {}</strong> <span style="color: {}; font-size: 11px;">({:.0f}%)</span>',
+            '<strong>{} / {}</strong> <span style="color: {}; font-size: 11px;">({}%)</span>',
             obj.used_count, obj.max_uses, color, pct
         )
 

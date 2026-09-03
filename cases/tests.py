@@ -487,3 +487,35 @@ class NeonDropComprehensiveTests(TestCase):
 
         res_ctr = self.client.get(reverse('contracts:index'))
         self.assertEqual(res_ctr.status_code, 200)
+
+    def test_admin_models_render_without_operational_error(self):
+        """Verify all Django Admin model changelist views render with HTTP 200 without OperationalError."""
+        self.client.login(username='AdminUser', password='AdminPassword123!')
+
+        # Create sample records to verify list displays
+        now = timezone.now()
+        promo = PromoCode.objects.create(
+            code='ADMINTEST', bonus_type='coins', bonus_value=Decimal('50.00'),
+            starts_at=now, expires_at=now + timedelta(days=5), is_active=True
+        )
+        PromoCodeUse.objects.create(promo_code=promo, user=self.user, bonus_amount=Decimal('50.00'))
+        PersonalCaseChance.objects.create(
+            user=self.user, case=self.case, item=self.knife, chance=Decimal('5.00'),
+            starts_at=now, expires_at=now + timedelta(days=5), is_active=True
+        )
+        UserFreeOpening.objects.create(user=self.user, case=self.case, openings_left=3, total_granted=3)
+
+        admin_urls = [
+            '/admin/cases/promocode/',
+            '/admin/cases/promocodeuse/',
+            '/admin/cases/personalcasechance/',
+            '/admin/cases/userfreeopening/',
+            '/admin/cases/case/',
+            '/admin/cases/item/',
+            '/admin/cases/opening/',
+        ]
+
+        for url in admin_urls:
+            response = self.client.get(url)
+            self.assertEqual(response.status_code, 200, f"Failed rendering admin page {url}")
+
