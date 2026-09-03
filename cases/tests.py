@@ -513,9 +513,131 @@ class NeonDropComprehensiveTests(TestCase):
             '/admin/cases/case/',
             '/admin/cases/item/',
             '/admin/cases/opening/',
+            '/admin/contracts/contract/',
+            '/admin/upgrades/upgradeattempt/',
+            '/admin/battles/battle/',
+            '/admin/inventory/inventoryitem/',
+            '/admin/payments/transaction/',
+            '/admin/users/profile/',
         ]
 
         for url in admin_urls:
             response = self.client.get(url)
             self.assertEqual(response.status_code, 200, f"Failed rendering admin page {url}")
+
+    def test_contracts_flow(self):
+        """Verify contract craft burns input items, creates reward, and updates statistics."""
+        self.client.login(username='SecurityUser', password='StrongPassword123!')
+        i1 = InventoryItem.objects.create(user=self.user, item=self.cheap_gun, source='case')
+        i2 = InventoryItem.objects.create(user=self.user, item=self.cheap_gun, source='case')
+        i3 = InventoryItem.objects.create(user=self.user, item=self.pistol, source='case')
+
+        # Craft contract via JSON
+        res = self.client.post(
+            reverse('contracts:create'),
+            json.dumps({'item_ids': [i1.id, i2.id, i3.id]}),
+            content_type='application/json'
+        )
+        self.assertEqual(res.status_code, 200)
+        data = res.json()
+        self.assertTrue(data['success'])
+        self.assertIn('output_item', data)
+
+        # Verify inputs burned
+        i1.refresh_from_db()
+        i2.refresh_from_db()
+        i3.refresh_from_db()
+        self.assertTrue(i1.is_sold)
+        self.assertTrue(i2.is_sold)
+        self.assertTrue(i3.is_sold)
+
+        # Verify crafted item in inventory
+        crafted = InventoryItem.objects.filter(user=self.user, source='contract').first()
+        self.assertIsNotNone(crafted)
+
+    def test_upgrades_flow(self):
+        """Verify upgrade chance calculation and execution."""
+        self.client.login(username='SecurityUser', password='StrongPassword123!')
+        inv_item = InventoryItem.objects.create(user=self.user, item=self.pistol, source='case')
+
+        # 1. Calc chance
+        calc_res = self.client.get(
+            reverse('upgrades:calculate_chance'),
+            {'input_id': inv_item.id, 'target_id': self.rifle.id}
+        )
+        self.assertEqual(calc_res.status_code, 200)
+        calc_data = calc_res.json()
+        self.assertTrue(calc_data['success'])
+        self.assertGreater(calc_data['chance_percent'], 0)
+
+        # 2. Execute upgrade
+        exec_res = self.client.post(
+            reverse('upgrades:execute'),
+            {'inventory_item_id': inv_item.id, 'target_item_id': self.rifle.id}
+        )
+        self.assertEqual(exec_res.status_code, 200)
+        exec_data = exec_res.json()
+        self.assertTrue(exec_data['success'])
+        inv_item.refresh_from_db()
+        self.assertTrue(inv_item.is_sold)
+
+    def test_battles_flow(self):
+        """Verify case battles creation vs bot, PvP creation, and joining."""
+        from battles.models import Battle
+        self.client.login(username='SecurityUser', password='StrongPassword123!')
+
+        # 1. Create battle vs bot
+        bot_res = self.client.post(
+            reverse('battles:create'),
+            {'case_id': self.case.id, 'rounds_count': 1, 'vs_bot': 'true'}
+        )
+        self.assertEqual(bot_res.status_code, 200)
+        bot_data = bot_res.json()
+        self.assertTrue(bot_data['success'])
+        b_id = bot_data['battle_id']
+        b = Battle.objects.get(id=b_id)
+        self.assertEqual(b.status, 'finished')
+
+        # 2. Create battle PvP
+        pvp_res = self.client.post(
+            reverse('battles:create'),
+            {'case_id': self.case.id, 'rounds_count': 1, 'vs_bot': 'false'}
+        )
+        self.assertEqual(pvp_res.status_code, 200)
+        pvp_data = pvp_res.json()
+        pvp_b = Battle.objects.get(id=pvp_data['battle_id'])
+        self.assertEqual(pvp_b.status, 'waiting')
+
+        # 3. Join battle as other user
+        self.client.login(username='VictimUser', password='StrongPassword123!')
+        join_res = self.client.post(reverse('battles:join', kwargs={'battle_id': pvp_b.id}))
+        self.assertEqual(join_res.status_code, 200)
+        pvp_b.refresh_from_db()
+        self.assertEqual(pvp_b.status, 'finished')
+        self.assertIsNotNone(pvp_b.winner)
+
+    def test_all_pages_render(self):
+        """Verify all public and private pages render with HTTP 200."""
+        self.client.login(username='SecurityUser', password='StrongPassword123!')
+
+        routes = [
+            reverse('cases:home'),
+            reverse('cases:cases_list'),
+            reverse('cases:case_detail', kwargs={'slug': self.case.slug}),
+            reverse('cases:top'),
+            reverse('cases:fairness'),
+            reverse('users:profile'),
+            reverse('users:history'),
+            reverse('users:settings'),
+            reverse('inventory:index'),
+            reverse('upgrades:index'),
+            reverse('contracts:index'),
+            reverse('battles:index'),
+            reverse('payments:deposit'),
+        ]
+
+        for route in routes:
+            res = self.client.get(route)
+            self.assertEqual(res.status_code, 200, f"Failed rendering route {route}")
+
 

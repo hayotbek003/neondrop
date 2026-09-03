@@ -115,6 +115,18 @@ DATABASES = {
     }
 }
 
+database_url = os.environ.get('DATABASE_URL', '').strip()
+if database_url:
+    try:
+        import dj_database_url
+        DATABASES['default'] = dj_database_url.config(
+            default=database_url,
+            conn_max_age=600,
+            conn_health_checks=True
+        )
+    except Exception:
+        pass
+
 # Cache & Rate Limiting Configuration
 REDIS_URL = os.environ.get('REDIS_URL', '').strip()
 if REDIS_URL:

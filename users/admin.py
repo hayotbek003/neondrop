@@ -14,7 +14,9 @@ class UserAdmin(BaseUserAdmin):
     list_display = ('username', 'email', 'get_balance', 'is_staff', 'date_joined')
     
     def get_balance(self, instance):
-        return f"${instance.profile.balance}"
+        if hasattr(instance, 'profile') and instance.profile:
+            return f"${instance.profile.balance:.2f}"
+        return "$0.00"
     get_balance.short_description = 'Баланс'
 
 @admin.register(Profile)

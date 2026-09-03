@@ -44,6 +44,7 @@
 
     <!-- Amount Input Form -->
     <form id="depositForm" style="display: flex; flex-direction: column; gap: 18px;">
+      {% csrf_token %}
       <div>
         <label for="depositAmount" style="font-family: var(--font-sub); font-size: 13px; font-weight: 700; color: #94a3b8; text-transform: uppercase; margin-bottom: 6px; display: block;">
           СУММА ПОПОЛНЕНИЯ ($):

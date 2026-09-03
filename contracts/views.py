@@ -35,7 +35,19 @@ contracts_view = index_view
 @transaction.atomic
 def create_contract_api(request):
     ip = get_client_ip(request)
-    raw_ids = request.POST.getlist('item_ids[]') or request.POST.getlist('item_ids')
+    raw_ids = []
+    
+    # Try parsing JSON body if sent as application/json
+    if request.content_type == 'application/json':
+        try:
+            import json
+            data = json.loads(request.body.decode('utf-8'))
+            raw_ids = data.get('item_ids', [])
+        except Exception:
+            raw_ids = []
+            
+    if not raw_ids:
+        raw_ids = request.POST.getlist('item_ids[]') or request.POST.getlist('item_ids')
     
     # 1. Validate count constraint (3 to 10 skins)
     if not raw_ids or len(raw_ids) < 3 or len(raw_ids) > 10:
@@ -43,7 +55,7 @@ def create_contract_api(request):
         
     try:
         item_ids = [int(i) for i in set(raw_ids)]
-    except ValueError:
+    except (ValueError, TypeError):
         return JsonResponse({'success': False, 'error': 'Некорректные идентификаторы предметов.'}, status=400)
 
     # 2. Lock and verify ownership of all selected items
@@ -102,19 +114,14 @@ def create_contract_api(request):
     contract = Contract.objects.create(
         user=request.user,
         total_input_value=total_input_value,
-        output_item=output_item,
-        output_value=output_item.value,
-        server_seed_hash=server_seed_hash,
-        server_seed=server_seed,
-        client_seed=client_seed,
-        nonce=nonce
+        reward_item=output_item,
+        items_count=len(input_inv_items)
     )
 
     for inv in input_inv_items:
         ContractInputItem.objects.create(
             contract=contract,
-            item=inv.item,
-            value=inv.item.value
+            item=inv.item
         )
         
     # Update winnings
@@ -127,18 +134,21 @@ def create_contract_api(request):
         f"contract_id={contract.id} | ip={ip}"
     )
 
+    item_dict = {
+        'id': output_item.id,
+        'name': output_item.name,
+        'weapon_type': output_item.weapon_type,
+        'skin_name': output_item.skin_name,
+        'value': float(output_item.value),
+        'rarity_name': output_item.rarity_display_ru,
+        'rarity_color': output_item.rarity_color,
+        'image_url': output_item.image_url or (output_item.image.url if output_item.image else ''),
+    }
+
     return JsonResponse({
         'success': True,
-        'output_item': {
-            'id': output_item.id,
-            'name': output_item.name,
-            'weapon_type': output_item.weapon_type,
-            'skin_name': output_item.skin_name,
-            'value': float(output_item.value),
-            'rarity_name': output_item.rarity_display_ru,
-            'rarity_color': output_item.rarity_color,
-            'image_url': output_item.image_url or (output_item.image.url if output_item.image else ''),
-        },
+        'output_item': item_dict,
+        'reward_item': item_dict,
         'total_input_value': float(total_input_value),
         'server_seed_hash': server_seed_hash,
         'server_seed': server_seed,

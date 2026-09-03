@@ -83,6 +83,7 @@
     <h2 class="win-title" style="text-align: center; margin-bottom: 20px;">СОЗДАНИЕ БИТВЫ</h2>
 
     <form id="submitBattleForm">
+      {% csrf_token %}
       <div style="margin-bottom: 16px;">
         <label style="font-family: var(--font-sub); font-size: 13px; font-weight: 700; color: #94a3b8; text-transform: uppercase; margin-bottom: 6px; display: block;">ВЫБЕРИТЕ КЕЙС:</label>
         <select name="case_id" class="input-cyber" required>

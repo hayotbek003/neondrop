@@ -13,6 +13,7 @@ class Transaction(models.Model):
         ('contract_craft', 'Крафт по контракту'),
         ('battle_entry', 'Вход в битву кейсов'),
         ('battle_win', 'Выигрыш в битве кейсов'),
+        ('promo_bonus', 'Бонус по промокоду'),
         ('admin_adjustment', 'Корректировка администратором'),
     ]
 

@@ -35,8 +35,8 @@ upgrade_view = index_view
 @rate_limit(key_prefix='upgrade_calc', limit=60, period=60, by_user=True)
 @login_required
 def calculate_chance_api(request):
-    input_inv_id = request.GET.get('input_id')
-    target_item_id = request.GET.get('target_id')
+    input_inv_id = request.GET.get('input_id') or request.GET.get('inventory_item_id')
+    target_item_id = request.GET.get('target_id') or request.GET.get('target_item_id')
     
     if not input_inv_id or not target_item_id:
         return JsonResponse({'success': False, 'error': 'Необходимо выбрать исходный и целевой скин.'}, status=400)
@@ -67,8 +67,8 @@ def calculate_chance_api(request):
 @transaction.atomic
 def execute_upgrade_api(request):
     ip = get_client_ip(request)
-    input_inv_id = request.POST.get('input_id')
-    target_item_id = request.POST.get('target_id')
+    input_inv_id = request.POST.get('input_id') or request.POST.get('inventory_item_id')
+    target_item_id = request.POST.get('target_id') or request.POST.get('target_item_id')
     client_seed = request.POST.get('client_seed') or secrets.token_hex(16)
     client_seed = ''.join(c for c in client_seed if c.isalnum())[:64] or secrets.token_hex(16)
     
@@ -116,17 +116,12 @@ def execute_upgrade_api(request):
     # 5. Record Upgrade Attempt
     attempt = UpgradeAttempt.objects.create(
         user=request.user,
-        input_item=inv_item.item,
+        source_item=inv_item.item,
         target_item=target_item,
-        input_value=inv_item.item.value,
-        target_value=target_item.value,
-        chance_percent=Decimal(str(round(chance * 100.0, 2))),
+        chance=round(chance * 100.0, 2),
+        roll=round(roll_float * 100.0, 4),
         is_success=is_win,
-        roll_number=Decimal(str(round(roll_float * 100.0, 4))),
-        server_seed_hash=server_seed_hash,
-        server_seed=server_seed,
-        client_seed=client_seed,
-        nonce=nonce
+        server_seed=server_seed
     )
 
     audit_logger.info(
@@ -137,19 +132,26 @@ def execute_upgrade_api(request):
     
     target_degree = int(roll_float * 360.0)
     
+    target_item_dict = {
+        'id': target_item.id,
+        'name': target_item.name,
+        'value': float(target_item.value),
+        'image_url': target_item.image_url or (target_item.image.url if target_item.image else ''),
+        'rarity_color': target_item.rarity_color,
+    }
+    
     return JsonResponse({
         'success': True,
         'is_win': is_win,
+        'is_won': is_win,
+        'chance': round(chance * 100.0, 2),
         'chance_percent': round(chance * 100.0, 2),
+        'roll': round(roll_float * 100.0, 4),
         'roll_percent': round(roll_float * 100.0, 4),
+        'target_deg': target_degree,
         'target_degree': target_degree,
-        'won_item': {
-            'id': target_item.id,
-            'name': target_item.name,
-            'value': float(target_item.value),
-            'image_url': target_item.image_url or (target_item.image.url if target_item.image else ''),
-            'rarity_color': target_item.rarity_color,
-        } if is_win else None,
+        'won_item': target_item_dict if is_win else None,
+        'target_item': target_item_dict,
         'server_seed_hash': server_seed_hash,
         'server_seed': server_seed,
         'client_seed': client_seed,

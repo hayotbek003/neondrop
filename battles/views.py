@@ -22,7 +22,7 @@ audit_logger = logging.getLogger('neondrop.audit')
 @login_required
 def index_view(request):
     open_battles = Battle.objects.filter(status='waiting').select_related('creator', 'case').order_by('-created_at')
-    finished_battles = Battle.objects.filter(status='completed').select_related('creator', 'winner', 'case').order_by('-created_at')[:10]
+    finished_battles = Battle.objects.filter(status='finished').select_related('creator', 'winner', 'case').order_by('-created_at')[:10]
     available_cases = Case.objects.filter(active=True).order_by('price')
     
     context = {
@@ -46,7 +46,7 @@ def join_battle_api(request, battle_id):
     if battle.creator == request.user:
         return JsonResponse({'success': False, 'error': 'Вы не можете присоединиться к собственной битве.'}, status=400)
         
-    cost = battle.cost_per_player
+    cost = battle.total_cost
     try:
         ledger_tx = modify_user_balance(
             user=request.user,
@@ -59,8 +59,10 @@ def join_battle_api(request, battle_id):
     except InsufficientBalanceError as e:
         return JsonResponse({'success': False, 'error': str(e)}, status=400)
         
-    p2 = BattlePlayer.objects.create(battle=battle, user=request.user, position=2)
-    p1 = battle.players.get(position=1)
+    p2 = BattlePlayer.objects.create(battle=battle, user=request.user, is_bot=False)
+    p1 = battle.players.filter(user=battle.creator).first()
+    if not p1:
+        p1 = BattlePlayer.objects.create(battle=battle, user=battle.creator, is_bot=False)
     
     # Execute rounds
     case_items = list(battle.case.case_items.select_related('item').all())
@@ -70,22 +72,22 @@ def join_battle_api(request, battle_id):
     for r in range(1, battle.rounds_count + 1):
         s_seed1 = generate_server_seed()
         ci1, _, _ = select_weighted_item(case_items, s_seed1, secrets.token_hex(8), r)
-        BattleRound.objects.create(battle=battle, player=p1, round_number=r, item=ci1.item, item_value=ci1.item.value)
+        BattleRound.objects.create(battle=battle, player=p1, round_number=r, item=ci1.item)
         p1_total += ci1.item.value
         
         s_seed2 = generate_server_seed()
         ci2, _, _ = select_weighted_item(case_items, s_seed2, secrets.token_hex(8), r)
-        BattleRound.objects.create(battle=battle, player=p2, round_number=r, item=ci2.item, item_value=ci2.item.value)
+        BattleRound.objects.create(battle=battle, player=p2, round_number=r, item=ci2.item)
         p2_total += ci2.item.value
         
-    p1.total_value = p1_total
-    p1.save(update_fields=['total_value'])
-    p2.total_value = p2_total
-    p2.save(update_fields=['total_value'])
+    p1.total_loot_value = p1_total
+    p1.save(update_fields=['total_loot_value'])
+    p2.total_loot_value = p2_total
+    p2.save(update_fields=['total_loot_value'])
     
     winner = p1.user if p1_total >= p2_total else p2.user
     battle.winner = winner
-    battle.status = 'completed'
+    battle.status = 'finished'
     battle.save(update_fields=['winner', 'status'])
     
     # Give all won items to the winner
@@ -95,6 +97,10 @@ def join_battle_api(request, battle_id):
     winner.profile.total_winnings += (p1_total + p2_total)
     winner.profile.save(update_fields=['total_winnings'])
     
+    audit_logger.info(
+        f"BATTLE_COMPLETED: id={battle.id} | p1={p1.user.username} (${p1_total}) vs p2={p2.user.username} (${p2_total}) | winner={winner.username}"
+    )
+
     return JsonResponse({
         'success': True,
         'battle_id': battle.id,
@@ -109,8 +115,15 @@ def join_battle_api(request, battle_id):
 def create_battle_api(request):
     ip = get_client_ip(request)
     case_id = request.POST.get('case_id')
-    rounds_count = int(request.POST.get('rounds_count', 1))
-    mode = request.POST.get('mode', '1v1_bot')
+    rounds_count_raw = request.POST.get('rounds_count', 1)
+    try:
+        rounds_count = int(rounds_count_raw)
+        if rounds_count not in (1, 2, 3, 5):
+            rounds_count = 1
+    except (ValueError, TypeError):
+        rounds_count = 1
+        
+    vs_bot = request.POST.get('vs_bot', 'false').lower() == 'true'
     
     case = get_object_or_404(Case, id=case_id, active=True)
     cost = case.price * rounds_count
@@ -132,16 +145,15 @@ def create_battle_api(request):
         creator=request.user,
         case=case,
         rounds_count=rounds_count,
-        mode=mode,
-        cost_per_player=cost,
-        status='waiting' if mode == '1v1_pvp' else 'in_progress'
+        total_cost=cost,
+        is_bot_opponent=vs_bot,
+        status='finished' if vs_bot else 'waiting'
     )
     
-    p1 = BattlePlayer.objects.create(battle=battle, user=request.user, position=1)
+    p1 = BattlePlayer.objects.create(battle=battle, user=request.user, is_bot=False)
     
-    if mode == '1v1_bot':
-        bot_user, _ = User.objects.get_or_create(username='NeonBot_AI', defaults={'email': 'bot@neondrop.gg'})
-        p2 = BattlePlayer.objects.create(battle=battle, user=bot_user, is_bot=True, position=2)
+    if vs_bot:
+        p2 = BattlePlayer.objects.create(battle=battle, user=None, is_bot=True, bot_name='CyberBot AI')
         
         # Execute rounds
         case_items = list(case.case_items.select_related('item').all())
@@ -151,26 +163,26 @@ def create_battle_api(request):
         for r in range(1, rounds_count + 1):
             s_seed1 = generate_server_seed()
             ci1, _, _ = select_weighted_item(case_items, s_seed1, secrets.token_hex(8), r)
-            BattleRound.objects.create(battle=battle, player=p1, round_number=r, item=ci1.item, item_value=ci1.item.value)
+            BattleRound.objects.create(battle=battle, player=p1, round_number=r, item=ci1.item)
             p1_total += ci1.item.value
             
             s_seed2 = generate_server_seed()
             ci2, _, _ = select_weighted_item(case_items, s_seed2, secrets.token_hex(8), r)
-            BattleRound.objects.create(battle=battle, player=p2, round_number=r, item=ci2.item, item_value=ci2.item.value)
+            BattleRound.objects.create(battle=battle, player=p2, round_number=r, item=ci2.item)
             p2_total += ci2.item.value
             
-        p1.total_value = p1_total
-        p1.save(update_fields=['total_value'])
-        p2.total_value = p2_total
-        p2.save(update_fields=['total_value'])
+        p1.total_loot_value = p1_total
+        p1.save(update_fields=['total_loot_value'])
+        p2.total_loot_value = p2_total
+        p2.save(update_fields=['total_loot_value'])
         
-        winner = request.user if p1_total >= p2_total else bot_user
-        battle.winner = winner
-        battle.status = 'completed'
+        human_won = p1_total >= p2_total
+        battle.winner = request.user if human_won else None
+        battle.status = 'finished'
         battle.save(update_fields=['winner', 'status'])
         
         # If human won, give won items from battle to inventory
-        if winner == request.user:
+        if human_won:
             won_rounds = BattleRound.objects.filter(battle=battle).select_related('item')
             for br in won_rounds:
                 InventoryItem.objects.create(user=request.user, item=br.item, source='battle')
@@ -179,7 +191,7 @@ def create_battle_api(request):
 
     audit_logger.info(
         f"BATTLE_CREATED: user={request.user.username} (id={request.user.id}) | "
-        f"case={case.name} (${cost}) | mode={mode} | battle_id={battle.id} | ip={ip}"
+        f"case={case.name} (${cost}) | vs_bot={vs_bot} | battle_id={battle.id} | ip={ip}"
     )
 
     return JsonResponse({
@@ -193,7 +205,7 @@ def create_battle_api(request):
 def battle_detail_view(request, battle_id):
     battle = get_object_or_404(Battle.objects.select_related('creator', 'winner', 'case'), id=battle_id)
     players = battle.players.select_related('user').all()
-    rounds = battle.rounds.select_related('player__user', 'item').order_by('round_number', 'player__position')
+    rounds = battle.rounds.select_related('player__user', 'item').order_by('round_number', 'id')
     
     context = {
         'battle': battle,
