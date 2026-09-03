@@ -5,6 +5,7 @@ from decimal import Decimal
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_POST, require_GET
+from django.views.decorators.csrf import ensure_csrf_cookie
 from django.http import JsonResponse
 from django.db import transaction, models
 from django.contrib.auth.models import User
@@ -30,6 +31,7 @@ from config.security import rate_limit, check_and_store_idempotency_key, get_cli
 security_logger = logging.getLogger('neondrop.security')
 audit_logger = logging.getLogger('neondrop.audit')
 
+@ensure_csrf_cookie
 def home_view(request):
     popular_cases = Case.objects.filter(active=True, is_popular=True).order_by('order', 'price')
     if not popular_cases.exists():
@@ -103,24 +105,15 @@ def cases_list_view(request):
     
     cases = Case.objects.filter(active=True)
     
-    if active_category == 'popular':
-        cases = cases.filter(is_popular=True)
-    elif active_category == 'new':
-        cases = cases.filter(is_new=True)
-    elif active_category == 'affordable' and request.user.is_authenticated:
-        cases = cases.filter(price__lte=request.user.profile.balance)
-    elif active_category != 'all' and active_category != '':
+    if active_category:
         cases = cases.filter(category__slug=active_category)
-        
     if search_query:
         cases = cases.filter(name__icontains=search_query)
-        
     if price_min:
         try:
             cases = cases.filter(price__gte=Decimal(price_min))
         except Exception:
             pass
-            
     if price_max:
         try:
             cases = cases.filter(price__lte=Decimal(price_max))
@@ -140,6 +133,7 @@ def cases_list_view(request):
     }
     return render(request, 'cases.html', context)
 
+@ensure_csrf_cookie
 def case_detail_view(request, slug):
     case = get_object_or_404(Case.objects.prefetch_related('case_items__item'), slug=slug, active=True)
     
@@ -540,8 +534,12 @@ def custom_bad_request_view(request, exception=None):
 def custom_permission_denied_view(request, exception=None):
     return render(request, '403.html', status=403)
 
+def custom_csrf_failure_view(request, reason=""):
+    return render(request, '403_csrf.html', {'reason': reason}, status=403)
+
 def custom_page_not_found_view(request, exception=None):
     return render(request, '404.html', status=404)
 
 def custom_server_error_view(request):
     return render(request, '500.html', status=500)
+

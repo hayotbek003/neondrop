@@ -697,5 +697,91 @@ class NeonDropComprehensiveTests(TestCase):
         self.assertEqual(protected_res.status_code, 302)
         self.assertIn(reverse('users:login'), protected_res.url)
 
+    def test_csrf_enforcement_and_validation(self):
+        """Verify CSRF token generation, strict 403 rejection on missing/invalid token, and successful POST on valid token."""
+        from django.middleware.csrf import get_token
+
+        # 1. Test GET login page ensures CSRF cookie and meta tag
+        client_get = Client()
+        get_res = client_get.get(reverse('users:login'))
+        self.assertEqual(get_res.status_code, 200)
+        self.assertIn('csrftoken', client_get.cookies)
+        self.assertContains(get_res, 'name="csrfmiddlewaretoken"')
+        self.assertContains(get_res, 'name="csrf-token"')
+
+        # 2. Test CSRF Enforcement: Missing CSRF token is rejected with 403
+        strict_client = Client(enforce_csrf_checks=True)
+        no_csrf_res = strict_client.post(reverse('users:login'), {
+            'username_or_email': 'SecurityUser',
+            'password': 'StrongPassword123!'
+        })
+        self.assertEqual(no_csrf_res.status_code, 403)
+
+        # 3. Test CSRF Enforcement: Incorrect CSRF token is rejected with 403
+        bad_token_res = strict_client.post(
+            reverse('users:login'),
+            {'username_or_email': 'SecurityUser', 'password': 'StrongPassword123!'},
+            HTTP_X_CSRFTOKEN='invalid_corrupted_csrf_token_value_1234567890'
+        )
+        self.assertEqual(bad_token_res.status_code, 403)
+
+        # 4. Test Valid CSRF Login POST
+        login_page = strict_client.get(reverse('users:login'))
+        csrf_token = login_page.cookies['csrftoken'].value
+
+        valid_login_res = strict_client.post(
+            reverse('users:login'),
+            {
+                'username_or_email': 'SecurityUser',
+                'password': 'StrongPassword123!',
+                'csrfmiddlewaretoken': csrf_token
+            }
+        )
+        self.assertEqual(valid_login_res.status_code, 302)
+
+        # 5. Test Valid CSRF Case Opening API with fresh post-login CSRF token in X-CSRFToken header
+        fresh_csrf_token = strict_client.cookies['csrftoken'].value
+        open_res = strict_client.post(
+            reverse('cases:open_case_api', kwargs={'slug': self.case.slug}),
+            {'quantity': 1},
+            HTTP_X_CSRFTOKEN=fresh_csrf_token
+        )
+        self.assertEqual(open_res.status_code, 200)
+        self.assertTrue(open_res.json()['success'])
+
+        # 6. Test Valid CSRF Deposit Request API
+        deposit_res = strict_client.post(
+            reverse('payments:create_request'),
+            {'amount': '50.00'},
+            HTTP_X_CSRFTOKEN=fresh_csrf_token
+        )
+        self.assertEqual(deposit_res.status_code, 200)
+        self.assertTrue(deposit_res.json()['success'])
+
+        # 7. Test Valid CSRF PromoCode Redeem API
+        PromoCode.objects.create(
+            code='CSRFPROMO',
+            bonus_type='coins',
+            bonus_value=Decimal('50.00'),
+            starts_at=timezone.now() - timedelta(days=1),
+            expires_at=timezone.now() + timedelta(days=7),
+            is_active=True
+        )
+        promo_res = strict_client.post(
+            reverse('cases:redeem_promocode'),
+            {'code': 'CSRFPROMO'},
+            HTTP_X_CSRFTOKEN=fresh_csrf_token
+        )
+        self.assertEqual(promo_res.status_code, 200)
+        self.assertTrue(promo_res.json()['success'])
+
+        # 8. Test Valid CSRF Logout
+        logout_res = strict_client.post(
+            reverse('users:logout'),
+            HTTP_X_CSRFTOKEN=fresh_csrf_token
+        )
+        self.assertEqual(logout_res.status_code, 302)
+
+
 
 

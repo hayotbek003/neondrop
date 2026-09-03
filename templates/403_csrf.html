@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+
+{% block title %}403 - Сессия безопасности устарела | NEONDROP{% endblock %}
+
+{% block content %}
+<div class="container" style="padding: 80px 20px; text-align: center;">
+  <div class="panel-card" style="max-width: 520px; margin: 0 auto; padding: 40px 30px; border-color: rgba(234, 179, 8, 0.4); box-shadow: 0 0 35px rgba(234, 179, 8, 0.2);">
+    <div style="font-family: var(--font-display); font-size: 64px; font-weight: 900; color: #eab308; text-shadow: 0 0 25px rgba(234, 179, 8, 0.6); margin-bottom: 10px;">
+      CSRF 403
+    </div>
+    <h2 style="font-family: var(--font-display); font-size: 20px; color: #fff; margin-bottom: 12px; text-transform: uppercase;">
+      СЕССИЯ БЕЗОПАСНОСТИ УСТАРЕЛА
+    </h2>
+    <p style="color: #cbd5e1; font-size: 14px; margin-bottom: 24px; line-height: 1.6;">
+      Токен безопасности CSRF устарел или не совпал с текущей сессией браузера.<br>
+      Пожалуйста, обновите страницу, чтобы получить актуальный токен.
+    </p>
+    <div style="display: flex; justify-content: center; gap: 12px; flex-wrap: wrap;">
+      <button type="button" onclick="window.location.reload();" class="btn-neon" style="font-size: 14px; padding: 12px 24px;">
+        🔄 ОБНОВИТЬ СТРАНИЦУ
+      </button>
+      <a href="{% url 'cases:home' %}" class="btn-cyber-outline" style="font-size: 14px; padding: 12px 24px;">
+        НА ГЛАВНУЮ
+      </a>
+    </div>
+  </div>
+</div>
+{% endblock %}

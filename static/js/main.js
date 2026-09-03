@@ -3,7 +3,7 @@
  * Global Utilities, Web Audio Synthesizer, CSRF Helpers, Live Drop Streamer, Mobile Drawer
  */
 
-// CSRF Token Helper
+// Dynamic CSRF Token and Cookie Helper
 function getCookie(name) {
   let cookieValue = null;
   if (document.cookie && document.cookie !== '') {
@@ -19,7 +19,25 @@ function getCookie(name) {
   return cookieValue;
 }
 
-const csrftoken = getCookie('csrftoken');
+function getCsrfToken() {
+  const fromCookie = getCookie('csrftoken');
+  if (fromCookie) return fromCookie;
+
+  const metaEl = document.querySelector('meta[name="csrf-token"]');
+  if (metaEl && metaEl.getAttribute('content')) {
+    return metaEl.getAttribute('content');
+  }
+
+  const inputEl = document.querySelector('input[name="csrfmiddlewaretoken"]');
+  if (inputEl && inputEl.value) {
+    return inputEl.value;
+  }
+
+  return '';
+}
+
+window.getCookie = getCookie;
+window.getCsrfToken = getCsrfToken;
 
 // Web Audio API Synthesizer (No external audio file dependencies!)
 class NeonSoundFX {

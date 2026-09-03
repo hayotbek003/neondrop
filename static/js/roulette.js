@@ -340,8 +340,9 @@ document.addEventListener('DOMContentLoaded', () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',
-          'X-CSRFToken': getCookie('csrftoken')
+          'X-CSRFToken': typeof getCsrfToken === 'function' ? getCsrfToken() : (getCookie('csrftoken') || '')
         },
+        credentials: 'same-origin',
         body: new URLSearchParams({
           'quantity': selectedQuantity.toString(),
           'client_seed': Math.random().toString(36).substring(2, 15)
@@ -610,7 +611,10 @@ document.addEventListener('DOMContentLoaded', () => {
       for (const id of invIds) {
         const res = await fetch(`/inventory/sell/${id}/`, {
           method: 'POST',
-          headers: { 'X-CSRFToken': getCookie('csrftoken') }
+          headers: {
+            'X-CSRFToken': typeof getCsrfToken === 'function' ? getCsrfToken() : (getCookie('csrftoken') || '')
+          },
+          credentials: 'same-origin'
         });
         const d = await res.json();
         if (d.success) lastBalance = d.new_balance;

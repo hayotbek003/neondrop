@@ -29,8 +29,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const res = await fetch('/battles/api/create/', {
           method: 'POST',
           headers: {
-            'X-CSRFToken': getCookie('csrftoken')
+            'X-CSRFToken': typeof getCsrfToken === 'function' ? getCsrfToken() : (getCookie('csrftoken') || '')
           },
+          credentials: 'same-origin',
           body: formData
         });
 
@@ -54,8 +55,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const res = await fetch(`/battles/api/join/${battleId}/`, {
           method: 'POST',
           headers: {
-            'X-CSRFToken': getCookie('csrftoken')
-          }
+            'X-CSRFToken': typeof getCsrfToken === 'function' ? getCsrfToken() : (getCookie('csrftoken') || '')
+          },
+          credentials: 'same-origin'
         });
         const data = await res.json();
         if (data.success) {

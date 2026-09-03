@@ -5,6 +5,7 @@ from decimal import Decimal
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_POST
+from django.views.decorators.csrf import ensure_csrf_cookie
 from django.http import JsonResponse
 from django.db import transaction
 from django.contrib.auth.models import User
@@ -19,6 +20,7 @@ from config.security import rate_limit, get_client_ip
 security_logger = logging.getLogger('neondrop.security')
 audit_logger = logging.getLogger('neondrop.audit')
 
+@ensure_csrf_cookie
 @login_required
 def index_view(request):
     open_battles = Battle.objects.filter(status='waiting').select_related('creator', 'case').order_by('-created_at')
@@ -201,6 +203,7 @@ def create_battle_api(request):
         'new_balance': float(ledger_tx.balance_after),
     })
 
+@ensure_csrf_cookie
 @login_required
 def battle_detail_view(request, battle_id):
     battle = get_object_or_404(Battle.objects.select_related('creator', 'winner', 'case'), id=battle_id)

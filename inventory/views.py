@@ -3,6 +3,7 @@ from decimal import Decimal
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_POST, require_GET
+from django.views.decorators.csrf import ensure_csrf_cookie
 from django.http import JsonResponse
 from django.db import transaction
 from django.utils import timezone
@@ -14,6 +15,7 @@ from config.security import rate_limit, get_client_ip
 security_logger = logging.getLogger('neondrop.security')
 audit_logger = logging.getLogger('neondrop.audit')
 
+@ensure_csrf_cookie
 @login_required
 def inventory_view(request):
     items = InventoryItem.objects.filter(user=request.user, is_sold=False).select_related('item').order_by('-created_at')

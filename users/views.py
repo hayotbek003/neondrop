@@ -3,6 +3,7 @@ from django.shortcuts import render, redirect
 from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_POST, require_http_methods
+from django.views.decorators.csrf import ensure_csrf_cookie
 from django.contrib import messages
 from django.http import JsonResponse
 from django.conf import settings
@@ -17,6 +18,7 @@ from config.security import rate_limit, get_client_ip
 security_logger = logging.getLogger('neondrop.security')
 audit_logger = logging.getLogger('neondrop.audit')
 
+@ensure_csrf_cookie
 @rate_limit(key_prefix='register', limit=10, period=60, by_user=False, methods=('POST',))
 @require_http_methods(["GET", "POST"])
 def register_view(request):
@@ -53,6 +55,7 @@ def register_view(request):
         
     return render(request, 'register.html', {'form': form})
 
+@ensure_csrf_cookie
 @rate_limit(key_prefix='login', limit=10, period=60, by_user=False, methods=('POST',))
 @require_http_methods(["GET", "POST"])
 def login_view(request):
@@ -86,6 +89,7 @@ def logout_view(request):
     messages.info(request, "Вы успешно вышли из аккаунта.")
     return redirect('cases:home')
 
+@ensure_csrf_cookie
 @login_required
 def profile_view(request):
     profile = request.user.profile

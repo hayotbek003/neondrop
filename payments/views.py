@@ -4,6 +4,7 @@ from decimal import Decimal
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_POST
+from django.views.decorators.csrf import ensure_csrf_cookie
 from django.http import JsonResponse
 from django.conf import settings
 
@@ -13,6 +14,7 @@ from config.security import rate_limit, get_client_ip
 security_logger = logging.getLogger('neondrop.security')
 audit_logger = logging.getLogger('neondrop.audit')
 
+@ensure_csrf_cookie
 @login_required
 def deposit_view(request):
     tg_admin = getattr(settings, 'TELEGRAM_BOT_USERNAME', 'neondrop_admin').lstrip('@')

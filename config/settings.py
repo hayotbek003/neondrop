@@ -39,8 +39,8 @@ else:
 # CSRF Trusted Origins Configuration
 csrf_origins_env = os.environ.get('DJANGO_CSRF_TRUSTED_ORIGINS', '')
 CSRF_TRUSTED_ORIGINS = [
-    'https://*.onrender.com',
     'https://neondrop-ujly.onrender.com',
+    'https://*.onrender.com',
     'http://localhost:8000',
     'http://127.0.0.1:8000',
     'http://localhost',
@@ -52,6 +52,7 @@ if csrf_origins_env:
         if origin:
             if not origin.startswith(('http://', 'https://')):
                 origin = f'https://{origin}'
+            origin = origin.rstrip('/')
             if origin not in CSRF_TRUSTED_ORIGINS:
                 CSRF_TRUSTED_ORIGINS.append(origin)
 
@@ -213,15 +214,18 @@ CSRF_COOKIE_SECURE = not DEBUG or os.environ.get('CSRF_COOKIE_SECURE', 'False').
 CSRF_COOKIE_DOMAIN = None
 SESSION_COOKIE_DOMAIN = None
 
+# Custom CSRF Failure View
+CSRF_FAILURE_VIEW = 'cases.views.custom_csrf_failure_view'
+
 # Security Headers
 SECURE_BROWSER_XSS_FILTER = True
 SECURE_CONTENT_TYPE_NOSNIFF = True
 X_FRAME_OPTIONS = 'DENY'
 
-SECURE_SSL_REDIRECT = os.environ.get('SECURE_SSL_REDIRECT', 'False').lower() in ('true', '1')
+SECURE_SSL_REDIRECT = not DEBUG and os.environ.get('SECURE_SSL_REDIRECT', 'True').lower() in ('true', '1')
 
-if not DEBUG and SECURE_SSL_REDIRECT:
-    SECURE_HSTS_SECONDS = 31536000  # 1 year
+if not DEBUG:
+    SECURE_HSTS_SECONDS = int(os.environ.get('SECURE_HSTS_SECONDS', '31536000'))
     SECURE_HSTS_INCLUDE_SUBDOMAINS = True
     SECURE_HSTS_PRELOAD = True
 

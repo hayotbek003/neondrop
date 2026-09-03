@@ -97,8 +97,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const res = await fetch(`/inventory/sell/${id}/`, {
           method: 'POST',
           headers: {
-            'X-CSRFToken': getCookie('csrftoken')
-          }
+            'X-CSRFToken': typeof getCsrfToken === 'function' ? getCsrfToken() : (getCookie('csrftoken') || '')
+          },
+          credentials: 'same-origin'
         });
         const data = await res.json();
         if (data.success) {
@@ -128,8 +129,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const res = await fetch('/inventory/sell-all/', {
           method: 'POST',
           headers: {
-            'X-CSRFToken': getCookie('csrftoken')
-          }
+            'X-CSRFToken': typeof getCsrfToken === 'function' ? getCsrfToken() : (getCookie('csrftoken') || '')
+          },
+          credentials: 'same-origin'
         });
         const data = await res.json();
         if (data.success) {

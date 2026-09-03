@@ -152,8 +152,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const res = await fetch('/deposit/api/create-request/', {
           method: 'POST',
           headers: {
-            'X-CSRFToken': getCookie('csrftoken')
+            'X-CSRFToken': typeof getCsrfToken === 'function' ? getCsrfToken() : (getCookie('csrftoken') || '')
           },
+          credentials: 'same-origin',
           body: formData
         });
 

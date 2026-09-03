@@ -91,8 +91,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const res = await fetch('/upgrade/api/execute/', {
           method: 'POST',
           headers: {
-            'X-CSRFToken': getCookie('csrftoken')
+            'X-CSRFToken': typeof getCsrfToken === 'function' ? getCsrfToken() : (getCookie('csrftoken') || '')
           },
+          credentials: 'same-origin',
           body: formData
         });
 
