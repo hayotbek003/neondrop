@@ -210,3 +210,23 @@ class NeonDropSecurityTests(TestCase):
         self.assertGreaterEqual(roll1, 0.0)
         self.assertLess(roll1, 1.0)
         self.assertEqual(hash_seed(server_seed), hash_seed(server_seed))
+
+    def test_inventory_view_and_api_render_without_fielderror(self):
+        """Verify /inventory/ and /inventory/api/list/ query items using created_at without FieldError."""
+        InventoryItem.objects.create(user=self.user, item=self.pistol, source='case')
+        InventoryItem.objects.create(user=self.user, item=self.rifle, source='case')
+
+        self.client.login(username='SecurityUser', password='StrongPassword123!')
+        
+        # Test HTML view
+        response = self.client.get(reverse('inventory:index'))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'USP-S')
+        self.assertContains(response, 'AK-47')
+
+        # Test API view
+        api_res = self.client.get(reverse('inventory:api_list'))
+        self.assertEqual(api_res.status_code, 200)
+        data = api_res.json()
+        self.assertTrue(data['success'])
+        self.assertEqual(len(data['items']), 2)

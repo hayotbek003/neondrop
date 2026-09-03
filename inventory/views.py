@@ -16,7 +16,7 @@ audit_logger = logging.getLogger('neondrop.audit')
 
 @login_required
 def inventory_view(request):
-    items = InventoryItem.objects.filter(user=request.user, is_sold=False).select_related('item').order_by('-acquired_at')
+    items = InventoryItem.objects.filter(user=request.user, is_sold=False).select_related('item').order_by('-created_at')
     total_value = sum((inv.item.value for inv in items), Decimal('0.00'))
     total_count = items.count()
     
@@ -35,7 +35,7 @@ index_view = inventory_view
 @login_required
 @require_GET
 def api_inventory_list(request):
-    items = InventoryItem.objects.filter(user=request.user, is_sold=False).select_related('item').order_by('-acquired_at')
+    items = InventoryItem.objects.filter(user=request.user, is_sold=False).select_related('item').order_by('-created_at')
     data = []
     for inv in items:
         data.append({
