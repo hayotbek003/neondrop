@@ -5,6 +5,7 @@ from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_POST, require_http_methods
 from django.contrib import messages
 from django.http import JsonResponse
+from django.conf import settings
 from decimal import Decimal
 
 from .forms import RegistrationForm, LoginForm, ProfileSettingsForm
@@ -40,6 +41,7 @@ def register_view(request):
             audit_logger.info(f"USER_REGISTRATION: username={user.username}, id={user.id}, email={user.email}, ip={ip}")
             
             login(request, user)
+            request.session.set_expiry(getattr(settings, 'SESSION_COOKIE_AGE', 2592000))
             
             messages.success(request, f"Добро пожаловать в NEONDROP, {user.username}! Вам начислен приветственный баланс $100.00.")
             return redirect('cases:home')
@@ -63,6 +65,7 @@ def login_view(request):
         if form.is_valid():
             user = form.user
             login(request, user)
+            request.session.set_expiry(getattr(settings, 'SESSION_COOKIE_AGE', 2592000))
             
             audit_logger.info(f"USER_LOGIN_SUCCESS: username={user.username}, id={user.id}, ip={ip}")
             messages.success(request, f"С возвращением, {user.username}!")

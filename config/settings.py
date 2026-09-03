@@ -192,12 +192,16 @@ LOGIN_REDIRECT_URL = 'cases:home'
 LOGOUT_REDIRECT_URL = 'cases:home'
 
 # Session & Cookie Security
+SESSION_ENGINE = 'django.contrib.sessions.backends.db'
+SESSION_COOKIE_NAME = 'neondrop_sessionid'
 SESSION_COOKIE_HTTPONLY = True
 SESSION_COOKIE_SAMESITE = 'Lax'
 SESSION_EXPIRE_AT_BROWSER_CLOSE = False
-SESSION_COOKIE_AGE = 1209600  # 2 weeks
+SESSION_SAVE_EVERY_REQUEST = True
+SESSION_COOKIE_AGE = 2592000  # 30 days persistent session
 
-CSRF_COOKIE_HTTPONLY = False  # Allows vanilla JS getCookie('csrftoken') to read CSRF
+CSRF_COOKIE_NAME = 'csrftoken'
+CSRF_COOKIE_HTTPONLY = False  # Allows frontend JS getCookie('csrftoken') to read CSRF
 CSRF_COOKIE_SAMESITE = 'Lax'
 CSRF_COOKIE_AGE = 31449600  # 1 year
 

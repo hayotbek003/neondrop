@@ -640,4 +640,62 @@ class NeonDropComprehensiveTests(TestCase):
             res = self.client.get(route)
             self.assertEqual(res.status_code, 200, f"Failed rendering route {route}")
 
+    def test_persistent_authentication_and_session_lifecycle(self):
+        """Verify persistent authentication across browser sessions, 30-day age, and complete logout cleanup."""
+        from django.contrib.sessions.models import Session
+        from django.conf import settings
+
+        client = Client()
+
+        # 1. Login with credentials
+        login_res = client.post(reverse('users:login'), {
+            'username_or_email': 'SecurityUser',
+            'password': 'StrongPassword123!'
+        })
+        self.assertEqual(login_res.status_code, 302)
+
+        # 2. Verify session cookie is set
+        session_cookie_name = getattr(settings, 'SESSION_COOKIE_NAME', 'sessionid')
+        self.assertIn(session_cookie_name, client.cookies)
+        session_key = client.cookies[session_cookie_name].value
+
+        # 3. Verify session exists in database (database-backed)
+        db_session = Session.objects.filter(session_key=session_key).first()
+        self.assertIsNotNone(db_session)
+
+        # 4. Verify expiration is ~30 days in future (not browser close)
+        now = timezone.now()
+        expected_future = now + timedelta(days=29)
+        self.assertGreater(db_session.expire_date, expected_future)
+
+        # 5. Access authenticated page and API
+        profile_res = client.get(reverse('users:profile'))
+        self.assertEqual(profile_res.status_code, 200)
+        self.assertContains(profile_res, 'SecurityUser')
+
+        bal_res = client.get(reverse('users:api_balance'))
+        self.assertEqual(bal_res.status_code, 200)
+        self.assertEqual(bal_res.json()['username'], 'SecurityUser')
+
+        # 6. Simulate browser restart (New Client instance reusing persistent session cookie)
+        reopened_client = Client()
+        reopened_client.cookies[session_cookie_name] = session_key
+
+        reopened_res = reopened_client.get(reverse('users:profile'))
+        self.assertEqual(reopened_res.status_code, 200)
+        self.assertContains(reopened_res, 'SecurityUser')
+
+        # 7. Logout
+        logout_res = reopened_client.post(reverse('users:logout'))
+        self.assertEqual(logout_res.status_code, 302)
+
+        # 8. Verify session is wiped from DB and user cannot access protected routes
+        db_session_after = Session.objects.filter(session_key=session_key).first()
+        self.assertIsNone(db_session_after)
+
+        protected_res = reopened_client.get(reverse('users:profile'))
+        self.assertEqual(protected_res.status_code, 302)
+        self.assertIn(reverse('users:login'), protected_res.url)
+
+
 
