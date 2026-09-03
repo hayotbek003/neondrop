@@ -89,10 +89,33 @@ def profile_view(request):
     recent_openings = Opening.objects.filter(user=request.user).select_related('case', 'item')[:10]
     total_inventory_items = request.user.inventory_items.filter(is_sold=False).count()
     
+    from django.utils import timezone
+    from cases.models import PersonalCaseChance, UserFreeOpening, PromoCodeUse
+    now = timezone.now()
+    
+    active_promotions = PersonalCaseChance.objects.filter(
+        user=request.user,
+        is_active=True,
+        starts_at__lte=now,
+        expires_at__gte=now
+    ).select_related('case', 'item')
+
+    free_openings = UserFreeOpening.objects.filter(
+        user=request.user,
+        openings_left__gt=0
+    ).select_related('case')
+
+    used_promocodes = PromoCodeUse.objects.filter(
+        user=request.user
+    ).select_related('promo_code').order_by('-used_at')[:10]
+    
     context = {
         'profile': profile,
         'recent_openings': recent_openings,
         'total_inventory_items': total_inventory_items,
+        'active_promotions': active_promotions,
+        'free_openings': free_openings,
+        'used_promocodes': used_promocodes,
         'active_tab': 'profile',
     }
     return render(request, 'profile.html', context)

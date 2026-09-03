@@ -14,6 +14,34 @@
     </a>
   </div>
 
+  <!-- ==================== PERSONAL PROMO BANNER ==================== -->
+  {% if active_personal_promo %}
+    <div class="personal-promo-banner">
+      <div class="personal-promo-icon-box">🎁</div>
+      <div class="personal-promo-content">
+        <div class="personal-promo-title">ПЕРСОНАЛЬНЫЙ БОНУС АКТИВЕН</div>
+        <div class="personal-promo-text">
+          Для тебя действует специальный шанс на <strong>{{ active_personal_promo.item.name }}</strong>:
+          <span class="chance-old">Обычный шанс: {{ active_personal_promo.normal_chance_percent }}%</span>
+          <span class="chance-boosted">&rarr; Твой шанс: {{ active_personal_promo.chance }}%</span>
+        </div>
+        <div class="personal-promo-expiry">
+          Действует до: <strong>{{ active_personal_promo.expires_at|date:"d.m.Y H:i" }}</strong>
+        </div>
+      </div>
+    </div>
+  {% endif %}
+
+  <!-- ==================== FREE OPENINGS BADGE ==================== -->
+  {% if free_openings_count > 0 %}
+    <div class="free-openings-banner">
+      <div class="free-openings-icon">🎁</div>
+      <div class="free-openings-text">
+        Вам доступно <strong>{{ free_openings_count }}</strong> бесплатных открытий этого кейса!
+      </div>
+    </div>
+  {% endif %}
+
   <!-- ==================== TOP CASE SHOWCASE ==================== -->
   <div class="case-hero-showcase">
     <div class="case-hero-glow-box" style="--case-theme-glow: {{ case.accent_color }};">
@@ -23,12 +51,34 @@
     </div>
 
     <h1 class="case-hero-title">{{ case.name }}</h1>
-    <div class="case-hero-price">${{ case.price|floatformat:2 }}</div>
+    <div class="case-hero-price" id="caseUnitPrice" data-price="{{ case.price }}">${{ case.price|floatformat:2 }}</div>
+
+    <!-- Multi-Case Quantity Selector (1 to 5) -->
+    <div class="case-quantity-panel">
+      <div class="quantity-label">КОЛИЧЕСТВО КЕЙСОВ:</div>
+      <div class="quantity-selector-group">
+        <button type="button" class="btn-qty-preset active" data-qty="1">×1</button>
+        <button type="button" class="btn-qty-preset" data-qty="2">×2</button>
+        <button type="button" class="btn-qty-preset" data-qty="3">×3</button>
+        <button type="button" class="btn-qty-preset" data-qty="4">×4</button>
+        <button type="button" class="btn-qty-preset" data-qty="5">×5</button>
+      </div>
+      <div class="quantity-stepper">
+        <button type="button" id="qtyMinusBtn" class="btn-step">−</button>
+        <span id="qtyDisplay" class="qty-num">1</span>
+        <button type="button" id="qtyPlusBtn" class="btn-step">+</button>
+      </div>
+    </div>
+
+    <!-- Live Calculation Display -->
+    <div class="case-calc-summary" id="caseCalcSummary">
+      <span>1 кейс = ${{ case.price|floatformat:2 }}</span> &bull; <span>Итого: <strong id="totalCostDisplay" class="text-cyan">${{ case.price|floatformat:2 }}</strong></span>
+    </div>
 
     <div class="case-hero-actions">
       {% if user.is_authenticated %}
-        <button id="openCaseBtn" data-case-slug="{{ case.slug }}" class="btn-neon" style="font-size: 16px; padding: 14px 45px;">
-          <span>ОТКРЫТЬ КЕЙС</span>
+        <button id="openCaseBtn" data-case-slug="{{ case.slug }}" data-free-openings="{{ free_openings_count }}" class="btn-neon" style="font-size: 16px; padding: 14px 45px;">
+          <span id="openBtnText">ОТКРЫТЬ ×1</span>
         </button>
       {% else %}
         <a href="{% url 'users:login' %}?next={{ request.path }}" class="btn-neon">
@@ -50,16 +100,19 @@
     </div>
   </div>
 
-  <!-- ==================== CS:GO ROULETTE VIEWPORT ==================== -->
-  <div class="roulette-container" id="rouletteContainer" style="display: none;">
-    <div class="roulette-needle"></div>
-    <div class="roulette-viewport" id="rouletteViewport">
-      <div class="roulette-track" id="rouletteTrack">
-        <!-- Dynamically injected items during spin -->
-      </div>
+  <!-- ==================== CS:GO MULTI-ROULETTE VIEWPORT ==================== -->
+  <div class="multi-roulette-container" id="multiRouletteContainer" style="display: none;">
+    
+    <div class="roulette-top-actions">
+      <div class="roulette-status-text" id="rouletteStatusText">ОТКРЫВАЕМ КЕЙСЫ...</div>
+      <button type="button" id="skipAnimationBtn" class="btn-skip-spin" title="Пропустить анимацию">
+        ⏩ ПРОПУСТИТЬ
+      </button>
     </div>
-    <div class="roulette-status-bar" id="rouletteStatusBar" style="display: none;">
-      <div class="roulette-status-text">ОТКРЫВАЕМ КЕЙС...</div>
+
+    <!-- Dynamic 1..5 Roulette Tracks Grid -->
+    <div class="roulette-tracks-wrapper" id="rouletteTracksWrapper">
+      <!-- Tracks are dynamically injected via JS -->
     </div>
   </div>
 
@@ -70,10 +123,12 @@
 
   <div class="cases-grid" style="grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));">
     {% for entry in items_with_chances %}
-      <div class="item-card" style="--item-rarity-color: {{ entry.item.rarity_color }};">
+      <div class="item-card {% if entry.is_promoted %}promoted-item-card{% endif %}" style="--item-rarity-color: {{ entry.item.rarity_color }};">
         <div class="item-card-header">
           <span class="item-rarity-badge">{{ entry.item.rarity_display_ru }}</span>
-          <span class="item-chance-badge">{{ entry.chance_percent }}%</span>
+          <span class="item-chance-badge {% if entry.is_promoted %}promoted-chance{% endif %}">
+            {% if entry.is_promoted %}🔥 {% endif %}{{ entry.chance_percent }}%
+          </span>
         </div>
         <div class="item-card-img-wrapper">
           <svg class="item-card-img"><use href="#icon-{{ entry.item.image_url|default:'generic_weapon' }}"></use></svg>
@@ -87,26 +142,32 @@
 
 </div>
 
-<!-- ==================== WINNING ITEM REVEAL MODAL ==================== -->
+<!-- ==================== WINNING ITEMS REVEAL MODAL (1 to 5 items) ==================== -->
 <div class="modal-backdrop" id="winModal">
-  <div class="modal-win-card">
-    <h2 class="win-title">ПОЗДРАВЛЯЕМ!</h2>
-    <div class="win-item-img-box">
-      <svg style="width: 100%; height: 100%;"><use id="winItemSvgUse" href="#icon-generic_weapon"></use></svg>
+  <div class="modal-multi-win-card">
+    <div class="modal-win-header">
+      <h2 class="win-title" id="winModalTitle">ПОЗДРАВЛЯЕМ!</h2>
+      <div class="win-subtitle" id="winModalSubtitle">Вы получили предметы:</div>
     </div>
-    <div class="win-item-name"><span id="winItemWeapon">AK-47</span> | <span id="winItemSkin">Neon Rider</span></div>
-    <div class="win-item-rarity" id="winItemRarity">ТАЙНОЕ</div>
-    <div class="win-item-price" id="winItemPrice">$42.31</div>
+
+    <!-- Grid of won items -->
+    <div class="win-items-grid" id="winItemsGrid">
+      <!-- Dynamically filled with 1 to 5 cards -->
+    </div>
+
+    <div class="win-total-summary" id="winTotalSummary">
+      <span>Общая стоимость: <strong id="winTotalValueDisplay" class="text-green">$0.00</strong></span>
+    </div>
 
     <div class="win-actions">
-      <button id="closeWinModalBtn" class="btn-neon" style="font-size: 14px; padding: 10px 22px;">
-        ЗАБРАТЬ
+      <button id="modalSellAllBtn" class="btn-neon-green" style="font-size: 14px; padding: 12px 24px;">
+        ПРОДАТЬ ВСЕ ЗА $0.00
       </button>
-      <button id="modalSellBtn" class="btn-neon-green" style="font-size: 14px; padding: 10px 20px;">
-        ПРОДАТЬ
+      <button id="closeWinModalBtn" class="btn-neon" style="font-size: 14px; padding: 12px 24px;">
+        ЗАБРАТЬ ВСЕ В ИНВЕНТАРЬ
       </button>
-      <button id="modalOpenAgainBtn" class="btn-cyber-outline" style="font-size: 14px; padding: 10px 18px;">
-        ЕЩЁ РАЗ
+      <button id="modalOpenAgainBtn" class="btn-cyber-outline" style="font-size: 14px; padding: 12px 20px;">
+        ОТКРЫТЬ ЕЩЁ
       </button>
     </div>
   </div>

@@ -166,3 +166,139 @@ class Opening(models.Model):
 
     def __str__(self):
         return f"{self.user.username} открыл {self.case.name} -> {self.item.name} (${self.item.value})"
+
+class PersonalCaseChance(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='personal_chances', verbose_name="Пользователь")
+    case = models.ForeignKey(Case, on_delete=models.CASCADE, related_name='personal_chances', verbose_name="Кейс")
+    item = models.ForeignKey(Item, on_delete=models.CASCADE, related_name='personal_chances', verbose_name="Предмет")
+    chance = models.DecimalField(max_digits=5, decimal_places=2, verbose_name="Персональный шанс (%)", help_text="Шанс в процентах (0.01 - 100.00)")
+    starts_at = models.DateTimeField(verbose_name="Дата начала")
+    expires_at = models.DateTimeField(verbose_name="Дата окончания")
+    is_active = models.BooleanField(default=True, verbose_name="Активен")
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Создано")
+    updated_at = models.DateTimeField(auto_now=True, verbose_name="Обновлено")
+
+    class Meta:
+        verbose_name = "Персональный шанс (Personal Case Chance)"
+        verbose_name_plural = "Персональные шансы (Personal Case Chances)"
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.user.username} -> {self.case.name} -> {self.item.name}: {self.chance}%"
+
+    def clean(self):
+        from django.core.exceptions import ValidationError
+        if self.chance < Decimal('0.01') or self.chance > Decimal('100.00'):
+            raise ValidationError({'chance': "Шанс должен быть в диапазоне от 0.01% до 100.00%."})
+        if self.expires_at and self.starts_at and self.expires_at <= self.starts_at:
+            raise ValidationError({'expires_at': "Дата окончания должна быть позже даты начала."})
+
+    @property
+    def is_valid_now(self):
+        from django.utils import timezone
+        now = timezone.now()
+        return self.is_active and (self.starts_at <= now <= self.expires_at)
+
+    def normal_chance_percent(self):
+        """Calculates normal base chance of this item in this case."""
+        case_items = self.case.case_items.all()
+        total_weight = sum(ci.weight for ci in case_items)
+        if total_weight <= 0:
+            return 0.0
+        matching = self.case.case_items.filter(item=self.item).first()
+        if not matching:
+            return 0.0
+        return round((matching.weight / total_weight) * 100.0, 2)
+
+class PromoCode(models.Model):
+    BONUS_TYPE_CHOICES = [
+        ('coins', 'Coins / Баланс ($)'),
+        ('percentage', 'Процент к депозиту (%)'),
+        ('free_case_opens', 'Бесплатные открытия кейса'),
+    ]
+
+    code = models.CharField(max_length=50, unique=True, db_index=True, verbose_name="Промокод")
+    bonus_type = models.CharField(max_length=30, choices=BONUS_TYPE_CHOICES, default='coins', verbose_name="Тип бонуса")
+    bonus_value = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="Значение бонуса (Coins / % / Кол-во)")
+    max_uses = models.PositiveIntegerField(default=100, verbose_name="Максимум использований (всего)")
+    used_count = models.PositiveIntegerField(default=0, verbose_name="Количество использований")
+    starts_at = models.DateTimeField(verbose_name="Дата начала")
+    expires_at = models.DateTimeField(verbose_name="Дата окончания")
+    is_active = models.BooleanField(default=True, verbose_name="Активен")
+    min_deposit = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal('0.00'), verbose_name="Мин. депозит для активации ($)")
+    max_bonus = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, verbose_name="Макс. сумма бонуса ($)")
+    case = models.ForeignKey(Case, on_delete=models.SET_NULL, null=True, blank=True, related_name='promocodes', verbose_name="Кейс для бесплатных открытий")
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Дата создания")
+    updated_at = models.DateTimeField(auto_now=True, verbose_name="Дата обновления")
+
+    class Meta:
+        verbose_name = "Промокод (Promo Code)"
+        verbose_name_plural = "Промокоды (Promo Codes)"
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.code} ({self.get_bonus_type_display()}: {self.bonus_value})"
+
+    def clean(self):
+        from django.core.exceptions import ValidationError
+        self.code = self.code.strip().upper()
+        if self.bonus_value <= Decimal('0.00'):
+            raise ValidationError({'bonus_value': "Значение бонуса должно быть больше 0."})
+        if self.bonus_type == 'free_case_opens' and not self.case:
+            raise ValidationError({'case': "Для типа 'Бесплатные открытия' необходимо выбрать кейс."})
+        if self.expires_at and self.starts_at and self.expires_at <= self.starts_at:
+            raise ValidationError({'expires_at': "Дата окончания должна быть позже даты начала."})
+
+    def save(self, *args, **kwargs):
+        if self.code:
+            self.code = self.code.strip().upper()
+        super().save(*args, **kwargs)
+
+    @property
+    def is_valid_now(self):
+        from django.utils import timezone
+        now = timezone.now()
+        return self.is_active and (self.used_count < self.max_uses) and (self.starts_at <= now <= self.expires_at)
+
+    @property
+    def is_expired(self):
+        from django.utils import timezone
+        return timezone.now() > self.expires_at
+
+    @property
+    def is_limit_reached(self):
+        return self.used_count >= self.max_uses
+
+class PromoCodeUse(models.Model):
+    promo_code = models.ForeignKey(PromoCode, on_delete=models.CASCADE, related_name='uses', verbose_name="Промокод")
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='promocode_uses', verbose_name="Пользователь")
+    used_at = models.DateTimeField(auto_now_add=True, verbose_name="Дата использования")
+    bonus_amount = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal('0.00'), verbose_name="Начисленный бонус")
+    related_transaction = models.ForeignKey('payments.Transaction', on_delete=models.SET_NULL, null=True, blank=True, related_name='promocode_uses', verbose_name="Связанная транзакция")
+
+    class Meta:
+        verbose_name = "Использование промокода"
+        verbose_name_plural = "Использования промокодов"
+        unique_together = ('user', 'promo_code')
+        ordering = ['-used_at']
+
+    def __str__(self):
+        return f"{self.user.username} использовал {self.promo_code.code} ({self.used_at.strftime('%d.%m.%Y %H:%M')})"
+
+class UserFreeOpening(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='free_openings', verbose_name="Пользователь")
+    case = models.ForeignKey(Case, on_delete=models.CASCADE, related_name='user_free_openings', verbose_name="Кейс")
+    openings_left = models.PositiveIntegerField(default=0, verbose_name="Осталось бесплатных открытий")
+    total_granted = models.PositiveIntegerField(default=0, verbose_name="Всего начислено")
+    promo_code = models.ForeignKey(PromoCode, on_delete=models.SET_NULL, null=True, blank=True, verbose_name="Промокод")
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Создано")
+    updated_at = models.DateTimeField(auto_now=True, verbose_name="Обновлено")
+
+    class Meta:
+        verbose_name = "Бесплатные открытия пользователя"
+        verbose_name_plural = "Бесплатные открытия пользователей"
+        unique_together = ('user', 'case')
+        ordering = ['-updated_at']
+
+    def __str__(self):
+        return f"{self.user.username} -> {self.case.name}: {self.openings_left} бесплатных открытий"

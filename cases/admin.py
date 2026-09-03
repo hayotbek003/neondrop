@@ -1,5 +1,10 @@
 from django.contrib import admin
-from .models import Category, Item, Case, CaseItem, Opening
+from django.utils.html import format_html
+from django.utils import timezone
+from .models import (
+    Category, Item, Case, CaseItem, Opening,
+    PersonalCaseChance, PromoCode, PromoCodeUse, UserFreeOpening
+)
 
 class CaseItemInline(admin.TabularInline):
     model = CaseItem
@@ -42,3 +47,86 @@ class OpeningAdmin(admin.ModelAdmin):
     search_fields = ('user__username', 'item__name', 'case__name', 'server_seed_hash')
     ordering = ('-created_at',)
     readonly_fields = ('server_seed_hash', 'server_seed', 'client_seed', 'nonce', 'created_at')
+
+@admin.register(PersonalCaseChance)
+class PersonalCaseChanceAdmin(admin.ModelAdmin):
+    list_display = (
+        'user', 'case', 'item', 'chance_display', 'normal_chance_display',
+        'status_badge', 'starts_at', 'expires_at'
+    )
+    list_filter = ('is_active', 'case', 'starts_at', 'expires_at')
+    search_fields = ('user__username', 'case__name', 'item__name')
+    autocomplete_fields = ('user', 'case', 'item')
+    ordering = ('-created_at',)
+
+    @admin.display(description="Персональный шанс")
+    def chance_display(self, obj):
+        return format_html('<strong style="color: #ffd700; font-size: 13px;">{}%</strong>', obj.chance)
+
+    @admin.display(description="Обычный шанс")
+    def normal_chance_display(self, obj):
+        return f"{obj.normal_chance_percent()}%"
+
+    @admin.display(description="Статус")
+    def status_badge(self, obj):
+        now = timezone.now()
+        if not obj.is_active:
+            return format_html('<span style="color: #94a3b8; font-weight: bold;">✕ Выключен</span>')
+        if obj.expires_at < now:
+            return format_html('<span style="color: #ef4444; font-weight: bold;">✕ Истёк</span>')
+        if obj.starts_at > now:
+            return format_html('<span style="color: #eab308; font-weight: bold;">⏳ Ожидает начала</span>')
+        return format_html('<span style="color: #22c55e; font-weight: bold;">✓ Активен</span>')
+
+@admin.register(PromoCode)
+class PromoCodeAdmin(admin.ModelAdmin):
+    list_display = (
+        'code', 'bonus_type_display', 'bonus_value', 'usage_display',
+        'status_badge', 'starts_at', 'expires_at'
+    )
+    list_filter = ('is_active', 'bonus_type', 'starts_at', 'expires_at')
+    search_fields = ('code',)
+    autocomplete_fields = ('case',)
+    ordering = ('-created_at',)
+
+    @admin.display(description="Тип бонуса")
+    def bonus_type_display(self, obj):
+        return obj.get_bonus_type_display()
+
+    @admin.display(description="Использовано / Лимит")
+    def usage_display(self, obj):
+        pct = (obj.used_count / obj.max_uses) * 100 if obj.max_uses > 0 else 0
+        color = '#22c55e' if pct < 80 else '#ef4444'
+        return format_html(
+            '<strong>{} / {}</strong> <span style="color: {}; font-size: 11px;">({:.0f}%)</span>',
+            obj.used_count, obj.max_uses, color, pct
+        )
+
+    @admin.display(description="Статус")
+    def status_badge(self, obj):
+        now = timezone.now()
+        if not obj.is_active:
+            return format_html('<span style="color: #94a3b8; font-weight: bold;">✕ Выключен</span>')
+        if obj.used_count >= obj.max_uses:
+            return format_html('<span style="color: #ef4444; font-weight: bold;">✕ Лимит исчерпан</span>')
+        if obj.expires_at < now:
+            return format_html('<span style="color: #ef4444; font-weight: bold;">✕ Истёк</span>')
+        if obj.starts_at > now:
+            return format_html('<span style="color: #eab308; font-weight: bold;">⏳ Ожидает начала</span>')
+        return format_html('<span style="color: #22c55e; font-weight: bold;">✓ Активен</span>')
+
+@admin.register(PromoCodeUse)
+class PromoCodeUseAdmin(admin.ModelAdmin):
+    list_display = ('user', 'promo_code', 'bonus_amount', 'used_at', 'related_transaction')
+    list_filter = ('promo_code__bonus_type', 'used_at')
+    search_fields = ('user__username', 'promo_code__code')
+    readonly_fields = ('user', 'promo_code', 'used_at', 'bonus_amount', 'related_transaction')
+    ordering = ('-used_at',)
+
+@admin.register(UserFreeOpening)
+class UserFreeOpeningAdmin(admin.ModelAdmin):
+    list_display = ('user', 'case', 'openings_left', 'total_granted', 'promo_code', 'updated_at')
+    list_filter = ('case', 'updated_at')
+    search_fields = ('user__username', 'case__name', 'promo_code__code')
+    autocomplete_fields = ('user', 'case', 'promo_code')
+    ordering = ('-updated_at',)

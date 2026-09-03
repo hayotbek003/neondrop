@@ -1,6 +1,6 @@
 /**
- * NEONDROP CS:GO STYLE ROULETTE & SOUND ENGINE
- * Precise server-aligned tape, physically synchronized ticks & audio controls
+ * NEONDROP CS:GO STYLE MULTI-ROULETTE (1-5) & SOUND ENGINE
+ * Precise server-aligned tapes, synchronized multi-track physics, instant skip, and batch selling
  */
 
 class RouletteSoundManager {
@@ -15,12 +15,12 @@ class RouletteSoundManager {
     this.gainNode = null;
     this.hasAudioUnlocked = false;
 
-    // Local Audio Element instances
+    // Audio elements
     this.startAudio = this.createAudioElement('/static/sounds/roulette_start.mp3');
     this.winAudio = this.createAudioElement('/static/sounds/roulette_win.mp3');
     
     // Pool of tick audio elements for rapid non-overlapping playback
-    this.tickPoolSize = 5;
+    this.tickPoolSize = 6;
     this.tickPool = [];
     this.tickPoolIndex = 0;
     for (let i = 0; i < this.tickPoolSize; i++) {
@@ -136,9 +136,7 @@ class RouletteSoundManager {
 
     if (this.startAudio) {
       this.startAudio.currentTime = 0;
-      this.startAudio.play().catch(() => {
-        this.synthStart();
-      });
+      this.startAudio.play().catch(() => this.synthStart());
     } else {
       this.synthStart();
     }
@@ -148,15 +146,12 @@ class RouletteSoundManager {
     if (this.isMuted) return;
     this.initAudioContext();
 
-    // Use pooled audio element for zero-latency consecutive clicks
     const audio = this.tickPool[this.tickPoolIndex];
     this.tickPoolIndex = (this.tickPoolIndex + 1) % this.tickPoolSize;
 
     if (audio) {
       audio.currentTime = 0;
-      audio.play().catch(() => {
-        this.synthTick();
-      });
+      audio.play().catch(() => this.synthTick());
     } else {
       this.synthTick();
     }
@@ -168,15 +163,12 @@ class RouletteSoundManager {
 
     if (this.winAudio) {
       this.winAudio.currentTime = 0;
-      this.winAudio.play().catch(() => {
-        this.synthWin();
-      });
+      this.winAudio.play().catch(() => this.synthWin());
     } else {
       this.synthWin();
     }
   }
 
-  // ==================== SYNTHESIZED FALLBACKS (Web Audio API) ====================
   synthTick() {
     try {
       if (!this.audioCtx || !this.gainNode) return;
@@ -222,7 +214,7 @@ class RouletteSoundManager {
   synthWin() {
     try {
       if (!this.audioCtx || !this.gainNode) return;
-      const chords = [523.25, 659.25, 783.99, 1046.50]; // C5, E5, G5, C6
+      const chords = [523.25, 659.25, 783.99, 1046.50];
       chords.forEach((freq, i) => {
         const osc = this.audioCtx.createOscillator();
         const gain = this.audioCtx.createGain();
@@ -243,42 +235,100 @@ class RouletteSoundManager {
   }
 }
 
-// ==================== ROULETTE CONTROLLER ====================
+// ==================== MULTI-ROULETTE CONTROLLER ====================
 document.addEventListener('DOMContentLoaded', () => {
   const openCaseBtn = document.getElementById('openCaseBtn');
-  const rouletteContainer = document.getElementById('rouletteContainer');
-  const rouletteTrack = document.getElementById('rouletteTrack');
-  const rouletteViewport = document.getElementById('rouletteViewport');
-  const rouletteStatusBar = document.getElementById('rouletteStatusBar');
+  const multiRouletteContainer = document.getElementById('multiRouletteContainer');
+  const rouletteTracksWrapper = document.getElementById('rouletteTracksWrapper');
+  const skipAnimationBtn = document.getElementById('skipAnimationBtn');
   const winModal = document.getElementById('winModal');
-  const caseSlug = openCaseBtn ? openCaseBtn.getAttribute('data-case-slug') : null;
+  const caseUnitPriceEl = document.getElementById('caseUnitPrice');
 
-  if (!openCaseBtn || !caseSlug) return;
+  if (!openCaseBtn || !caseUnitPriceEl) return;
+
+  const caseSlug = openCaseBtn.getAttribute('data-case-slug');
+  const unitPrice = parseFloat(caseUnitPriceEl.getAttribute('data-price')) || 0.0;
+  let freeOpeningsAvailable = parseInt(openCaseBtn.getAttribute('data-free-openings')) || 0;
 
   const soundManager = new RouletteSoundManager();
 
+  let selectedQuantity = 1;
   let isOpening = false;
-  let lastWonItem = null;
-  let lastInvId = null;
-  let animFrameId = null;
+  let activeAnimationId = null;
+  let isSkipped = false;
+  let currentResults = [];
 
+  // ==================== QUANTITY SELECTOR ====================
+  const qtyPresets = document.querySelectorAll('.btn-qty-preset');
+  const qtyDisplay = document.getElementById('qtyDisplay');
+  const qtyMinusBtn = document.getElementById('qtyMinusBtn');
+  const qtyPlusBtn = document.getElementById('qtyPlusBtn');
+  const caseCalcSummary = document.getElementById('caseCalcSummary');
+  const openBtnText = document.getElementById('openBtnText');
+
+  function updateQuantity(newQty) {
+    selectedQuantity = Math.max(1, Math.min(5, newQty));
+    if (qtyDisplay) qtyDisplay.textContent = selectedQuantity;
+
+    qtyPresets.forEach(btn => {
+      btn.classList.toggle('active', parseInt(btn.getAttribute('data-qty')) === selectedQuantity);
+    });
+
+    const paidQuantity = Math.max(0, selectedQuantity - freeOpeningsAvailable);
+    const totalCost = paidQuantity * unitPrice;
+
+    if (caseCalcSummary) {
+      if (freeOpeningsAvailable >= selectedQuantity) {
+        caseCalcSummary.innerHTML = `<span>Количество: ${selectedQuantity}</span> &bull; <span>Оплата: <strong class="text-green">БЕСПЛАТНО (${selectedQuantity} шт.)</strong></span>`;
+      } else if (freeOpeningsAvailable > 0) {
+        caseCalcSummary.innerHTML = `<span>Бесплатно: ${freeOpeningsAvailable} шт. &bull; К оплате: ${paidQuantity} × $${unitPrice.toFixed(2)}</span> &bull; <span>Итого: <strong class="text-cyan">$${totalCost.toFixed(2)}</strong></span>`;
+      } else {
+        caseCalcSummary.innerHTML = `<span>1 кейс = $${unitPrice.toFixed(2)} &bull; ${selectedQuantity} шт.</span> &bull; <span>Итого: <strong class="text-cyan">$${totalCost.toFixed(2)}</strong></span>`;
+      }
+    }
+
+    if (openBtnText) {
+      if (paidQuantity === 0) {
+        openBtnText.textContent = `ОТКРЫТЬ БЕСПЛАТНО (×${selectedQuantity})`;
+      } else {
+        openBtnText.textContent = `ОТКРЫТЬ ×${selectedQuantity} ($${totalCost.toFixed(2)})`;
+      }
+    }
+  }
+
+  qtyPresets.forEach(btn => {
+    btn.addEventListener('click', () => {
+      updateQuantity(parseInt(btn.getAttribute('data-qty'), 10));
+    });
+  });
+
+  if (qtyMinusBtn) {
+    qtyMinusBtn.addEventListener('click', () => updateQuantity(selectedQuantity - 1));
+  }
+  if (qtyPlusBtn) {
+    qtyPlusBtn.addEventListener('click', () => updateQuantity(selectedQuantity + 1));
+  }
+
+  updateQuantity(1);
+
+  // ==================== OPEN CASE EVENT ====================
   openCaseBtn.addEventListener('click', async () => {
     if (isOpening) return;
     isOpening = true;
+    isSkipped = false;
 
     soundManager.initAudioContext();
 
     openCaseBtn.disabled = true;
     openCaseBtn.classList.add('loading');
-    openCaseBtn.innerHTML = '<span>ОТКРЫВАЕМ...</span>';
+    openBtnText.textContent = 'ОТКРЫВАЕМ...';
 
-    rouletteContainer.style.display = 'block';
-    rouletteContainer.classList.remove('winner-active');
-    rouletteContainer.classList.add('spinning');
-    rouletteStatusBar.style.display = 'block';
+    multiRouletteContainer.style.display = 'block';
+    multiRouletteContainer.classList.remove('winner-active');
+    multiRouletteContainer.classList.add('spinning');
+    if (skipAnimationBtn) skipAnimationBtn.style.display = 'inline-block';
 
-    // Scroll smoothly to roulette viewport
-    rouletteContainer.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    multiRouletteContainer.scrollIntoView({ behavior: 'smooth', block: 'center' });
 
     try {
       // 1. Django Backend Authoritative Result
@@ -289,6 +339,7 @@ document.addEventListener('DOMContentLoaded', () => {
           'X-CSRFToken': getCookie('csrftoken')
         },
         body: new URLSearchParams({
+          'quantity': selectedQuantity.toString(),
           'client_seed': Math.random().toString(36).substring(2, 15)
         })
       });
@@ -304,18 +355,20 @@ document.addEventListener('DOMContentLoaded', () => {
       // Update Live Balance across header
       window.updateUserBalance(data.new_balance);
 
-      lastWonItem = data.won_item;
-      lastInvId = data.inventory_id;
+      freeOpeningsAvailable = data.free_openings_remaining || 0;
+      openCaseBtn.setAttribute('data-free-openings', freeOpeningsAvailable.toString());
 
-      // 2. Build Ribbon Tape
-      buildRouletteTrack(data.tape, data.winning_index);
+      currentResults = data.results || [data];
+
+      // 2. Build Multi-Roulette Lanes
+      buildMultiRouletteLanes(currentResults);
 
       // 3. Play Start Sound
       soundManager.playStart();
 
-      // 4. Start Physics Spin
+      // 4. Start Physics Animation on all tracks
       setTimeout(() => {
-        spinRoulettePhysics(data.winning_index, data.won_item, lastInvId);
+        spinMultiRoulettePhysics(currentResults);
       }, 80);
 
     } catch (err) {
@@ -325,138 +378,211 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  function buildRouletteTrack(tape, winningIndex) {
-    rouletteTrack.style.transition = 'none';
-    rouletteTrack.style.transform = 'translate3d(0px, 0, 0)';
-    rouletteTrack.innerHTML = '';
+  // ==================== SKIP ANIMATION ====================
+  if (skipAnimationBtn) {
+    skipAnimationBtn.addEventListener('click', () => {
+      if (!isOpening || isSkipped) return;
+      isSkipped = true;
+      if (activeAnimationId) cancelAnimationFrame(activeAnimationId);
 
-    tape.forEach((item, index) => {
-      const card = document.createElement('div');
-      card.className = 'roulette-item';
-      card.style.setProperty('--r-color', item.rarity_color);
-      card.setAttribute('data-index', index);
+      // Instantly position all tracks to winning targets
+      const lanes = rouletteTracksWrapper.querySelectorAll('.roulette-lane');
+      lanes.forEach((lane, idx) => {
+        const track = lane.querySelector('.roulette-track');
+        const targetOffset = parseFloat(lane.getAttribute('data-target-offset')) || 0;
+        track.style.transition = 'none';
+        track.style.transform = `translate3d(-${targetOffset}px, 0, 0)`;
 
-      card.innerHTML = `
-        <div class="roulette-item-weapon">${item.weapon_type}</div>
-        <div class="roulette-item-img-box">
-          <svg class="roulette-item-img"><use href="#icon-${item.image_url || 'generic_weapon'}"></use></svg>
-        </div>
-        <div class="roulette-item-skin">${item.skin_name}</div>
-        <div class="roulette-item-price">$${item.value.toFixed(2)}</div>
-      `;
-      rouletteTrack.appendChild(card);
+        const winningIndex = parseInt(lane.getAttribute('data-winning-index')) || 50;
+        const winCard = track.children[winningIndex];
+        if (winCard) winCard.classList.add('winner-landed');
+      });
+
+      onMultiRouletteStopped(currentResults);
     });
   }
 
-  function spinRoulettePhysics(winningIndex, wonItem, invId) {
-    if (!rouletteTrack.children.length) return;
+  // ==================== BUILD MULTI LANES ====================
+  function buildMultiRouletteLanes(results) {
+    rouletteTracksWrapper.innerHTML = '';
 
-    const firstCard = rouletteTrack.children[0];
+    results.forEach((res, laneIndex) => {
+      const lane = document.createElement('div');
+      lane.className = 'roulette-lane';
+      lane.id = `rouletteLane_${laneIndex}`;
+      lane.setAttribute('data-winning-index', res.winning_index);
+
+      lane.innerHTML = `
+        <div class="roulette-needle"></div>
+        <div class="roulette-viewport">
+          <div class="roulette-track"></div>
+        </div>
+      `;
+
+      const track = lane.querySelector('.roulette-track');
+      res.tape.forEach((item, itemIdx) => {
+        const card = document.createElement('div');
+        card.className = 'roulette-item';
+        card.style.setProperty('--r-color', item.rarity_color);
+        card.setAttribute('data-index', itemIdx);
+
+        card.innerHTML = `
+          <div class="roulette-item-weapon">${item.weapon_type}</div>
+          <div class="roulette-item-img-box">
+            <svg class="roulette-item-img"><use href="#icon-${item.image_url || 'generic_weapon'}"></use></svg>
+          </div>
+          <div class="roulette-item-skin">${item.skin_name}</div>
+          <div class="roulette-item-price">$${item.value.toFixed(2)}</div>
+        `;
+        track.appendChild(card);
+      });
+
+      rouletteTracksWrapper.appendChild(lane);
+    });
+  }
+
+  // ==================== PHYSICS MULTI SPIN ====================
+  function spinMultiRoulettePhysics(results) {
+    const lanes = rouletteTracksWrapper.querySelectorAll('.roulette-lane');
+    if (!lanes.length) return;
+
+    const firstLane = lanes[0];
+    const track = firstLane.querySelector('.roulette-track');
+    const firstCard = track.children[0];
     const cardStyle = window.getComputedStyle(firstCard);
     const cardWidth = firstCard.offsetWidth;
     const cardMargin = parseFloat(cardStyle.marginLeft) + parseFloat(cardStyle.marginRight);
     const totalCardWidth = cardWidth + cardMargin;
+    const viewportWidth = firstLane.querySelector('.roulette-viewport').offsetWidth;
 
-    const viewportWidth = rouletteViewport.offsetWidth;
+    // Calculate landing offsets for each lane with individual micro-jitter
+    const laneConfigs = [];
+    lanes.forEach((lane, idx) => {
+      const winningIndex = parseInt(lane.getAttribute('data-winning-index')) || 50;
+      const jitter = (Math.random() - 0.5) * (cardWidth * 0.6);
+      const targetOffset = (winningIndex * totalCardWidth) + (totalCardWidth / 2) - (viewportWidth / 2) + jitter;
+      lane.setAttribute('data-target-offset', targetOffset.toString());
+      laneConfigs.push({
+        lane: lane,
+        track: lane.querySelector('.roulette-track'),
+        targetOffset: targetOffset,
+        winningIndex: winningIndex,
+      });
+    });
 
-    // Small realistic sub-pixel jitter within center card (+- 30% card width)
-    const jitter = (Math.random() - 0.5) * (cardWidth * 0.6);
-
-    // Exact landing target offset to align winning card under center needle
-    const targetOffset = (winningIndex * totalCardWidth) + (totalCardWidth / 2) - (viewportWidth / 2) + jitter;
-
-    // Duration: 7.4s +- 0.2s
-    const totalDuration = 7400 + (Math.random() * 400 - 200);
-
+    const totalDuration = 7400 + (Math.random() * 300 - 150);
     const startTime = performance.now();
     let lastPassedIndex = -1;
 
-    // Custom multi-stage physics easing:
-    // 0.0 - 0.5s: Acceleration
-    // 0.5 - 3.5s: Fast spin
-    // 3.5 - 6.5s: Progressive deceleration
-    // 6.5 - 7.4s: Final slow ticks
     function customEase(p) {
       if (p <= 0) return 0;
       if (p >= 1) return 1;
-      // High-precision smooth deceleration curve (quartic ease-out tailored for CS:GO wheel)
       return 1 - Math.pow(1 - p, 4.2);
     }
 
     function animate(currentTime) {
+      if (isSkipped) return;
+
       const elapsed = currentTime - startTime;
       const progress = Math.min(1, elapsed / totalDuration);
       const easeProgress = customEase(progress);
 
-      const currentX = targetOffset * easeProgress;
-      rouletteTrack.style.transform = `translate3d(-${currentX}px, 0, 0)`;
+      laneConfigs.forEach(cfg => {
+        const currentX = cfg.targetOffset * easeProgress;
+        cfg.track.style.transform = `translate3d(-${currentX}px, 0, 0)`;
+      });
 
-      // Real-time Card Tick Tracking:
-      // Trigger tick each time a card boundary crosses the center needle position
-      const needlePositionOnTape = currentX + (viewportWidth / 2);
-      const currentCardIndex = Math.floor(needlePositionOnTape / totalCardWidth);
+      // Synchronized Tick Sound on primary lane
+      const needlePosition = (laneConfigs[0].targetOffset * easeProgress) + (viewportWidth / 2);
+      const currentCardIndex = Math.floor(needlePosition / totalCardWidth);
 
-      if (currentCardIndex !== lastPassedIndex && currentCardIndex >= 0 && currentCardIndex <= winningIndex) {
+      if (currentCardIndex !== lastPassedIndex && currentCardIndex >= 0 && currentCardIndex <= laneConfigs[0].winningIndex) {
         lastPassedIndex = currentCardIndex;
         soundManager.playTick();
       }
 
       if (progress < 1) {
-        animFrameId = requestAnimationFrame(animate);
+        activeAnimationId = requestAnimationFrame(animate);
       } else {
         // Complete Stop
-        rouletteTrack.style.transform = `translate3d(-${targetOffset}px, 0, 0)`;
-        onRouletteStopped(winningIndex, wonItem, invId);
+        laneConfigs.forEach(cfg => {
+          cfg.track.style.transform = `translate3d(-${cfg.targetOffset}px, 0, 0)`;
+          const winCard = cfg.track.children[cfg.winningIndex];
+          if (winCard) winCard.classList.add('winner-landed');
+        });
+        onMultiRouletteStopped(results);
       }
     }
 
-    animFrameId = requestAnimationFrame(animate);
+    activeAnimationId = requestAnimationFrame(animate);
   }
 
-  function onRouletteStopped(winningIndex, wonItem, invId) {
-    rouletteContainer.classList.remove('spinning');
-    rouletteContainer.classList.add('winner-active');
+  // ==================== ON STOPPED & WIN REVEAL ====================
+  function onMultiRouletteStopped(results) {
+    multiRouletteContainer.classList.remove('spinning');
+    multiRouletteContainer.classList.add('winner-active');
+    if (skipAnimationBtn) skipAnimationBtn.style.display = 'none';
 
-    // Play victory sound
     soundManager.playWin();
 
-    // Highlight winning card on the ribbon
-    const winningCard = rouletteTrack.children[winningIndex];
-    if (winningCard) {
-      winningCard.classList.add('winner-landed');
-    }
-
-    // Reveal winning modal after flash
     setTimeout(() => {
-      showWinModal(wonItem, invId);
+      showMultiWinModal(results);
       resetOpenButton();
-    }, 750);
+    }, 800);
   }
 
-  function showWinModal(item, invId) {
-    document.getElementById('winItemWeapon').textContent = item.weapon_type;
-    document.getElementById('winItemSkin').textContent = item.skin_name;
-    document.getElementById('winItemRarity').textContent = item.rarity_name;
-    document.getElementById('winItemRarity').style.color = item.rarity_color;
-    document.getElementById('winItemPrice').textContent = `$${item.value.toFixed(2)}`;
+  // ==================== MULTI WIN MODAL ====================
+  function showMultiWinModal(results) {
+    const winItemsGrid = document.getElementById('winItemsGrid');
+    const winModalTitle = document.getElementById('winModalTitle');
+    const winModalSubtitle = document.getElementById('winModalSubtitle');
+    const winTotalValueDisplay = document.getElementById('winTotalValueDisplay');
+    const modalSellAllBtn = document.getElementById('modalSellAllBtn');
 
-    const winSvgUse = document.getElementById('winItemSvgUse');
-    if (winSvgUse) {
-      winSvgUse.setAttribute('href', `#icon-${item.image_url || 'generic_weapon'}`);
+    winItemsGrid.innerHTML = '';
+    let totalValue = 0.0;
+    const invIds = [];
+
+    results.forEach(res => {
+      const item = res.won_item;
+      totalValue += item.value;
+      if (res.inventory_id) invIds.push(res.inventory_id);
+
+      const card = document.createElement('div');
+      card.className = 'win-single-card';
+      card.style.setProperty('--card-color', item.rarity_color);
+
+      card.innerHTML = `
+        <div class="win-card-weapon">${item.weapon_type}</div>
+        <div class="win-card-img-box">
+          <svg class="win-card-img"><use href="#icon-${item.image_url || 'generic_weapon'}"></use></svg>
+        </div>
+        <div class="win-card-skin">${item.skin_name}</div>
+        <div class="win-card-price">$${item.value.toFixed(2)}</div>
+      `;
+      winItemsGrid.appendChild(card);
+    });
+
+    if (results.length > 1) {
+      winModalTitle.textContent = `ПОЗДРАВЛЯЕМ! (${results.length} КЕЙСОВ)`;
+      winModalSubtitle.textContent = `Вы открыли ${results.length} кейсов и выиграли предметы:`;
+    } else {
+      winModalTitle.textContent = 'ПОЗДРАВЛЯЕМ!';
+      winModalSubtitle.textContent = 'Вы выиграли предмет:';
     }
 
-    const modalWinCard = document.querySelector('.modal-win-card');
-    if (modalWinCard) {
-      modalWinCard.style.setProperty('--win-rarity-color', item.rarity_color);
+    if (winTotalValueDisplay) {
+      winTotalValueDisplay.textContent = `$${totalValue.toFixed(2)}`;
     }
 
-    const sellBtn = document.getElementById('modalSellBtn');
-    sellBtn.textContent = `ПРОДАТЬ ЗА $${item.value.toFixed(2)}`;
-    sellBtn.onclick = () => sellWonItem(invId);
+    if (modalSellAllBtn) {
+      modalSellAllBtn.textContent = `ПРОДАТЬ ВСЕ ЗА $${totalValue.toFixed(2)}`;
+      modalSellAllBtn.onclick = () => sellBatchWonItems(invIds);
+    }
 
-    const openAgainBtn = document.getElementById('modalOpenAgainBtn');
-    if (openAgainBtn) {
-      openAgainBtn.onclick = () => {
+    const modalOpenAgainBtn = document.getElementById('modalOpenAgainBtn');
+    if (modalOpenAgainBtn) {
+      modalOpenAgainBtn.onclick = () => {
         winModal.classList.remove('active');
         openCaseBtn.click();
       };
@@ -465,24 +591,23 @@ document.addEventListener('DOMContentLoaded', () => {
     winModal.classList.add('active');
   }
 
-  async function sellWonItem(invId) {
-    if (!invId) return;
+  async function sellBatchWonItems(invIds) {
+    if (!invIds.length) return;
     try {
-      const res = await fetch(`/inventory/sell/${invId}/`, {
-        method: 'POST',
-        headers: {
-          'X-CSRFToken': getCookie('csrftoken')
-        }
-      });
-      const data = await res.json();
-      if (data.success) {
-        window.updateUserBalance(data.new_balance);
-        winModal.classList.remove('active');
-      } else {
-        alert(data.error);
+      // Sell all items sequentially or via bulk API
+      let lastBalance = null;
+      for (const id of invIds) {
+        const res = await fetch(`/inventory/sell/${id}/`, {
+          method: 'POST',
+          headers: { 'X-CSRFToken': getCookie('csrftoken') }
+        });
+        const d = await res.json();
+        if (d.success) lastBalance = d.new_balance;
       }
+      if (lastBalance !== null) window.updateUserBalance(lastBalance);
+      winModal.classList.remove('active');
     } catch (e) {
-      alert('Ошибка при продаже.');
+      alert('Ошибка при продаже предметов.');
     }
   }
 
@@ -490,10 +615,9 @@ document.addEventListener('DOMContentLoaded', () => {
     isOpening = false;
     openCaseBtn.disabled = false;
     openCaseBtn.classList.remove('loading');
-    openCaseBtn.innerHTML = '<span>ОТКРЫТЬ КЕЙС</span>';
+    updateQuantity(selectedQuantity);
   }
 
-  // Close modal button
   const closeWinModalBtn = document.getElementById('closeWinModalBtn');
   if (closeWinModalBtn) {
     closeWinModalBtn.addEventListener('click', () => {

@@ -34,6 +34,28 @@
     </div>
   </div>
 
+  <!-- ==================== PROMOCODE REDEMPTION CARD ==================== -->
+  <div class="panel-card" style="padding: 20px 24px; margin-bottom: 24px; background: linear-gradient(135deg, rgba(168, 85, 247, 0.1), rgba(6, 182, 212, 0.1)); border: 1px solid rgba(168, 85, 247, 0.3);">
+    <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px;">
+      <div>
+        <h3 style="font-family: var(--font-display); font-size: 16px; font-weight: 800; color: #ffd700; margin-bottom: 4px; display: flex; align-items: center; gap: 8px;">
+          <span>🎟️</span> ЕСТЬ ПРОМОКОД?
+        </h3>
+        <p style="font-size: 13px; color: #cbd5e1; margin: 0;">
+          Активируйте промокод для получения Coins, бонусов к пополнению или бесплатных открытий кейсов!
+        </p>
+      </div>
+      <form id="promoForm" style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+        {% csrf_token %}
+        <input type="text" id="promoInput" name="code" placeholder="Введите промокод..." required style="background: #090c14; border: 1px solid var(--border-color); color: #fff; padding: 10px 16px; border-radius: 8px; font-family: var(--font-display); font-weight: 700; font-size: 13px; text-transform: uppercase; width: 200px; outline: none;">
+        <button type="submit" id="promoSubmitBtn" class="btn-neon" style="font-size: 13px; padding: 10px 20px;">
+          АКТИВИРОВАТЬ
+        </button>
+      </form>
+    </div>
+    <div id="promoAlert" style="display: none; margin-top: 14px; padding: 10px 14px; border-radius: 8px; font-size: 13px; font-weight: 600;"></div>
+  </div>
+
   <!-- ==================== QUICK STATS (MOBILE & DESKTOP) ==================== -->
   <div class="profile-stats-grid">
     <div class="stat-card">
@@ -96,53 +118,204 @@
       </nav>
     </div>
 
-    <!-- Right Content: История открытий Preview -->
-    <div class="panel-card">
-      <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;">
-        <h3 class="panel-title" style="margin-bottom: 0;">ИСТОРИЯ ОТКРЫТИЙ</h3>
-        <a href="{% url 'users:history' %}" style="font-family: var(--font-sub); font-size: 12px; font-weight: 700; color: #a855f7;">
-          ПОСМОТРЕТЬ ВСЁ &rarr;
-        </a>
-      </div>
+    <!-- Right Content: Бонусы + История открытий Preview -->
+    <div style="display: flex; flex-direction: column; gap: 24px;">
 
-      <div style="display: flex; flex-direction: column; gap: 8px;">
-        {% for op in recent_openings %}
-          <div class="profile-history-row">
-            <!-- Case -->
-            <div style="display: flex; align-items: center; gap: 8px;">
-              <svg style="width: 32px; height: 26px;"><use href="#icon-case-{{ op.case.color_theme }}"></use></svg>
-              <div>
-                <div style="font-family: var(--font-display); font-size: 11px; font-weight: 700; color: #fff;">{{ op.case.name }}</div>
-                <div style="font-size: 10px; color: #64748b;">${{ op.price|floatformat:2 }}</div>
-              </div>
+      <!-- ==================== МОИ БОНУСЫ ==================== -->
+      <div class="panel-card">
+        <h3 class="panel-title" style="display: flex; align-items: center; gap: 8px;">
+          <span>🎁</span> МОИ БОНУСЫ И АКЦИИ
+        </h3>
+
+        <!-- 1. Active Personal Chances -->
+        {% if active_promotions %}
+          <div style="margin-bottom: 20px;">
+            <div style="font-family: var(--font-sub); font-size: 12px; font-weight: 700; color: #ffd700; margin-bottom: 10px; text-transform: uppercase;">
+              🔥 АКТИВНЫЕ ПЕРСОНАЛЬНЫЕ ШАНСЫ
             </div>
-
-            <!-- Item Won -->
-            <div style="display: flex; align-items: center; gap: 10px; min-width: 0;">
-              <svg style="width: 40px; height: 28px; flex-shrink: 0;"><use href="#icon-{{ op.item.image_url|default:'generic_weapon' }}"></use></svg>
-              <div style="min-width: 0;">
-                <div style="font-family: var(--font-display); font-size: 12px; font-weight: 700; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ op.item.name }}</div>
-                <div style="font-size: 10px; font-weight: 600; color: {{ op.item.rarity_color }};">{{ op.item.rarity_display_ru }}</div>
-              </div>
-            </div>
-
-            <!-- Value -->
-            <div style="font-family: var(--font-display); font-size: 13px; font-weight: 800; color: #22c55e; text-align: right;">
-              +${{ op.item.value|floatformat:2 }}
+            <div style="display: flex; flex-direction: column; gap: 8px;">
+              {% for promo in active_promotions %}
+                <div style="background: rgba(234, 179, 8, 0.08); border: 1px solid rgba(234, 179, 8, 0.3); border-radius: 10px; padding: 12px 16px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
+                  <div>
+                    <div style="font-family: var(--font-display); font-size: 13px; font-weight: 800; color: #fff;">
+                      Кейс «{{ promo.case.name }}» &rarr; {{ promo.item.name }}
+                    </div>
+                    <div style="font-size: 12px; color: #cbd5e1; margin-top: 2px;">
+                      Обычный шанс: {{ promo.normal_chance_percent }}% &bull; <strong style="color: #ffd700;">Твой шанс: {{ promo.chance }}%</strong> &bull; До: {{ promo.expires_at|date:"d.m.Y H:i" }}
+                    </div>
+                  </div>
+                  <a href="{% url 'cases:case_detail' promo.case.slug %}" class="btn-neon" style="font-size: 12px; padding: 6px 14px;">
+                    ОТКРЫТЬ КЕЙС
+                  </a>
+                </div>
+              {% endfor %}
             </div>
           </div>
-        {% empty %}
-          <div style="text-align: center; padding: 30px; color: #94a3b8;">
-            <p style="font-size: 13px;">Вы пока не открыли ни одного кейса.</p>
-            <a href="{% url 'cases:cases_list' %}" class="btn-neon" style="margin-top: 12px; display: inline-block;">ОТКРЫТЬ КЕЙС</a>
+        {% endif %}
+
+        <!-- 2. Free Openings Available -->
+        {% if free_openings %}
+          <div style="margin-bottom: 20px;">
+            <div style="font-family: var(--font-sub); font-size: 12px; font-weight: 700; color: #22c55e; margin-bottom: 10px; text-transform: uppercase;">
+              ✨ БЕСПЛАТНЫЕ ОТКРЫТИЯ КЕЙСОВ
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 8px;">
+              {% for fo in free_openings %}
+                <div style="background: rgba(34, 197, 94, 0.08); border: 1px solid rgba(34, 197, 94, 0.3); border-radius: 10px; padding: 12px 16px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
+                  <div>
+                    <div style="font-family: var(--font-display); font-size: 13px; font-weight: 800; color: #fff;">
+                      {{ fo.case.name }}
+                    </div>
+                    <div style="font-size: 12px; color: #4ade80; margin-top: 2px;">
+                      Доступно бесплатных открытий: <strong>{{ fo.openings_left }}</strong> шт.
+                    </div>
+                  </div>
+                  <a href="{% url 'cases:case_detail' fo.case.slug %}" class="btn-neon-green" style="font-size: 12px; padding: 6px 14px;">
+                    ОТКРЫТЬ БЕСПЛАТНО
+                  </a>
+                </div>
+              {% endfor %}
+            </div>
           </div>
-        {% endfor %}
+        {% endif %}
+
+        <!-- 3. Activated Promo Codes -->
+        {% if used_promocodes %}
+          <div>
+            <div style="font-family: var(--font-sub); font-size: 12px; font-weight: 700; color: #94a3b8; margin-bottom: 10px; text-transform: uppercase;">
+              📜 АКТИВИРОВАННЫЕ ПРОМОКОДЫ
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 6px;">
+              {% for use in used_promocodes %}
+                <div style="background: #090c14; border: 1px solid var(--border-color); border-radius: 8px; padding: 8px 12px; display: flex; align-items: center; justify-content: space-between; font-size: 12px;">
+                  <div>
+                    <strong style="color: #38bdf8;">{{ use.promo_code.code }}</strong>
+                    <span style="color: #64748b; margin-left: 6px;">({{ use.used_at|date:"d.m.Y H:i" }})</span>
+                  </div>
+                  <span style="color: #22c55e; font-weight: 700;">+{{ use.bonus_amount }}</span>
+                </div>
+              {% endfor %}
+            </div>
+          </div>
+        {% endif %}
+
+        {% if not active_promotions and not free_openings and not used_promocodes %}
+          <div style="text-align: center; padding: 20px; color: #64748b; font-size: 13px;">
+            У вас пока нет активных бонусов. Активируйте промокод выше!
+          </div>
+        {% endif %}
       </div>
+
+      <!-- ==================== ИСТОРИЯ ОТКРЫТИЙ PREVIEW ==================== -->
+      <div class="panel-card">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;">
+          <h3 class="panel-title" style="margin-bottom: 0;">ИСТОРИЯ ОТКРЫТИЙ</h3>
+          <a href="{% url 'users:history' %}" style="font-family: var(--font-sub); font-size: 12px; font-weight: 700; color: #a855f7;">
+            ПОСМОТРЕТЬ ВСЁ &rarr;
+          </a>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 8px;">
+          {% for op in recent_openings %}
+            <div class="profile-history-row">
+              <!-- Case -->
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <svg style="width: 32px; height: 26px;"><use href="#icon-case-{{ op.case.color_theme }}"></use></svg>
+                <div>
+                  <div style="font-family: var(--font-display); font-size: 11px; font-weight: 700; color: #fff;">{{ op.case.name }}</div>
+                  <div style="font-size: 10px; color: #64748b;">${{ op.price|floatformat:2 }}</div>
+                </div>
+              </div>
+
+              <!-- Item Won -->
+              <div style="display: flex; align-items: center; gap: 10px; min-width: 0;">
+                <svg style="width: 40px; height: 28px; flex-shrink: 0;"><use href="#icon-{{ op.item.image_url|default:'generic_weapon' }}"></use></svg>
+                <div style="min-width: 0;">
+                  <div style="font-family: var(--font-display); font-size: 12px; font-weight: 700; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ op.item.name }}</div>
+                  <div style="font-size: 10px; font-weight: 600; color: {{ op.item.rarity_color }};">{{ op.item.rarity_display_ru }}</div>
+                </div>
+              </div>
+
+              <!-- Value -->
+              <div style="font-family: var(--font-display); font-size: 13px; font-weight: 800; color: #22c55e; text-align: right;">
+                +${{ op.item.value|floatformat:2 }}
+              </div>
+            </div>
+          {% empty %}
+            <div style="text-align: center; padding: 30px; color: #94a3b8;">
+              <p style="font-size: 13px;">Вы пока не открыли ни одного кейса.</p>
+              <a href="{% url 'cases:cases_list' %}" class="btn-neon" style="margin-top: 12px; display: inline-block;">ОТКРЫТЬ КЕЙС</a>
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+
     </div>
 
   </div>
 
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const promoForm = document.getElementById('promoForm');
+  const promoInput = document.getElementById('promoInput');
+  const promoSubmitBtn = document.getElementById('promoSubmitBtn');
+  const promoAlert = document.getElementById('promoAlert');
+
+  if (promoForm) {
+    promoForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const code = promoInput.value.trim();
+      if (!code) return;
+
+      promoSubmitBtn.disabled = true;
+      promoSubmitBtn.textContent = 'ПРОВЕРКА...';
+      promoAlert.style.display = 'none';
+
+      try {
+        const res = await fetch('/api/promocodes/redeem/', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'X-CSRFToken': getCookie('csrftoken')
+          },
+          body: new URLSearchParams({ 'code': code })
+        });
+
+        const data = await res.json();
+        promoAlert.style.display = 'block';
+
+        if (data.success) {
+          promoAlert.style.background = 'rgba(34, 197, 94, 0.15)';
+          promoAlert.style.border = '1px solid rgba(34, 197, 94, 0.4)';
+          promoAlert.style.color = '#4ade80';
+          promoAlert.textContent = data.message;
+          if (data.new_balance !== undefined) {
+            window.updateUserBalance(data.new_balance);
+          }
+          promoInput.value = '';
+          setTimeout(() => window.location.reload(), 1500);
+        } else {
+          promoAlert.style.background = 'rgba(239, 68, 68, 0.15)';
+          promoAlert.style.border = '1px solid rgba(239, 68, 68, 0.4)';
+          promoAlert.style.color = '#f87171';
+          promoAlert.textContent = data.error || 'Ошибка при активации промокода.';
+        }
+      } catch (err) {
+        promoAlert.style.display = 'block';
+        promoAlert.style.background = 'rgba(239, 68, 68, 0.15)';
+        promoAlert.style.border = '1px solid rgba(239, 68, 68, 0.4)';
+        promoAlert.style.color = '#f87171';
+        promoAlert.textContent = 'Ошибка соединения с сервером.';
+      } finally {
+        promoSubmitBtn.disabled = false;
+        promoSubmitBtn.textContent = 'АКТИВИРОВАТЬ';
+      }
+    });
+  }
+});
+</script>
 
 <style>
 .profile-header-card {
