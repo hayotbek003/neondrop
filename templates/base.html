@@ -15,7 +15,7 @@
       ucToUzs: {{ currency_rates.uc_to_uzs|default:250 }},
       usdToUzs: {{ currency_rates.usd_to_uzs|default:12000 }},
       ucToUsdRate: {{ currency_rates.uc_to_usd_rate|default:0.020833333333333333 }},
-      ucIconUrl: "{% static 'images/uc_icon.svg' %}"
+      ucIconUrl: "{% static 'images/uc_icon.png' %}"
     };
   </script>
   {% block extra_css %}{% endblock %}
@@ -40,7 +40,7 @@
         <div class="drawer-user-info">
           <span class="drawer-user-name">{{ user.username }}</span>
           <span class="drawer-user-balance user-balance-val">
-            <img src="{% static 'images/uc_icon.svg' %}" class="uc-icon" alt="UC">
+            <img src="{% static 'images/uc_icon.png' %}" class="uc-icon" alt="UC">
             <span>{{ user_balance|uc }}</span>
           </span>
         </div>
@@ -122,7 +122,7 @@
         <svg class="drop-chip-weapon-icon"><use href="#icon-{{ drop.item.image_url|default:'generic_weapon' }}"></use></svg>
         <div class="drop-chip-info">
           <span class="drop-chip-name">{{ drop.item.name }}</span>
-          <span class="drop-chip-price"><img src="{% static 'images/uc_icon.svg' %}" class="uc-icon-sm" alt="UC"> {{ drop.item.value|uc }}</span>
+          <span class="drop-chip-price"><img src="{% static 'images/uc_icon.png' %}" class="uc-icon-sm" alt="UC"> {{ drop.item.value|uc }}</span>
         </div>
       </div>
       {% empty %}
@@ -131,7 +131,7 @@
         <svg class="drop-chip-weapon-icon"><use href="#icon-knife_karambit_fade"></use></svg>
         <div class="drop-chip-info">
           <span class="drop-chip-name">Karambit | Fade</span>
-          <span class="drop-chip-price"><img src="{% static 'images/uc_icon.svg' %}" class="uc-icon-sm" alt="UC"> 1450 UC</span>
+          <span class="drop-chip-price"><img src="{% static 'images/uc_icon.png' %}" class="uc-icon-sm" alt="UC"> 1450 UC</span>
         </div>
       </div>
       <div class="drop-item-chip" style="border-bottom-color: #eb4b4b;">
@@ -139,7 +139,7 @@
         <svg class="drop-chip-weapon-icon"><use href="#icon-m4a4_howl"></use></svg>
         <div class="drop-chip-info">
           <span class="drop-chip-name">M4A4 | Howl</span>
-          <span class="drop-chip-price"><img src="{% static 'images/uc_icon.svg' %}" class="uc-icon-sm" alt="UC"> 1850 UC</span>
+          <span class="drop-chip-price"><img src="{% static 'images/uc_icon.png' %}" class="uc-icon-sm" alt="UC"> 1850 UC</span>
         </div>
       </div>
       <div class="drop-item-chip" style="border-bottom-color: #d32ce6;">
@@ -147,7 +147,7 @@
         <svg class="drop-chip-weapon-icon"><use href="#icon-ak47_neon_rider"></use></svg>
         <div class="drop-chip-info">
           <span class="drop-chip-name">AK-47 | Neon Rider</span>
-          <span class="drop-chip-price"><img src="{% static 'images/uc_icon.svg' %}" class="uc-icon-sm" alt="UC"> 42 UC</span>
+          <span class="drop-chip-price"><img src="{% static 'images/uc_icon.png' %}" class="uc-icon-sm" alt="UC"> 42 UC</span>
         </div>
       </div>
       {% endfor %}
@@ -188,7 +188,7 @@
         {% if user.is_authenticated %}
           <!-- Balance Pill (UC + approx USD tooltip/subtext) -->
           <div class="balance-pill" title="≈ {{ user_balance|usd_approx }}">
-            <img src="{% static 'images/uc_icon.svg' %}" class="uc-icon" alt="UC">
+            <img src="{% static 'images/uc_icon.png' %}" class="uc-icon" alt="UC">
             <span class="balance-amount user-balance-val">{{ user_balance|uc }}</span>
             <a href="{% url 'payments:deposit' %}" class="btn-topup-plus" title="Пополнить баланс">+</a>
           </div>

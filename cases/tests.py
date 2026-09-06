@@ -930,7 +930,8 @@ class NeonDropComprehensiveTests(TestCase):
         self.assertIn('UZS', uzs_approx_filter(60))
 
         icon_html = uc_icon(size=20)
-        self.assertIn('uc_icon.svg', icon_html)
+        self.assertIn('uc_icon', icon_html)
+        self.assertIn('.png', icon_html)
         self.assertIn('width="20"', icon_html)
 
         badge_html = uc_badge(60, show_usd=True)

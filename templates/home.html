@@ -12,7 +12,7 @@
       <div class="quick-balance-left">
         <span class="quick-balance-lbl">ВАШ БАЛАНС</span>
         <div style="display: flex; align-items: baseline; gap: 6px;">
-          <img src="{% static 'images/uc_icon.svg' %}" class="uc-icon" alt="UC">
+          <img src="{% static 'images/uc_icon.png' %}" class="uc-icon" alt="UC">
           <span class="quick-balance-amt user-balance-val">{{ user_balance|uc }}</span>
           <span class="usd-approx-sub user-balance-usd" style="font-size: 11px; color: #94a3b8;">{{ user_balance|usd_approx }}</span>
         </div>
@@ -123,7 +123,7 @@
           <h3 class="case-card-name">{{ case.name }}</h3>
           <div class="case-card-price">
             <span class="uc-badge">
-              <img src="{% static 'images/uc_icon.svg' %}" class="uc-icon" alt="UC">
+              <img src="{% static 'images/uc_icon.png' %}" class="uc-icon" alt="UC">
               <span class="uc-val">{{ case.price|uc }}</span>
             </span>
             <span class="usd-approx-sub">{{ case.price|usd_approx }}</span>
@@ -149,7 +149,7 @@
             <span class="winner-username">{{ winner.username }}</span>
             <svg class="winner-weapon-thumb"><use href="#icon-{{ winner.weapon_image }}"></use></svg>
             <span class="winner-amount">
-              <img src="{% static 'images/uc_icon.svg' %}" class="uc-icon-sm" alt="UC">
+              <img src="{% static 'images/uc_icon.png' %}" class="uc-icon-sm" alt="UC">
               +{{ winner.winnings|uc }}
             </span>
           </div>

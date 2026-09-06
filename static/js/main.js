@@ -126,8 +126,9 @@ function formatUsdApprox(amount) {
 function renderUcBadgeHtml(amount, showUsd = true, size = 16) {
   const ucText = formatUC(amount);
   const usdText = formatUsdApprox(amount);
+  const iconUrl = (window.NEONDROP_CURRENCY && window.NEONDROP_CURRENCY.ucIconUrl) ? window.NEONDROP_CURRENCY.ucIconUrl : '/static/images/uc_icon.png';
   const usdHtml = showUsd ? `<span class="usd-approx">${usdText}</span>` : '';
-  return `<span class="uc-price-wrap"><span class="uc-badge"><img src="/static/images/uc_icon.svg" class="uc-icon" width="${size}" height="${size}" alt="UC" /><span class="uc-val">${ucText}</span></span>${usdHtml}</span>`;
+  return `<span class="uc-price-wrap"><span class="uc-badge"><img src="${iconUrl}" class="uc-icon" width="${size}" height="${size}" alt="UC" /><span class="uc-val">${ucText}</span></span>${usdHtml}</span>`;
 }
 
 window.formatUC = formatUC;
@@ -144,6 +145,7 @@ function initLiveDrops() {
       .then(res => res.json())
       .then(data => {
         if (data.success && data.drops && data.drops.length > 0) {
+          const iconUrl = (window.NEONDROP_CURRENCY && window.NEONDROP_CURRENCY.ucIconUrl) ? window.NEONDROP_CURRENCY.ucIconUrl : '/static/images/uc_icon.png';
           let html = '';
           data.drops.forEach(drop => {
             const formattedVal = formatUC(drop.item_value);
@@ -154,7 +156,7 @@ function initLiveDrops() {
                 <svg class="drop-chip-weapon-icon"><use href="#icon-${drop.image_url || 'generic_weapon'}"></use></svg>
                 <div class="drop-chip-info">
                   <span class="drop-chip-name">${drop.item_name}</span>
-                  <span class="drop-chip-price"><img src="/static/images/uc_icon.svg" class="uc-icon-sm" alt="UC"> ${formattedVal}</span>
+                  <span class="drop-chip-price"><img src="${iconUrl}" class="uc-icon-sm" alt="UC"> ${formattedVal}</span>
                 </div>
               </div>
             `;

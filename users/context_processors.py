@@ -2,6 +2,8 @@ from decimal import Decimal
 from .models import Profile
 from payments.currency import get_currency_rates, uc_to_usd, format_uc, format_usd_approx
 
+from django.templatetags.static import static
+
 def user_profile_context(request):
     """
     Context processor to inject profile, balance, and system currency stats into templates.
@@ -11,7 +13,7 @@ def user_profile_context(request):
         'user_profile': None,
         'user_balance': Decimal('0.00'),
         'user_balance_usd': Decimal('0.00'),
-        'uc_icon_url': '/static/images/uc_icon.svg',
+        'uc_icon_url': static('images/uc_icon.png'),
         'currency_rates': {
             'uc_to_uzs': float(rates['uc_to_uzs']),
             'usd_to_uzs': float(rates['usd_to_uzs']),

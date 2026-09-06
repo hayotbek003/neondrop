@@ -27,7 +27,7 @@
       <div>
         <div class="profile-balance-label">БАЛАНС</div>
         <div class="profile-balance-val user-balance-val" style="display: flex; align-items: center; gap: 6px;">
-          <img src="{% static 'images/uc_icon.svg' %}" class="uc-icon" alt="UC">
+          <img src="{% static 'images/uc_icon.png' %}" class="uc-icon" alt="UC">
           <span>{{ profile.balance|uc }}</span>
         </div>
         <div class="usd-approx-sub user-balance-usd" style="font-size: 11px; color: #94a3b8; text-align: left; margin-top: 2px;">{{ profile.balance|usd_approx }}</div>
@@ -240,7 +240,7 @@
 
               <!-- Value -->
               <div style="font-family: var(--font-display); font-size: 13px; font-weight: 800; color: #22c55e; text-align: right; display: flex; align-items: center; justify-content: flex-end; gap: 4px;">
-                <img src="{% static 'images/uc_icon.svg' %}" class="uc-icon-sm" alt="UC">
+                <img src="{% static 'images/uc_icon.png' %}" class="uc-icon-sm" alt="UC">
                 <span>+{{ op.item.value|uc }}</span>
               </div>
             </div>

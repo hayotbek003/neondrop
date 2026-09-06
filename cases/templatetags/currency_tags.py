@@ -1,4 +1,5 @@
 from django import template
+from django.templatetags.static import static
 from django.utils.safestring import mark_safe
 from payments.currency import (
     get_currency_rates, uc_to_usd, uc_to_uzs,
@@ -42,9 +43,10 @@ def uzs_approx_filter(value):
 @register.simple_tag
 def uc_icon(size=18, extra_class=''):
     """
-    Renders standard UC icon image tag.
+    Renders standard UC icon image tag using the authentic PUBG Mobile UC image.
     """
-    html = f'<img src="/static/images/uc_icon.svg" class="uc-icon {extra_class}" width="{size}" height="{size}" alt="UC" />'
+    icon_url = static('images/uc_icon.png')
+    html = f'<img src="{icon_url}" class="uc-icon {extra_class}" width="{size}" height="{size}" alt="UC" />'
     return mark_safe(html)
 
 @register.simple_tag
@@ -55,10 +57,11 @@ def uc_badge(value, show_usd=True, size=18):
     """
     uc_text = format_uc(value)
     usd_text = format_usd_approx(value) if show_usd else ""
+    icon_url = static('images/uc_icon.png')
     
     usd_html = f'<span class="usd-approx">{usd_text}</span>' if show_usd else ""
     html = f'''<span class="uc-price-wrap">
-        <span class="uc-badge"><img src="/static/images/uc_icon.svg" class="uc-icon" width="{size}" height="{size}" alt="UC" /><span class="uc-val">{uc_text}</span></span>
+        <span class="uc-badge"><img src="{icon_url}" class="uc-icon" width="{size}" height="{size}" alt="UC" /><span class="uc-val">{uc_text}</span></span>
         {usd_html}
     </span>'''
     return mark_safe(html)
