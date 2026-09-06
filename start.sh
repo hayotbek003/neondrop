@@ -15,6 +15,10 @@ python manage.py migrate --noinput
 echo "==> Verifying system integrity..."
 python manage.py check
 
+# Initialize production database if empty (backs up first, then restores verified snapshot)
+echo "==> Checking production database state..."
+python manage.py init_production_db
+
 # Ensure primary admin user has staff and superuser permissions
 echo "==> Ensuring administrator permissions..."
 python manage.py promote_admin Smoke
