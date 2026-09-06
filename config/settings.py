@@ -109,24 +109,54 @@ TEMPLATES = [
 WSGI_APPLICATION = 'config.wsgi.application'
 
 # Database configuration
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
-}
-
 database_url = os.environ.get('DATABASE_URL', '').strip()
 if database_url:
     try:
         import dj_database_url
-        DATABASES['default'] = dj_database_url.config(
-            default=database_url,
-            conn_max_age=600,
-            conn_health_checks=True
-        )
+        DATABASES = {
+            'default': dj_database_url.config(
+                default=database_url,
+                conn_max_age=600,
+                conn_health_checks=True
+            )
+        }
     except Exception:
         pass
+else:
+    # SQLite configuration supporting Render persistent disk, custom paths, and local dev
+    sqlite_path_env = (
+        os.environ.get('SQLITE_PATH') or
+        os.environ.get('SQLITE_DB_PATH') or
+        os.environ.get('RENDER_DATA_DIR') or
+        os.environ.get('DATA_DIR')
+    )
+    if sqlite_path_env:
+        sqlite_path = Path(sqlite_path_env)
+        if sqlite_path.is_dir() or sqlite_path_env.endswith(('/', '\\')):
+            sqlite_file = sqlite_path / 'db.sqlite3'
+        else:
+            sqlite_file = sqlite_path
+    elif Path('/var/data').is_dir():
+        # Standard Render persistent disk mount point (/var/data)
+        sqlite_file = Path('/var/data/db.sqlite3')
+    else:
+        sqlite_file = BASE_DIR / 'db.sqlite3'
+
+    # Ensure database directory exists
+    try:
+        sqlite_file.parent.mkdir(parents=True, exist_ok=True)
+    except Exception:
+        pass
+
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': sqlite_file,
+            'OPTIONS': {
+                'timeout': 20,
+            },
+        }
+    }
 
 # Cache & Rate Limiting Configuration
 REDIS_URL = os.environ.get('REDIS_URL', '').strip()
