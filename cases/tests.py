@@ -965,6 +965,129 @@ class NeonDropComprehensiveTests(TestCase):
         response = client.get('/admin/')
         self.assertEqual(response.status_code, 200)
 
+    def test_blogger_promocode_reward_calculation(self):
+        """Verify blogger reward is calculated strictly from net loss: Net Loss = Spent - Won."""
+        now = timezone.now()
+        blogger_promo = PromoCode.objects.create(
+            code='BLOGER10',
+            blogger_name='YouTube @TopGamer',
+            blogger_percentage=Decimal('10.00'),
+            bonus_type='coins',
+            bonus_value=Decimal('50.00'),
+            max_uses=500,
+            starts_at=now - timedelta(days=2),
+            expires_at=now + timedelta(days=30),
+            is_active=True,
+        )
+
+        # Referred user activates promo
+        ref_user = User.objects.create_user(username='ReferredUser1', password='Password123!')
+        PromoCodeUse.objects.create(
+            promo_code=blogger_promo,
+            user=ref_user,
+            bonus_amount=Decimal('50.00'),
+            used_at=now - timedelta(hours=5)
+        )
+
+        # User opens cases: Spent 1000 UC, Won 160 UC
+        win_item = Item.objects.create(name='Won Skin', weapon_type='AWP', skin_name='Special', value=Decimal('160.00'))
+        Opening.objects.create(
+            user=ref_user,
+            case=self.case,
+            item=win_item,
+            price=Decimal('1000.00'),
+            server_seed_hash='hash_test',
+            server_seed='seed_test',
+            client_seed='client_test',
+            nonce=1,
+            created_at=now - timedelta(hours=3)
+        )
+
+        stats = blogger_promo.get_stats_all_time()
+        self.assertEqual(stats['users_count'], 1)
+        self.assertEqual(stats['total_spent'], Decimal('1000.00'))
+        self.assertEqual(stats['total_won'], Decimal('160.00'))
+        self.assertEqual(stats['net_loss'], Decimal('840.00'))
+        self.assertEqual(stats['blogger_percentage'], Decimal('10.00'))
+        self.assertEqual(stats['blogger_payout'], Decimal('84.00'))
+        self.assertEqual(stats['site_revenue'], Decimal('756.00'))
+
+    def test_independent_promocode_percentages(self):
+        """Verify multiple promocodes calculate their blogger rewards independently."""
+        now = timezone.now()
+        promo_a = PromoCode.objects.create(
+            code='PROMO_A_10',
+            blogger_percentage=Decimal('10.00'),
+            bonus_type='coins',
+            bonus_value=Decimal('10.00'),
+            starts_at=now - timedelta(days=1),
+            expires_at=now + timedelta(days=30),
+        )
+        promo_b = PromoCode.objects.create(
+            code='PROMO_B_25',
+            blogger_percentage=Decimal('25.00'),
+            bonus_type='coins',
+            bonus_value=Decimal('10.00'),
+            starts_at=now - timedelta(days=1),
+            expires_at=now + timedelta(days=30),
+        )
+
+        user_a = User.objects.create_user(username='UserA', password='Password123!')
+        user_b = User.objects.create_user(username='UserB', password='Password123!')
+
+        PromoCodeUse.objects.create(promo_code=promo_a, user=user_a, used_at=now - timedelta(hours=4))
+        PromoCodeUse.objects.create(promo_code=promo_b, user=user_b, used_at=now - timedelta(hours=4))
+
+        win_skin = Item.objects.create(name='Skin', weapon_type='AK-47', skin_name='Skin', value=Decimal('200.00'))
+        # User A: Spent 500, Won 200 -> Loss 300, 10% = 30 UC
+        Opening.objects.create(
+            user=user_a, case=self.case, item=win_skin, price=Decimal('500.00'),
+            server_seed_hash='hA', server_seed='sA', client_seed='cA', nonce=1
+        )
+        # User B: Spent 600, Won 200 -> Loss 400, 25% = 100 UC
+        Opening.objects.create(
+            user=user_b, case=self.case, item=win_skin, price=Decimal('600.00'),
+            server_seed_hash='hB', server_seed='sB', client_seed='cB', nonce=2
+        )
+
+        stats_a = promo_a.get_stats_all_time()
+        stats_b = promo_b.get_stats_all_time()
+
+        self.assertEqual(stats_a['net_loss'], Decimal('300.00'))
+        self.assertEqual(stats_a['blogger_payout'], Decimal('30.00'))
+        self.assertEqual(stats_a['site_revenue'], Decimal('270.00'))
+
+        self.assertEqual(stats_b['net_loss'], Decimal('400.00'))
+        self.assertEqual(stats_b['blogger_payout'], Decimal('100.00'))
+        self.assertEqual(stats_b['site_revenue'], Decimal('300.00'))
+
+    def test_blogger_admin_dashboard_rendering(self):
+        """Verify Admin renders blogger metrics, daily table, and date filters without error."""
+        now = timezone.now()
+        promo = PromoCode.objects.create(
+            code='ADMIN_TEST_PROMO',
+            blogger_name='StreamerX',
+            blogger_percentage=Decimal('15.00'),
+            bonus_type='coins',
+            bonus_value=Decimal('20.00'),
+            starts_at=now - timedelta(days=2),
+            expires_at=now + timedelta(days=30),
+        )
+
+        self.client.force_login(self.admin_user)
+        res_list = self.client.get('/admin/cases/promocode/')
+        self.assertEqual(res_list.status_code, 200)
+        self.assertContains(res_list, 'ADMIN_TEST_PROMO')
+        self.assertContains(res_list, '15.00%')
+
+        res_change = self.client.get(f'/admin/cases/promocode/{promo.id}/change/')
+        self.assertEqual(res_change.status_code, 200)
+        self.assertContains(res_change, 'Финансовая статистика промокода')
+        self.assertContains(res_change, 'Детализация расчётов по дням')
+        self.assertContains(res_change, 'К выплате блогеру')
+        self.assertContains(res_change, 'Доход сайта')
+
+
 
 
 

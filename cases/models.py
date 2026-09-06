@@ -240,6 +240,8 @@ class PromoCode(models.Model):
     ]
 
     code = models.CharField(max_length=50, unique=True, db_index=True, verbose_name="Промокод")
+    blogger_name = models.CharField(max_length=150, blank=True, null=True, verbose_name="Имя / Канал блогера", help_text="Например: YouTube @BloggerName или Telegram @channel")
+    blogger_percentage = models.DecimalField(max_digits=5, decimal_places=2, default=Decimal('0.00'), verbose_name="Процент блогера (%)", help_text="Процент от чистого проигрыша привлеченных пользователей (например: 10.00 = 10%)")
     bonus_type = models.CharField(max_length=30, choices=BONUS_TYPE_CHOICES, default='coins', verbose_name="Тип бонуса")
     bonus_value = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="Значение бонуса (UC / % / Кол-во)")
     max_uses = models.PositiveIntegerField(default=100, verbose_name="Максимум использований (всего)")
@@ -259,13 +261,16 @@ class PromoCode(models.Model):
         ordering = ['-created_at']
 
     def __str__(self):
-        return f"{self.code} ({self.get_bonus_type_display()}: {self.bonus_value})"
+        blogger_str = f" [{self.blogger_percentage}%]" if self.blogger_percentage > 0 else ""
+        return f"{self.code}{blogger_str} ({self.get_bonus_type_display()}: {self.bonus_value})"
 
     def clean(self):
         from django.core.exceptions import ValidationError
         self.code = self.code.strip().upper()
         if self.bonus_value <= Decimal('0.00'):
             raise ValidationError({'bonus_value': "Значение бонуса должно быть больше 0."})
+        if self.blogger_percentage < Decimal('0.00') or self.blogger_percentage > Decimal('100.00'):
+            raise ValidationError({'blogger_percentage': "Процент блогера должен быть от 0.00% до 100.00%."})
         if self.bonus_type == 'free_case_opens' and not self.case:
             raise ValidationError({'case': "Для типа 'Бесплатные открытия' необходимо выбрать кейс."})
         if self.expires_at and self.starts_at and self.expires_at <= self.starts_at:
@@ -290,6 +295,181 @@ class PromoCode(models.Model):
     @property
     def is_limit_reached(self):
         return self.used_count >= self.max_uses
+
+    def get_stats_for_period(self, date_from=None, date_to=None):
+        """
+        Calculates financial and loss statistics for users referred by this promo code.
+        Formula:
+          Total Spent = Sum of Opening.price by referred users
+          Total Won   = Sum of Opening.item.value by referred users
+          Net Loss    = max(0.00, Total Spent - Total Won)
+          Blogger Payout = round(Net Loss * (blogger_percentage / 100), 2)
+          Site Revenue   = Net Loss - Blogger Payout
+        """
+        uses = list(self.uses.all())
+        user_ids = [u.user_id for u in uses]
+
+        if not user_ids:
+            return {
+                'users_count': 0,
+                'openings_count': 0,
+                'total_spent': Decimal('0.00'),
+                'total_won': Decimal('0.00'),
+                'net_loss': Decimal('0.00'),
+                'blogger_percentage': self.blogger_percentage or Decimal('0.00'),
+                'blogger_payout': Decimal('0.00'),
+                'site_revenue': Decimal('0.00'),
+            }
+
+        user_use_map = {u.user_id: u.used_at for u in uses}
+        openings_qs = Opening.objects.filter(user_id__in=user_ids).select_related('item', 'user')
+
+        if date_from:
+            openings_qs = openings_qs.filter(created_at__gte=date_from)
+        if date_to:
+            openings_qs = openings_qs.filter(created_at__lte=date_to)
+
+        valid_openings = [
+            op for op in openings_qs
+            if op.created_at >= user_use_map.get(op.user_id, op.created_at)
+        ]
+
+        total_spent = sum((op.price for op in valid_openings), Decimal('0.00'))
+        total_won = sum((op.item.value for op in valid_openings), Decimal('0.00'))
+        net_loss = max(Decimal('0.00'), total_spent - total_won)
+
+        blogger_pct = self.blogger_percentage or Decimal('0.00')
+        blogger_payout = (net_loss * (blogger_pct / Decimal('100.00'))).quantize(Decimal('0.01'))
+        site_revenue = net_loss - blogger_payout
+
+        return {
+            'users_count': len(user_ids),
+            'openings_count': len(valid_openings),
+            'total_spent': total_spent,
+            'total_won': total_won,
+            'net_loss': net_loss,
+            'blogger_percentage': blogger_pct,
+            'blogger_payout': blogger_payout,
+            'site_revenue': site_revenue,
+        }
+
+    def get_stats_today(self):
+        from django.utils import timezone
+        now = timezone.now()
+        start_of_day = now.replace(hour=0, minute=0, second=0, microsecond=0)
+        return self.get_stats_for_period(date_from=start_of_day, date_to=now)
+
+    def get_stats_yesterday(self):
+        from django.utils import timezone
+        from datetime import timedelta
+        now = timezone.now()
+        start_of_today = now.replace(hour=0, minute=0, second=0, microsecond=0)
+        start_of_yesterday = start_of_today - timedelta(days=1)
+        return self.get_stats_for_period(date_from=start_of_yesterday, date_to=start_of_today)
+
+    def get_stats_7_days(self):
+        from django.utils import timezone
+        from datetime import timedelta
+        now = timezone.now()
+        start_7_days = now - timedelta(days=7)
+        return self.get_stats_for_period(date_from=start_7_days, date_to=now)
+
+    def get_stats_30_days(self):
+        from django.utils import timezone
+        from datetime import timedelta
+        now = timezone.now()
+        start_30_days = now - timedelta(days=30)
+        return self.get_stats_for_period(date_from=start_30_days, date_to=now)
+
+    def get_stats_all_time(self):
+        return self.get_stats_for_period()
+
+    def get_daily_breakdown(self, date_from=None, date_to=None):
+        from collections import defaultdict
+        uses = list(self.uses.all())
+        user_ids = [u.user_id for u in uses]
+        if not user_ids:
+            return []
+
+        user_use_map = {u.user_id: u.used_at for u in uses}
+        openings_qs = Opening.objects.filter(user_id__in=user_ids).select_related('item', 'user')
+
+        if date_from:
+            openings_qs = openings_qs.filter(created_at__gte=date_from)
+        if date_to:
+            openings_qs = openings_qs.filter(created_at__lte=date_to)
+
+        daily_map = defaultdict(lambda: {'openings_count': 0, 'spent': Decimal('0.00'), 'won': Decimal('0.00')})
+
+        for op in openings_qs:
+            if op.created_at >= user_use_map.get(op.user_id, op.created_at):
+                day = op.created_at.date()
+                daily_map[day]['openings_count'] += 1
+                daily_map[day]['spent'] += op.price
+                daily_map[day]['won'] += op.item.value
+
+        rows = []
+        blogger_pct = self.blogger_percentage or Decimal('0.00')
+
+        for day in sorted(daily_map.keys(), reverse=True):
+            data = daily_map[day]
+            spent = data['spent']
+            won = data['won']
+            net_loss = max(Decimal('0.00'), spent - won)
+            blogger_payout = (net_loss * (blogger_pct / Decimal('100.00'))).quantize(Decimal('0.01'))
+            site_revenue = net_loss - blogger_payout
+
+            rows.append({
+                'date': day,
+                'date_str': day.strftime('%d.%m.%Y'),
+                'openings_count': data['openings_count'],
+                'spent': spent,
+                'won': won,
+                'net_loss': net_loss,
+                'blogger_percentage': blogger_pct,
+                'blogger_payout': blogger_payout,
+                'site_revenue': site_revenue,
+            })
+
+        return rows
+
+    def get_referred_users_breakdown(self, date_from=None, date_to=None):
+        uses = list(self.uses.select_related('user').all())
+        if not uses:
+            return []
+
+        blogger_pct = self.blogger_percentage or Decimal('0.00')
+        rows = []
+
+        for use in uses:
+            openings_qs = Opening.objects.filter(user=use.user, created_at__gte=use.used_at).select_related('item')
+            if date_from:
+                openings_qs = openings_qs.filter(created_at__gte=date_from)
+            if date_to:
+                openings_qs = openings_qs.filter(created_at__lte=date_to)
+
+            openings_list = list(openings_qs)
+            spent = sum((op.price for op in openings_list), Decimal('0.00'))
+            won = sum((op.item.value for op in openings_list), Decimal('0.00'))
+            net_loss = max(Decimal('0.00'), spent - won)
+            blogger_payout = (net_loss * (blogger_pct / Decimal('100.00'))).quantize(Decimal('0.01'))
+            site_revenue = net_loss - blogger_payout
+
+            rows.append({
+                'user': use.user,
+                'username': use.user.username,
+                'used_at': use.used_at,
+                'used_at_str': use.used_at.strftime('%d.%m.%Y %H:%M'),
+                'openings_count': len(openings_list),
+                'spent': spent,
+                'won': won,
+                'net_loss': net_loss,
+                'blogger_payout': blogger_payout,
+                'site_revenue': site_revenue,
+            })
+
+        rows.sort(key=lambda x: x['net_loss'], reverse=True)
+        return rows
 
 class PromoCodeUse(models.Model):
     promo_code = models.ForeignKey(PromoCode, on_delete=models.CASCADE, related_name='uses', verbose_name="Промокод")
