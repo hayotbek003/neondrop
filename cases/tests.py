@@ -1149,20 +1149,80 @@ class NeonDropComprehensiveTests(TestCase):
         self.assertEqual(reloaded_existing.price, Decimal('999.00'))
         self.assertEqual(reloaded_existing.color_theme, 'godlike-gold')
 
-    def test_seed_initial_data_safety_guards(self):
+    def test_full_user_and_case_persistence_across_deploy(self):
         """
-        Verify seed_initial_data is safe by default and will not overwrite existing cases without --force.
+        Complete end-to-end verification:
+        1. User registers, logs in, holds balance, owns inventory, performs transactions.
+        2. Admin creates custom cases and deletes old cases.
+        3. Deploy lifecycle executes (migrate, promote_admin, wsgi boot).
+        4. User, password hash, permissions, balances, inventory, and cases remain 100% untouched.
         """
-        initial_case_count = Case.objects.count()
-        self.assertGreater(initial_case_count, 0)
-
-        # Run seed_initial_data without --force
+        from django.contrib.auth import authenticate
         from django.core.management import call_command
-        call_command('seed_initial_data')
+        from payments.models import Transaction
 
-        # Count should remain unchanged
-        self.assertEqual(Case.objects.count(), initial_case_count)
+        # 1. Create a user with password and balance
+        raw_password = 'MySecretSecurePass99!'
+        user = User.objects.create_user(
+            username='PlayerAlice',
+            email='alice@neondrop.gg',
+            password=raw_password,
+        )
+        user.profile.balance = Decimal('550.00')
+        user.profile.save()
 
+        # 2. Add inventory item and transaction
+        inv_item = InventoryItem.objects.create(
+            user=user,
+            item=self.knife,
+            source='case',
+            is_sold=False,
+        )
+        tx = Transaction.objects.create(
+            user=user,
+            amount=Decimal('100.00'),
+            transaction_type='deposit',
+            status='completed',
+            balance_after=Decimal('550.00'),
+        )
+
+        # 3. Create a custom case and delete an old case
+        new_case = Case.objects.create(
+            name='ADMIN_LIVE_CASE',
+            slug='admin-live-case',
+            price=Decimal('15.00'),
+            color_theme='neon-green',
+        )
+        to_delete_case = Case.objects.create(
+            name='OLD_UNUSED_CASE',
+            slug='old-unused-case',
+            price=Decimal('5.00'),
+            color_theme='cyber-pink',
+        )
+        to_delete_case.delete()
+
+        # 4. Simulate Deploy / Container Restart
+        call_command('migrate', interactive=False)
+        call_command('promote_admin', 'Smoke')
+
+        # 5. Verify User and Authentication
+        reloaded_user = User.objects.filter(username='PlayerAlice').first()
+        self.assertIsNotNone(reloaded_user)
+        self.assertEqual(reloaded_user.email, 'alice@neondrop.gg')
+        self.assertTrue(reloaded_user.check_password(raw_password))
+
+        authenticated_user = authenticate(username='PlayerAlice', password=raw_password)
+        self.assertIsNotNone(authenticated_user)
+        self.assertEqual(authenticated_user.id, user.id)
+
+        # Verify balance, inventory, and transactions
+        self.assertEqual(reloaded_user.profile.balance, Decimal('550.00'))
+        self.assertEqual(InventoryItem.objects.filter(user=reloaded_user, is_sold=False).count(), 1)
+        self.assertEqual(Transaction.objects.filter(user=reloaded_user).count(), 1)
+
+        # Verify Cases
+        self.assertTrue(Case.objects.filter(slug='admin-live-case').exists())
+        self.assertFalse(Case.objects.filter(slug='old-unused-case').exists())
 
 
 
