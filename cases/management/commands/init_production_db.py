@@ -7,13 +7,13 @@ from django.conf import settings
 
 
 class Command(BaseCommand):
-    help = "Safely initializes a fresh PostgreSQL/SQLite database with existing production data without ever overwriting active data."
+    help = "Manual helper to seed or restore data on a fresh database. Safe by default: refuses to run if data already exists."
 
     def add_arguments(self, parser):
         parser.add_argument(
             '--force-seed',
             action='store_true',
-            help='Force seed even if users exist (requires explicit intention)'
+            help='Force seed even if cases or users exist'
         )
 
     def handle(self, *args, **options):
@@ -21,46 +21,30 @@ class Command(BaseCommand):
 
         if user_count > 0 and not options.get('force_seed'):
             self.stdout.write(
-                self.style.SUCCESS(
-                    f"[NEONDROP DB] Persistent database active: {user_count} users present. Skipping initial seed to protect existing data."
+                self.style.WARNING(
+                    f"[NEONDROP DB PROTECT] Database contains {user_count} users and active case data.\n"
+                    f"Automatic seed/fixture restoration is disabled to prevent overwriting admin changes.\n"
+                    f"Use `python manage.py seed_initial_data --force` only if you intentionally want to reseed."
                 )
             )
-            # Ensure Smoke is always superuser & staff
+            return
+
+        if not options.get('force_seed'):
+            self.stdout.write(
+                self.style.WARNING(
+                    "[NEONDROP DB PROTECT] To populate an empty database with default cases, run:\n"
+                    "  python manage.py seed_initial_data\n"
+                    "Or to restore a backup:\n"
+                    "  python manage.py restore_data <path_to_backup.json>"
+                )
+            )
+            return
+
+        fixture_file = settings.BASE_DIR / 'cases' / 'fixtures' / 'initial_data.json'
+        if fixture_file.exists():
+            self.stdout.write(f" -> Restoring production data from: {fixture_file}")
+            call_command('restore_data', str(fixture_file), ignore_checksum=True)
             try:
                 call_command('promote_admin', 'Smoke')
             except Exception:
                 pass
-            return
-
-        self.stdout.write(
-            self.style.WARNING(
-                "[NEONDROP DB] Fresh/Empty database detected (0 users). Initiating zero-loss seed from existing production dataset..."
-            )
-        )
-
-        fixture_file = settings.BASE_DIR / 'cases' / 'fixtures' / 'initial_data.json'
-        if not fixture_file.exists():
-            # Fallback to backups directory if exists
-            backups_dir = settings.BASE_DIR / 'backups' / 'database'
-            json_files = sorted(backups_dir.glob('*.json')) if backups_dir.exists() else []
-            if json_files:
-                fixture_file = json_files[-1]
-
-        if fixture_file and fixture_file.exists():
-            self.stdout.write(f" -> Restoring production data from: {fixture_file}")
-            call_command('restore_data', str(fixture_file), ignore_checksum=True)
-            
-            # Ensure Smoke has admin privileges
-            call_command('promote_admin', 'Smoke')
-            
-            self.stdout.write(
-                self.style.SUCCESS(
-                    "[NEONDROP DB] Zero-loss migration to database completed successfully!"
-                )
-            )
-        else:
-            self.stdout.write(
-                self.style.ERROR(
-                    "[NEONDROP DB] No initial data fixture found. Please create one with `python manage.py backup_data`."
-                )
-            )

@@ -109,19 +109,25 @@ TEMPLATES = [
 WSGI_APPLICATION = 'config.wsgi.application'
 
 # Database configuration
+# Persistent PostgreSQL database is configured via DATABASE_URL on Render / Production.
+# When DATABASE_URL is configured, all cases, items, users, and transactions persist across all deploys.
 database_url = os.environ.get('DATABASE_URL', '').strip()
 if database_url:
-    try:
-        import dj_database_url
-        DATABASES = {
-            'default': dj_database_url.config(
-                default=database_url,
-                conn_max_age=600,
-                conn_health_checks=True
-            )
-        }
-    except Exception:
-        pass
+    import dj_database_url
+    if database_url.startswith('postgres://'):
+        database_url = database_url.replace('postgres://', 'postgresql://', 1)
+    
+    db_config = dj_database_url.parse(
+        database_url,
+        conn_max_age=600,
+        conn_health_checks=True,
+    )
+    if 'localhost' not in database_url and '127.0.0.1' not in database_url:
+        db_config.setdefault('OPTIONS', {})['sslmode'] = os.environ.get('DB_SSLMODE', 'prefer')
+        
+    DATABASES = {
+        'default': db_config
+    }
 else:
     # SQLite configuration supporting Render persistent disk, custom paths, and local dev
     sqlite_path_env = (

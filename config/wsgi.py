@@ -7,8 +7,7 @@ os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings')
 application = get_wsgi_application()
 
 # Render / Ephemeral Container Startup Integrity Check
-# Ensures that even if the container starts fresh with an empty SQLite database,
-# Django automatically runs migrations and creates django_session before handling requests.
+# Ensures core database tables exist before handling requests without touching application data
 try:
     from django.db import connection
     from django.core.management import call_command
@@ -17,17 +16,11 @@ try:
         existing_tables = connection.introspection.table_names(cursor)
 
     if 'django_session' not in existing_tables or 'django_migrations' not in existing_tables:
-        logging.getLogger('django').info("[NEONDROP] Missing core tables detected. Running automatic startup migrations...")
+        logging.getLogger('django').info("[NEONDROP] Missing core tables detected. Running automatic schema migrations...")
         call_command('migrate', interactive=False)
-        logging.getLogger('django').info("[NEONDROP] Automatic startup migrations completed successfully.")
+        logging.getLogger('django').info("[NEONDROP] Automatic schema migrations completed.")
 
-    # Initialize production database if needed (idempotent, safe for existing DB)
-    try:
-        call_command('init_production_db')
-    except Exception as e:
-        logging.getLogger('django').warning(f"[NEONDROP] DB init note: {e}")
-
-    # Ensure admin privileges for Smoke
+    # Ensure admin privileges for Smoke if user already exists
     try:
         call_command('promote_admin', 'Smoke')
     except Exception:

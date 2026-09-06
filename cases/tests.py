@@ -1087,6 +1087,82 @@ class NeonDropComprehensiveTests(TestCase):
         self.assertContains(res_change, 'К выплате блогеру')
         self.assertContains(res_change, 'Доход сайта')
 
+    def test_deploy_and_migration_preserves_custom_cases_and_deletions(self):
+        """
+        Verify that creating a custom case, modifying an existing case, and deleting an old case
+        are 100% persistent and never reverted by migrate, wsgi startup, or deploy scripts.
+        """
+        # 1. Create a custom case as if created in Django Admin
+        custom_case = Case.objects.create(
+            name='TEST_NEW_CASE',
+            slug='test-new-case',
+            price=Decimal('77.50'),
+            color_theme='demon-orange',
+            active=True,
+            is_popular=True,
+        )
+        custom_item = Item.objects.create(
+            weapon_type='AWP',
+            skin_name='Custom Hyper',
+            value=Decimal('350.00'),
+            rarity='covert',
+        )
+        CaseItem.objects.create(case=custom_case, item=custom_item, weight=100.0)
+
+        # 2. Modify an existing case
+        self.case.price = Decimal('999.00')
+        self.case.color_theme = 'godlike-gold'
+        self.case.save()
+
+        # 3. Create a temporary case and delete it
+        old_case = Case.objects.create(
+            name='OLD_DELETED_CASE',
+            slug='old-deleted-case',
+            price=Decimal('12.00'),
+            color_theme='frost-cyan',
+        )
+        old_case_id = old_case.id
+        old_case.delete()
+
+        # 4. Simulate what runs during a Deploy / Server Restart:
+        #    a) python manage.py migrate --noinput
+        #    b) python manage.py promote_admin Smoke
+        #    c) WSGI boot
+        from django.core.management import call_command
+        call_command('migrate', interactive=False)
+        call_command('promote_admin', 'Smoke')
+
+        # 5. Verify database state post-deploy:
+        # - TEST_NEW_CASE must still exist exactly as configured
+        reloaded_custom = Case.objects.filter(slug='test-new-case').first()
+        self.assertIsNotNone(reloaded_custom)
+        self.assertEqual(reloaded_custom.name, 'TEST_NEW_CASE')
+        self.assertEqual(reloaded_custom.price, Decimal('77.50'))
+        self.assertEqual(reloaded_custom.color_theme, 'demon-orange')
+        self.assertEqual(reloaded_custom.case_items.count(), 1)
+
+        # - Deleted case must NOT have been restored
+        self.assertFalse(Case.objects.filter(slug='old-deleted-case').exists())
+
+        # - Modified case must keep its updated price and theme
+        reloaded_existing = Case.objects.get(id=self.case.id)
+        self.assertEqual(reloaded_existing.price, Decimal('999.00'))
+        self.assertEqual(reloaded_existing.color_theme, 'godlike-gold')
+
+    def test_seed_initial_data_safety_guards(self):
+        """
+        Verify seed_initial_data is safe by default and will not overwrite existing cases without --force.
+        """
+        initial_case_count = Case.objects.count()
+        self.assertGreater(initial_case_count, 0)
+
+        # Run seed_initial_data without --force
+        from django.core.management import call_command
+        call_command('seed_initial_data')
+
+        # Count should remain unchanged
+        self.assertEqual(Case.objects.count(), initial_case_count)
+
 
 
 
