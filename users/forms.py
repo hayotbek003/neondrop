@@ -57,24 +57,26 @@ class LoginForm(forms.Form):
         widget=forms.PasswordInput(attrs={'class': 'input-cyber', 'placeholder': 'Ваш пароль'})
     )
 
+    def __init__(self, *args, request=None, **kwargs):
+        self.request = request
+        super().__init__(*args, **kwargs)
+
     def clean(self):
         cleaned_data = super().clean()
-        username_or_email = cleaned_data.get('username_or_email')
+        username_or_email = (cleaned_data.get('username_or_email') or '').strip()
         password = cleaned_data.get('password')
 
         if username_or_email and password:
-            # Check if login input is email
-            if '@' in username_or_email:
-                try:
-                    user_obj = User.objects.get(email__iexact=username_or_email)
-                    user = authenticate(username=user_obj.username, password=password)
-                except User.DoesNotExist:
-                    user = None
-            else:
-                user = authenticate(username=username_or_email, password=password)
+            user = authenticate(
+                request=self.request,
+                username=username_or_email,
+                password=password
+            )
 
             if user is None:
                 raise forms.ValidationError("Неверное имя пользователя/email или пароль.")
+            if not user.is_active:
+                raise forms.ValidationError("Данный аккаунт деактивирован.")
             self.user = user
         return cleaned_data
 

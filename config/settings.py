@@ -113,18 +113,36 @@ WSGI_APPLICATION = 'config.wsgi.application'
 # When DATABASE_URL is configured, all cases, items, users, and transactions persist across all deploys.
 database_url = os.environ.get('DATABASE_URL', '').strip()
 if database_url:
-    import dj_database_url
+    import urllib.parse
     if database_url.startswith('postgres://'):
         database_url = database_url.replace('postgres://', 'postgresql://', 1)
-    
-    db_config = dj_database_url.parse(
-        database_url,
-        conn_max_age=600,
-        conn_health_checks=True,
-    )
-    if 'localhost' not in database_url and '127.0.0.1' not in database_url:
-        db_config.setdefault('OPTIONS', {})['sslmode'] = os.environ.get('DB_SSLMODE', 'prefer')
-        
+
+    parsed_db = urllib.parse.urlparse(database_url)
+    db_engine = 'django.db.backends.postgresql'
+    if 'sqlite' in parsed_db.scheme:
+        db_engine = 'django.db.backends.sqlite3'
+
+    db_config = {
+        'ENGINE': db_engine,
+        'NAME': urllib.parse.unquote(parsed_db.path.lstrip('/')),
+        'USER': urllib.parse.unquote(parsed_db.username or ''),
+        'PASSWORD': urllib.parse.unquote(parsed_db.password or ''),
+        'HOST': parsed_db.hostname or '',
+        'PORT': parsed_db.port or '',
+        'CONN_MAX_AGE': 600,
+        'CONN_HEALTH_CHECKS': True,
+    }
+
+    query_params = urllib.parse.parse_qs(parsed_db.query)
+    options = {}
+    if 'sslmode' in query_params:
+        options['sslmode'] = query_params['sslmode'][0]
+    elif parsed_db.hostname and parsed_db.hostname not in ('localhost', '127.0.0.1'):
+        options['sslmode'] = os.environ.get('DB_SSLMODE', 'prefer')
+
+    if options:
+        db_config['OPTIONS'] = options
+
     DATABASES = {
         'default': db_config
     }
@@ -180,6 +198,12 @@ else:
             'LOCATION': 'neondrop-local-cache',
         }
     }
+
+# Authentication Backends
+AUTHENTICATION_BACKENDS = [
+    'users.backends.CaseInsensitiveModelBackend',
+    'django.contrib.auth.backends.ModelBackend',
+]
 
 # Password validation
 AUTH_PASSWORD_VALIDATORS = [

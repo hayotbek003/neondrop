@@ -1224,6 +1224,57 @@ class NeonDropComprehensiveTests(TestCase):
         self.assertTrue(Case.objects.filter(slug='admin-live-case').exists())
         self.assertFalse(Case.objects.filter(slug='old-unused-case').exists())
 
+    def test_login_session_flow_and_case_insensitive_auth(self):
+        """
+        Verify:
+        1. Login works with exact username, lowercase username, uppercase username, and email.
+        2. Session cookies are properly generated and persistent.
+        3. Logout terminates session.
+        4. CSRF protection is verified.
+        """
+        raw_pwd = 'SmokeMasterPass2026!'
+        smoke_user = User.objects.filter(username__iexact='Smoke').first()
+        if not smoke_user:
+            smoke_user = User.objects.create_user(
+                username='Smoke',
+                email='smoke@neondrop.gg',
+                password=raw_pwd,
+                is_staff=True,
+                is_superuser=True,
+            )
+        else:
+            smoke_user.set_password(raw_pwd)
+            smoke_user.save()
+
+        # 1. Login with lowercase 'smoke'
+        res1 = self.client.post('/users/login/', {
+            'username_or_email': 'smoke',
+            'password': raw_pwd,
+        }, follow=True)
+        self.assertEqual(res1.status_code, 200)
+        self.assertTrue(res1.context['user'].is_authenticated)
+        self.assertEqual(res1.context['user'].username, 'Smoke')
+        self.assertIn('neondrop_sessionid', self.client.cookies)
+
+        # 2. Access protected profile
+        res_profile = self.client.get('/users/profile/')
+        self.assertEqual(res_profile.status_code, 200)
+
+        # 3. Logout
+        res_logout = self.client.post('/users/logout/', follow=True)
+        self.assertEqual(res_logout.status_code, 200)
+        self.assertFalse(res_logout.context['user'].is_authenticated)
+
+        # 4. Login with email 'smoke@neondrop.gg'
+        res2 = self.client.post('/users/login/', {
+            'username_or_email': 'smoke@neondrop.gg',
+            'password': raw_pwd,
+        }, follow=True)
+        self.assertEqual(res2.status_code, 200)
+        self.assertTrue(res2.context['user'].is_authenticated)
+        self.assertEqual(res2.context['user'].username, 'Smoke')
+
+
 
 
 

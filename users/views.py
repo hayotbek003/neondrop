@@ -63,7 +63,7 @@ def login_view(request):
         return redirect('cases:home')
         
     if request.method == 'POST':
-        form = LoginForm(request.POST)
+        form = LoginForm(request.POST, request=request)
         ip = get_client_ip(request)
         if form.is_valid():
             user = form.user
@@ -77,7 +77,7 @@ def login_view(request):
         else:
             security_logger.warning(f"USER_LOGIN_FAILED: ip={ip}")
     else:
-        form = LoginForm()
+        form = LoginForm(request=request)
         
     return render(request, 'login.html', {'form': form})
 
