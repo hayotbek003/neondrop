@@ -939,6 +939,32 @@ class NeonDropComprehensiveTests(TestCase):
         self.assertIn('60 UC', badge_html)
         self.assertIn('usd-approx', badge_html)
 
+    def test_smoke_admin_promotion_and_access(self):
+        """Verify Smoke is promoted to admin and has full access to /admin/."""
+        from django.core.management import call_command
+
+        # Create normal user Smoke
+        smoke_user, _ = User.objects.get_or_create(
+            username='Smoke',
+            defaults={'email': 'smoke@neondrop.gg', 'is_staff': False, 'is_superuser': False}
+        )
+        smoke_user.is_staff = False
+        smoke_user.is_superuser = False
+        smoke_user.save()
+
+        # Run command
+        call_command('promote_admin', 'Smoke')
+        smoke_user.refresh_from_db()
+        self.assertTrue(smoke_user.is_staff)
+        self.assertTrue(smoke_user.is_superuser)
+        self.assertTrue(smoke_user.is_active)
+
+        # Test admin access via client
+        client = Client()
+        client.force_login(smoke_user)
+        response = client.get('/admin/')
+        self.assertEqual(response.status_code, 200)
+
 
 
 

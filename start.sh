@@ -14,6 +14,10 @@ python manage.py migrate --noinput
 echo "==> Verifying system integrity..."
 python manage.py check
 
+# Ensure primary admin user has staff and superuser permissions
+echo "==> Ensuring administrator permissions..."
+python manage.py promote_admin Smoke
+
 # Start Gunicorn server
 PORT="${PORT:-8000}"
 WORKERS="${GUNICORN_WORKERS:-2}"

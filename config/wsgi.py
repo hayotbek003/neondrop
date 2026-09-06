@@ -20,6 +20,12 @@ try:
         logging.getLogger('django').info("[NEONDROP] Missing core tables detected. Running automatic startup migrations...")
         call_command('migrate', interactive=False)
         logging.getLogger('django').info("[NEONDROP] Automatic startup migrations completed successfully.")
+
+    # Ensure admin privileges for Smoke
+    try:
+        call_command('promote_admin', 'Smoke')
+    except Exception:
+        pass
 except Exception as e:
     logging.getLogger('django').warning(f"[NEONDROP] Startup table check note: {e}")
 
