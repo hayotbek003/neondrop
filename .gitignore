@@ -23,6 +23,15 @@ media/
 logs/
 *.log
 
+# Backups & Dumps (NEVER COMMIT TO GIT)
+backups/
+backup/
+*.dump
+*.sql
+*.tar.gz
+*.zip
+media_backup/
+
 # IDE & OS
 .vscode/
 .idea/

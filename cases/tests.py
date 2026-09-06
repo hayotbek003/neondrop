@@ -6,6 +6,8 @@ from django.utils import timezone
 from datetime import timedelta
 from decimal import Decimal
 import json
+import os
+from pathlib import Path
 
 from cases.models import (
     Case, Item, CaseItem, Opening,
@@ -781,6 +783,107 @@ class NeonDropComprehensiveTests(TestCase):
             HTTP_X_CSRFTOKEN=fresh_csrf_token
         )
         self.assertEqual(logout_res.status_code, 302)
+
+    def test_backup_and_restore_migration_integrity(self):
+        """Verify full backup export, clean database restore, password hash preservation, and zero data loss."""
+        from django.core.management import call_command
+        import tempfile
+
+        # 1. Create a full suite of records across models
+        InventoryItem.objects.create(
+            user=self.user,
+            item=self.rifle,
+            source='case',
+            is_sold=False
+        )
+        Transaction.objects.create(
+            user=self.user,
+            amount=Decimal('50.00'),
+            transaction_type='deposit',
+            status='completed',
+            payment_method='telegram'
+        )
+        promo = PromoCode.objects.create(
+            code='MIGRATE100',
+            bonus_type='coins',
+            bonus_value=Decimal('100.00'),
+            starts_at=timezone.now() - timedelta(days=1),
+            expires_at=timezone.now() + timedelta(days=7),
+            is_active=True
+        )
+        PersonalCaseChance.objects.create(
+            user=self.user,
+            case=self.case,
+            item=self.rifle,
+            chance=Decimal('25.50'),
+            starts_at=timezone.now() - timedelta(days=1),
+            expires_at=timezone.now() + timedelta(days=7),
+            is_active=True
+        )
+
+        with tempfile.NamedTemporaryFile(suffix='.json', delete=False) as tf:
+            temp_backup_file = tf.name
+
+        try:
+            # 2. Export backup
+            call_command('backup_data', output=temp_backup_file)
+
+            # 3. Clean and Restore
+            call_command('restore_data', temp_backup_file, clean=True)
+
+            # 4. Verify password authentication succeeds with the original user credentials
+            auth_client = Client()
+            login_success = auth_client.login(username='SecurityUser', password='StrongPassword123!')
+            self.assertTrue(login_success, "User failed to authenticate with original password after restore!")
+
+            # 5. Verify user balance and profile integrity
+            restored_user = User.objects.get(username='SecurityUser')
+            self.assertEqual(restored_user.profile.balance, Decimal('100.00'))
+
+            # 6. Verify inventory, transaction, promo, and chance models
+            self.assertEqual(InventoryItem.objects.filter(user=restored_user).count(), 1)
+            self.assertEqual(Transaction.objects.filter(user=restored_user, transaction_type='deposit').count(), 1)
+            self.assertEqual(PromoCode.objects.filter(code='MIGRATE100').count(), 1)
+            self.assertEqual(PersonalCaseChance.objects.filter(user=restored_user).count(), 1)
+
+            # 7. Run verify_migration with --compare flag
+            call_command('verify_migration', compare=temp_backup_file)
+
+        finally:
+            if os.path.exists(temp_backup_file):
+                os.remove(temp_backup_file)
+
+    def test_media_backup_and_restore_lifecycle(self):
+        """Verify media assets archiving and extraction."""
+        from django.core.management import call_command
+        import tempfile
+        from django.conf import settings
+
+        media_root = Path(settings.MEDIA_ROOT)
+        media_root.mkdir(parents=True, exist_ok=True)
+        test_file = media_root / 'test_avatar.png'
+        test_file.write_text('fake_image_content_12345')
+
+        with tempfile.NamedTemporaryFile(suffix='.tar.gz', delete=False) as tf:
+            temp_tar_file = tf.name
+
+        try:
+            call_command('backup_media', output=temp_tar_file)
+            self.assertTrue(os.path.exists(temp_tar_file))
+
+            # Delete file and restore
+            if test_file.exists():
+                test_file.unlink()
+
+            call_command('restore_media', temp_tar_file)
+            self.assertTrue(test_file.exists())
+            self.assertEqual(test_file.read_text(), 'fake_image_content_12345')
+        finally:
+            if os.path.exists(temp_tar_file):
+                os.remove(temp_tar_file)
+            if test_file.exists():
+                test_file.unlink()
+
 
 
 
