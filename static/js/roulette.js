@@ -436,10 +436,14 @@ document.addEventListener('DOMContentLoaded', () => {
         card.setAttribute('data-index', itemIdx);
 
         const priceBadgeHtml = window.renderUcBadgeHtml ? window.renderUcBadgeHtml(item.value, false, 14) : `${item.value} UC`;
+        const itemImgHtml = (item.image_url && (item.image_url.startsWith('/') || item.image_url.startsWith('http')))
+          ? `<img src="${item.image_url}" alt="${item.skin_name}" class="roulette-item-img" style="object-fit: contain;">`
+          : `<svg class="roulette-item-img"><use href="#icon-${item.image_url || 'generic_weapon'}"></use></svg>`;
+
         card.innerHTML = `
           <div class="roulette-item-weapon">${item.weapon_type}</div>
           <div class="roulette-item-img-box">
-            <svg class="roulette-item-img"><use href="#icon-${item.image_url || 'generic_weapon'}"></use></svg>
+            ${itemImgHtml}
           </div>
           <div class="roulette-item-skin">${item.skin_name}</div>
           <div class="roulette-item-price">${priceBadgeHtml}</div>
@@ -566,10 +570,14 @@ document.addEventListener('DOMContentLoaded', () => {
       card.style.setProperty('--card-color', item.rarity_color);
 
       const cardPriceHtml = window.renderUcBadgeHtml ? window.renderUcBadgeHtml(item.value, true, 14) : `${item.value} UC`;
+      const itemImgHtml = (item.image_url && (item.image_url.startsWith('/') || item.image_url.startsWith('http')))
+        ? `<img src="${item.image_url}" alt="${item.skin_name}" class="win-card-img" style="object-fit: contain;">`
+        : `<svg class="win-card-img"><use href="#icon-${item.image_url || 'generic_weapon'}"></use></svg>`;
+
       card.innerHTML = `
         <div class="win-card-weapon">${item.weapon_type}</div>
         <div class="win-card-img-box">
-          <svg class="win-card-img"><use href="#icon-${item.image_url || 'generic_weapon'}"></use></svg>
+          ${itemImgHtml}
         </div>
         <div class="win-card-skin">${item.skin_name}</div>
         <div class="win-card-price">${cardPriceHtml}</div>

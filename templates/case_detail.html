@@ -45,9 +45,13 @@
   <!-- ==================== TOP CASE SHOWCASE ==================== -->
   <div class="case-hero-showcase">
     <div class="case-hero-glow-box" style="--case-theme-glow: {{ case.accent_color }};">
-      <svg viewBox="0 0 200 160" style="width: 100%; height: 100%; filter: drop-shadow(0 0 35px {{ case.accent_color }});">
-        <use href="#icon-case-{{ case.color_theme }}"></use>
-      </svg>
+      {% if case.display_image %}
+        <img src="{{ case.display_image }}" alt="{{ case.name }}" class="case-hero-img">
+      {% else %}
+        <svg viewBox="0 0 200 160" style="width: 100%; height: 100%; filter: drop-shadow(0 0 35px {{ case.accent_color }});">
+          <use href="#icon-case-{{ case.color_theme }}"></use>
+        </svg>
+      {% endif %}
     </div>
 
     <h1 class="case-hero-title">{{ case.name }}</h1>
@@ -137,7 +141,11 @@
           </span>
         </div>
         <div class="item-card-img-wrapper">
-          <svg class="item-card-img"><use href="#icon-{{ entry.item.image_url|default:'generic_weapon' }}"></use></svg>
+          {% if entry.item.display_image %}
+            <img src="{{ entry.item.display_image }}" alt="{{ entry.item.name }}" class="item-card-img">
+          {% else %}
+            <svg class="item-card-img"><use href="#icon-{{ entry.item.image_url|default:'generic_weapon' }}"></use></svg>
+          {% endif %}
         </div>
         <div class="item-card-weapon">{{ entry.item.weapon_type }}</div>
         <div class="item-card-skin">{{ entry.item.skin_name }}</div>

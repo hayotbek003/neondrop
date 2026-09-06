@@ -78,6 +78,17 @@ class Item(models.Model):
     def rarity_display_ru(self):
         return self.RARITY_NAMES_RU.get(self.rarity, self.get_rarity_display())
 
+    @property
+    def display_image(self):
+        if self.image:
+            try:
+                return self.image.url
+            except Exception:
+                pass
+        if self.image_url and (self.image_url.startswith('http://') or self.image_url.startswith('https://') or self.image_url.startswith('/')):
+            return self.image_url
+        return None
+
     def __str__(self):
         return f"{self.name} ({self.value} UC)"
 
@@ -130,6 +141,17 @@ class Case(models.Model):
     @property
     def accent_color(self):
         return self.THEME_ACCENT_COLORS.get(self.color_theme, '#ec4899')
+
+    @property
+    def display_image(self):
+        if self.image:
+            try:
+                return self.image.url
+            except Exception:
+                pass
+        if self.image_url and (self.image_url.startswith('http://') or self.image_url.startswith('https://') or self.image_url.startswith('/')):
+            return self.image_url
+        return None
 
     def __str__(self):
         return f"{self.name} ({self.price} UC)"

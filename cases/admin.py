@@ -19,19 +19,33 @@ class CategoryAdmin(admin.ModelAdmin):
 
 @admin.register(Item)
 class ItemAdmin(admin.ModelAdmin):
-    list_display = ('name', 'weapon_type', 'skin_name', 'value', 'rarity', 'created_at')
+    list_display = ('image_preview', 'name', 'weapon_type', 'skin_name', 'value', 'rarity', 'created_at')
     list_filter = ('rarity', 'weapon_type', 'created_at')
     search_fields = ('name', 'weapon_type', 'skin_name')
     ordering = ('-value',)
+    readonly_fields = ('image_preview', 'created_at')
+
+    def image_preview(self, obj):
+        if obj.display_image:
+            return format_html('<img src="{}" style="width: 46px; height: 34px; object-fit: contain; border-radius: 4px; background: #0f172a; border: 1px solid #334155;" />', obj.display_image)
+        return format_html('<span style="color: #64748b; font-size: 11px;">SVG ID</span>')
+    image_preview.short_description = "Превью"
 
 @admin.register(Case)
 class CaseAdmin(admin.ModelAdmin):
-    list_display = ('name', 'price', 'category', 'color_theme', 'is_popular', 'is_new', 'active', 'order')
+    list_display = ('image_preview', 'name', 'price', 'category', 'color_theme', 'is_popular', 'is_new', 'active', 'order')
     list_filter = ('active', 'is_popular', 'is_new', 'color_theme', 'category')
     search_fields = ('name', 'slug')
     prepopulated_fields = {'slug': ('name',)}
     inlines = [CaseItemInline]
     ordering = ('order', 'price')
+    readonly_fields = ('image_preview', 'created_at')
+
+    def image_preview(self, obj):
+        if obj.display_image:
+            return format_html('<img src="{}" style="width: 50px; height: 38px; object-fit: contain; border-radius: 6px; background: #0f172a; border: 1px solid #334155;" />', obj.display_image)
+        return format_html('<span style="color: #64748b; font-size: 11px;">(Тема: {})</span>', obj.color_theme)
+    image_preview.short_description = "Фото кейса"
 
 @admin.register(CaseItem)
 class CaseItemAdmin(admin.ModelAdmin):

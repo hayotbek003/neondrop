@@ -116,9 +116,13 @@
       {% for case in popular_cases %}
         <a href="{% url 'cases:case_detail' case.slug %}" class="case-card" style="--case-accent: {{ case.accent_color }};">
           <div class="case-card-img-wrapper">
-            <svg class="case-card-img" viewBox="0 0 200 160">
-              <use href="#icon-case-{{ case.color_theme }}"></use>
-            </svg>
+            {% if case.display_image %}
+              <img src="{{ case.display_image }}" alt="{{ case.name }}" class="case-card-img">
+            {% else %}
+              <svg class="case-card-img" viewBox="0 0 200 160">
+                <use href="#icon-case-{{ case.color_theme }}"></use>
+              </svg>
+            {% endif %}
           </div>
           <h3 class="case-card-name">{{ case.name }}</h3>
           <div class="case-card-price">

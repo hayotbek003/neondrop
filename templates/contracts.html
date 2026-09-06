@@ -38,7 +38,11 @@
             <span class="item-rarity-badge">{{ inv.item.rarity_display_ru }}</span>
           </div>
           <div class="item-card-img-wrapper">
-            <svg class="item-card-img"><use href="#icon-{{ inv.item.image_url|default:'generic_weapon' }}"></use></svg>
+            {% if inv.item.display_image %}
+              <img src="{{ inv.item.display_image }}" alt="{{ inv.item.name }}" class="item-card-img">
+            {% else %}
+              <svg class="item-card-img"><use href="#icon-{{ inv.item.image_url|default:'generic_weapon' }}"></use></svg>
+            {% endif %}
           </div>
           <div class="item-card-weapon">{{ inv.item.weapon_type }}</div>
           <div class="item-card-skin">{{ inv.item.skin_name }}</div>

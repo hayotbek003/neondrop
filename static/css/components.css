@@ -323,6 +323,10 @@
 .case-card-img {
   width: 100%;
   height: 100%;
+  max-width: 140px;
+  max-height: 110px;
+  object-fit: contain;
+  display: block;
 }
 
 .case-card-name {

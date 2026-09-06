@@ -105,8 +105,15 @@ def cases_list_view(request):
     
     cases = Case.objects.filter(active=True)
     
-    if active_category:
-        cases = cases.filter(category__slug=active_category)
+    if active_category and active_category != 'all':
+        if active_category == 'popular':
+            cases = cases.filter(is_popular=True)
+        elif active_category == 'new':
+            cases = cases.filter(is_new=True)
+        elif active_category == 'affordable' and request.user.is_authenticated:
+            cases = cases.filter(price__lte=request.user.profile.balance)
+        else:
+            cases = cases.filter(category__slug=active_category)
     if search_query:
         cases = cases.filter(name__icontains=search_query)
     if price_min:

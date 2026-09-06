@@ -214,6 +214,10 @@ STORAGES = {
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
+MEDIA_ROOT.mkdir(parents=True, exist_ok=True)
+(MEDIA_ROOT / 'cases').mkdir(parents=True, exist_ok=True)
+(MEDIA_ROOT / 'items').mkdir(parents=True, exist_ok=True)
+(MEDIA_ROOT / 'avatars').mkdir(parents=True, exist_ok=True)
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 

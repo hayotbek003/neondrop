@@ -56,7 +56,11 @@
           {% for drop in p.round_drops.all %}
             <div style="display: flex; align-items: center; justify-content: space-between; background: #090c14; padding: 10px 14px; border-radius: 8px; border-left: 3px solid {{ drop.item.rarity_color }};">
               <div style="display: flex; align-items: center; gap: 10px;">
-                <svg style="width: 36px; height: 24px;"><use href="#icon-{{ drop.item.image_url|default:'generic_weapon' }}"></use></svg>
+                {% if drop.item.display_image %}
+                  <img src="{{ drop.item.display_image }}" alt="{{ drop.item.name }}" style="width: 36px; height: 24px; object-fit: contain;">
+                {% else %}
+                  <svg style="width: 36px; height: 24px;"><use href="#icon-{{ drop.item.image_url|default:'generic_weapon' }}"></use></svg>
+                {% endif %}
                 <span style="font-size: 13px; color: #fff; font-weight: 600;">{{ drop.item.name }}</span>
               </div>
               <span style="font-family: var(--font-display); font-size: 13px; font-weight: 800; color: #22c55e; display: flex; align-items: center; gap: 4px;">
