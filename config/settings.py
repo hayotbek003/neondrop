@@ -32,7 +32,7 @@ if allowed_hosts_raw == '*':
     ALLOWED_HOSTS = ['*']
 else:
     ALLOWED_HOSTS = [h.strip() for h in allowed_hosts_raw.split(',') if h.strip()]
-    for default_host in ['neondrop-ujly.onrender.com', '.onrender.com', 'localhost', '127.0.0.1']:
+    for default_host in ['neondrop-ujly.onrender.com', '.onrender.com', 'localhost', '127.0.0.1', 'testserver']:
         if default_host not in ALLOWED_HOSTS:
             ALLOWED_HOSTS.append(default_host)
 
