@@ -10,6 +10,10 @@ echo "====================================================="
 echo "==> Running Django database migrations..."
 python manage.py migrate --noinput
 
+# Initialize production database (zero-loss migration / seed if fresh DB)
+echo "==> Initializing production database..."
+python manage.py init_production_db
+
 # Verify system integrity
 echo "==> Verifying system integrity..."
 python manage.py check

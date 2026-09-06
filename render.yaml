@@ -1,3 +1,10 @@
+databases:
+  - name: neondrop-db
+    databaseName: neondrop
+    user: neondrop_user
+    plan: free
+    ipAllowList: []
+
 services:
   - type: web
     name: neondrop
@@ -9,3 +16,9 @@ services:
         value: 3.12.0
       - key: DJANGO_SETTINGS_MODULE
         value: config.settings
+      - key: DATABASE_URL
+        fromDatabase:
+          name: neondrop-db
+          property: connectionString
+      - key: DJANGO_DEBUG
+        value: "False"

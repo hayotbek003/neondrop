@@ -21,6 +21,12 @@ try:
         call_command('migrate', interactive=False)
         logging.getLogger('django').info("[NEONDROP] Automatic startup migrations completed successfully.")
 
+    # Initialize production database if needed (idempotent, safe for existing DB)
+    try:
+        call_command('init_production_db')
+    except Exception as e:
+        logging.getLogger('django').warning(f"[NEONDROP] DB init note: {e}")
+
     # Ensure admin privileges for Smoke
     try:
         call_command('promote_admin', 'Smoke')

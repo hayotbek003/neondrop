@@ -1,0 +1,2851 @@
+{
+  "metadata": {
+    "project": "NEONDROP",
+    "version": "2.0.0",
+    "export_timestamp_utc": "2026-09-06T17:24:18.571834Z",
+    "database_engine": "django.db.backends.sqlite3",
+    "total_records": 255,
+    "record_counts": {
+      "auth.Group": 0,
+      "auth.Permission": 100,
+      "auth.User": 2,
+      "users.Profile": 2,
+      "cases.Category": 4,
+      "cases.Item": 27,
+      "cases.Case": 8,
+      "cases.CaseItem": 52,
+      "cases.Opening": 21,
+      "cases.PersonalCaseChance": 0,
+      "cases.PromoCode": 0,
+      "payments.Transaction": 0,
+      "cases.PromoCodeUse": 0,
+      "cases.UserFreeOpening": 0,
+      "inventory.InventoryItem": 27,
+      "upgrades.UpgradeAttempt": 1,
+      "contracts.Contract": 1,
+      "contracts.ContractInputItem": 10,
+      "battles.Battle": 0,
+      "battles.BattlePlayer": 0,
+      "battles.BattleRound": 0
+    },
+    "checksum_sha256": "282dcbc7e3a70a3d8c6a15b4bd8e04c6abe2af35f85fcec303467829cb31c8d6",
+    "compressed": false
+  },
+  "data": [
+    {
+      "model": "auth.permission",
+      "pk": 1,
+      "fields": {
+        "name": "Can add log entry",
+        "content_type": 1,
+        "codename": "add_logentry"
+      }
+    },
+    {
+      "model": "auth.permission",
+      "pk": 2,
+      "fields": {
+        "name": "Can change log entry",
+        "content_type": 1,
+        "codename": "change_logentry"
+      }
+    },
+    {
+      "model": "auth.permission",
+      "pk": 3,
+      "fields": {
+        "name": "Can delete log entry",
+        "content_type": 1,
+        "codename": "delete_logentry"
+      }
+    },
+    {
+      "model": "auth.permission",
+      "pk": 4,
+      "fields": {
+        "name": "Can view log entry",
+        "content_type": 1,
+        "codename": "view_logentry"
+      }
+    },
+    {
+      "model": "auth.permission",
+      "pk": 5,
+      "fields": {
+        "name": "Can add permission",
+        "content_type": 2,
+        "codename": "add_permission"
+      }
+    },
+    {
+      "model": "auth.permission",
+      "pk": 6,
+      "fields": {
+        "name": "Can change permission",
+        "content_type": 2,
+        "codename": "change_permission"
+      }
+    },
+    {
+      "model": "auth.permission",
+      "pk": 7,
+      "fields": {
+        "name": "Can delete permission",
+        "content_type": 2,
+        "codename": "delete_permission"
+      }
+    },
+    {
+      "model": "auth.permission",
+      "pk": 8,
+      "fields": {
+        "name": "Can view permission",
+        "content_type": 2,
+        "codename": "view_permission"
+      }
+    },
+    {
+      "model": "auth.permission",
+      "pk": 9,
+      "fields": {
+        "name": "Can add group",
+        "content_type": 3,
+        "codename": "add_group"
+      }
+    },
+    {
+      "model": "auth.permission",
+      "pk": 10,
+      "fields": {
+        "name": "Can change group",
+        "content_type": 3,
+        "codename": "change_group"
+      }
+    },
+    {
+      "model": "auth.permission",
+      "pk": 11,
+      "fields": {
+        "name": "Can delete group",
+        "content_type": 3,
+        "codename": "delete_group"
+      }
+    },
+    {
+      "model": "auth.permission",
+      "pk": 12,
+      "fields": {
+        "name": "Can view group",
+        "content_type": 3,
+        "codename": "view_group"
+      }
+    },
+    {
+      "model": "auth.permission",
+      "pk": 13,
+      "fields": {
+        "name": "Can add user",
+        "content_type": 4,
+        "codename": "add_user"
+      }
+    },
+    {
+      "model": "auth.permission",
+      "pk": 14,
+      "fields": {
+        "name": "Can change user",
+        "content_type": 4,
+        "codename": "change_user"
+      }
+    },
+    {
+      "model": "auth.permission",
+      "pk": 15,
+      "fields": {
+        "name": "Can delete user",
+        "content_type": 4,
+        "codename": "delete_user"
+      }
+    },
+    {
+      "model": "auth.permission",
+      "pk": 16,
+      "fields": {
+        "name": "Can view user",
+        "content_type": 4,
+        "codename": "view_user"
+      }
+    },
+    {
+      "model": "auth.permission",
+      "pk": 17,
+      "fields": {
+        "name": "Can add content type",
+        "content_type": 5,
+        "codename": "add_contenttype"
+      }
+    },
+    {
+      "model": "auth.permission",
+      "pk": 18,
+      "fields": {
+        "name": "Can change content type",
+        "content_type": 5,
+        "codename": "change_contenttype"
+      }
+    },
+    {
+      "model": "auth.permission",
+      "pk": 19,
+      "fields": {
+        "name": "Can delete content type",
+        "content_type": 5,
+        "codename": "delete_contenttype"
+      }
+    },
+    {
+      "model": "auth.permission",
+      "pk": 20,
+      "fields": {
+        "name": "Can view content type",
+        "content_type": 5,
+        "codename": "view_contenttype"
+      }
+    },
+    {
+      "model": "auth.permission",
+      "pk": 21,
+      "fields": {
+        "name": "Can add session",
+        "content_type": 6,
+        "codename": "add_session"
+      }
+    },
+    {
+      "model": "auth.permission",
+      "pk": 22,
+      "fields": {
+        "name": "Can change session",
+        "content_type": 6,
+        "codename": "change_session"
+      }
+    },
+    {
+      "model": "auth.permission",
+      "pk": 23,
+      "fields": {
+        "name": "Can delete session",
+        "content_type": 6,
+        "codename": "delete_session"
+      }
+    },
+    {
+      "model": "auth.permission",
+      "pk": 24,
+      "fields": {
+        "name": "Can view session",
+        "content_type": 6,
+        "codename": "view_session"
+      }
+    },
+    {
+      "model": "auth.permission",
+      "pk": 25,
+      "fields": {
+        "name": "Can add \u041f\u0440\u043e\u0444\u0438\u043b\u044c \u043f\u043e\u043b\u044c\u0437\u043e\u0432\u0430\u0442\u0435\u043b\u044f",
+        "content_type": 7,
+        "codename": "add_profile"
+      }
+    },
+    {
+      "model": "auth.permission",
+      "pk": 26,
+      "fields": {
+        "name": "Can change \u041f\u0440\u043e\u0444\u0438\u043b\u044c \u043f\u043e\u043b\u044c\u0437\u043e\u0432\u0430\u0442\u0435\u043b\u044f",
+        "content_type": 7,
+        "codename": "change_profile"
+      }
+    },
+    {
+      "model": "auth.permission",
+      "pk": 27,
+      "fields": {
+        "name": "Can delete \u041f\u0440\u043e\u0444\u0438\u043b\u044c \u043f\u043e\u043b\u044c\u0437\u043e\u0432\u0430\u0442\u0435\u043b\u044f",
+        "content_type": 7,
+        "codename": "delete_profile"
+      }
+    },
+    {
+      "model": "auth.permission",
+      "pk": 28,
+      "fields": {
+        "name": "Can view \u041f\u0440\u043e\u0444\u0438\u043b\u044c \u043f\u043e\u043b\u044c\u0437\u043e\u0432\u0430\u0442\u0435\u043b\u044f",
+        "content_type": 7,
+        "codename": "view_profile"
+      }
+    },
+    {
+      "model": "auth.permission",
+      "pk": 29,
+      "fields": {
+        "name": "Can add \u041a\u0430\u0442\u0435\u0433\u043e\u0440\u0438\u044f \u043a\u0435\u0439\u0441\u043e\u0432",
+        "content_type": 8,
+        "codename": "add_category"
+      }
+    },
+    {
+      "model": "auth.permission",
+      "pk": 30,
+      "fields": {
+        "name": "Can change \u041a\u0430\u0442\u0435\u0433\u043e\u0440\u0438\u044f \u043a\u0435\u0439\u0441\u043e\u0432",
+        "content_type": 8,
+        "codename": "change_category"
+      }
+    },
+    {
+      "model": "auth.permission",
+      "pk": 31,
+      "fields": {
+        "name": "Can delete \u041a\u0430\u0442\u0435\u0433\u043e\u0440\u0438\u044f \u043a\u0435\u0439\u0441\u043e\u0432",
+        "content_type": 8,
+        "codename": "delete_category"
+      }
+    },
+    {
+      "model": "auth.permission",
+      "pk": 32,
+      "fields": {
+        "name": "Can view \u041a\u0430\u0442\u0435\u0433\u043e\u0440\u0438\u044f \u043a\u0435\u0439\u0441\u043e\u0432",
+        "content_type": 8,
+        "codename": "view_category"
+      }
+    },
+    {
+      "model": "auth.permission",
+      "pk": 33,
+      "fields": {
+        "name": "Can add \u041f\u0440\u0435\u0434\u043c\u0435\u0442 / \u0421\u043a\u0438\u043d",
+        "content_type": 9,
+        "codename": "add_item"
+      }
+    },
+    {
+      "model": "auth.permission",
+      "pk": 34,
+      "fields": {
+        "name": "Can change \u041f\u0440\u0435\u0434\u043c\u0435\u0442 / \u0421\u043a\u0438\u043d",
+        "content_type": 9,
+        "codename": "change_item"
+      }
+    },
+    {
+      "model": "auth.permission",
+      "pk": 35,
+      "fields": {
+        "name": "Can delete \u041f\u0440\u0435\u0434\u043c\u0435\u0442 / \u0421\u043a\u0438\u043d",
+        "content_type": 9,
+        "codename": "delete_item"
+      }
+    },
+    {
+      "model": "auth.permission",
+      "pk": 36,
+      "fields": {
+        "name": "Can view \u041f\u0440\u0435\u0434\u043c\u0435\u0442 / \u0421\u043a\u0438\u043d",
+        "content_type": 9,
+        "codename": "view_item"
+      }
+    },
+    {
+      "model": "auth.permission",
+      "pk": 37,
+      "fields": {
+        "name": "Can add \u041a\u0435\u0439\u0441",
+        "content_type": 10,
+        "codename": "add_case"
+      }
+    },
+    {
+      "model": "auth.permission",
+      "pk": 38,
+      "fields": {
+        "name": "Can change \u041a\u0435\u0439\u0441",
+        "content_type": 10,
+        "codename": "change_case"
+      }
+    },
+    {
+      "model": "auth.permission",
+      "pk": 39,
+      "fields": {
+        "name": "Can delete \u041a\u0435\u0439\u0441",
+        "content_type": 10,
+        "codename": "delete_case"
+      }
+    },
+    {
+      "model": "auth.permission",
+      "pk": 40,
+      "fields": {
+        "name": "Can view \u041a\u0435\u0439\u0441",
+        "content_type": 10,
+        "codename": "view_case"
+      }
+    },
+    {
+      "model": "auth.permission",
+      "pk": 41,
+      "fields": {
+        "name": "Can add \u0418\u0441\u0442\u043e\u0440\u0438\u044f \u043e\u0442\u043a\u0440\u044b\u0442\u0438\u044f \u043a\u0435\u0439\u0441\u0430",
+        "content_type": 11,
+        "codename": "add_opening"
+      }
+    },
+    {
+      "model": "auth.permission",
+      "pk": 42,
+      "fields": {
+        "name": "Can change \u0418\u0441\u0442\u043e\u0440\u0438\u044f \u043e\u0442\u043a\u0440\u044b\u0442\u0438\u044f \u043a\u0435\u0439\u0441\u0430",
+        "content_type": 11,
+        "codename": "change_opening"
+      }
+    },
+    {
+      "model": "auth.permission",
+      "pk": 43,
+      "fields": {
+        "name": "Can delete \u0418\u0441\u0442\u043e\u0440\u0438\u044f \u043e\u0442\u043a\u0440\u044b\u0442\u0438\u044f \u043a\u0435\u0439\u0441\u0430",
+        "content_type": 11,
+        "codename": "delete_opening"
+      }
+    },
+    {
+      "model": "auth.permission",
+      "pk": 44,
+      "fields": {
+        "name": "Can view \u0418\u0441\u0442\u043e\u0440\u0438\u044f \u043e\u0442\u043a\u0440\u044b\u0442\u0438\u044f \u043a\u0435\u0439\u0441\u0430",
+        "content_type": 11,
+        "codename": "view_opening"
+      }
+    },
+    {
+      "model": "auth.permission",
+      "pk": 45,
+      "fields": {
+        "name": "Can add \u041f\u0440\u0435\u0434\u043c\u0435\u0442 \u0432 \u043a\u0435\u0439\u0441\u0435",
+        "content_type": 12,
+        "codename": "add_caseitem"
+      }
+    },
+    {
+      "model": "auth.permission",
+      "pk": 46,
+      "fields": {
+        "name": "Can change \u041f\u0440\u0435\u0434\u043c\u0435\u0442 \u0432 \u043a\u0435\u0439\u0441\u0435",
+        "content_type": 12,
+        "codename": "change_caseitem"
+      }
+    },
+    {
+      "model": "auth.permission",
+      "pk": 47,
+      "fields": {
+        "name": "Can delete \u041f\u0440\u0435\u0434\u043c\u0435\u0442 \u0432 \u043a\u0435\u0439\u0441\u0435",
+        "content_type": 12,
+        "codename": "delete_caseitem"
+      }
+    },
+    {
+      "model": "auth.permission",
+      "pk": 48,
+      "fields": {
+        "name": "Can view \u041f\u0440\u0435\u0434\u043c\u0435\u0442 \u0432 \u043a\u0435\u0439\u0441\u0435",
+        "content_type": 12,
+        "codename": "view_caseitem"
+      }
+    },
+    {
+      "model": "auth.permission",
+      "pk": 49,
+      "fields": {
+        "name": "Can add \u041f\u0440\u0435\u0434\u043c\u0435\u0442 \u0432 \u0438\u043d\u0432\u0435\u043d\u0442\u0430\u0440\u0435",
+        "content_type": 13,
+        "codename": "add_inventoryitem"
+      }
+    },
+    {
+      "model": "auth.permission",
+      "pk": 50,
+      "fields": {
+        "name": "Can change \u041f\u0440\u0435\u0434\u043c\u0435\u0442 \u0432 \u0438\u043d\u0432\u0435\u043d\u0442\u0430\u0440\u0435",
+        "content_type": 13,
+        "codename": "change_inventoryitem"
+      }
+    },
+    {
+      "model": "auth.permission",
+      "pk": 51,
+      "fields": {
+        "name": "Can delete \u041f\u0440\u0435\u0434\u043c\u0435\u0442 \u0432 \u0438\u043d\u0432\u0435\u043d\u0442\u0430\u0440\u0435",
+        "content_type": 13,
+        "codename": "delete_inventoryitem"
+      }
+    },
+    {
+      "model": "auth.permission",
+      "pk": 52,
+      "fields": {
+        "name": "Can view \u041f\u0440\u0435\u0434\u043c\u0435\u0442 \u0432 \u0438\u043d\u0432\u0435\u043d\u0442\u0430\u0440\u0435",
+        "content_type": 13,
+        "codename": "view_inventoryitem"
+      }
+    },
+    {
+      "model": "auth.permission",
+      "pk": 53,
+      "fields": {
+        "name": "Can add \u0422\u0440\u0430\u043d\u0437\u0430\u043a\u0446\u0438\u044f / \u041f\u043e\u043f\u043e\u043b\u043d\u0435\u043d\u0438\u0435",
+        "content_type": 14,
+        "codename": "add_transaction"
+      }
+    },
+    {
+      "model": "auth.permission",
+      "pk": 54,
+      "fields": {
+        "name": "Can change \u0422\u0440\u0430\u043d\u0437\u0430\u043a\u0446\u0438\u044f / \u041f\u043e\u043f\u043e\u043b\u043d\u0435\u043d\u0438\u0435",
+        "content_type": 14,
+        "codename": "change_transaction"
+      }
+    },
+    {
+      "model": "auth.permission",
+      "pk": 55,
+      "fields": {
+        "name": "Can delete \u0422\u0440\u0430\u043d\u0437\u0430\u043a\u0446\u0438\u044f / \u041f\u043e\u043f\u043e\u043b\u043d\u0435\u043d\u0438\u0435",
+        "content_type": 14,
+        "codename": "delete_transaction"
+      }
+    },
+    {
+      "model": "auth.permission",
+      "pk": 56,
+      "fields": {
+        "name": "Can view \u0422\u0440\u0430\u043d\u0437\u0430\u043a\u0446\u0438\u044f / \u041f\u043e\u043f\u043e\u043b\u043d\u0435\u043d\u0438\u0435",
+        "content_type": 14,
+        "codename": "view_transaction"
+      }
+    },
+    {
+      "model": "auth.permission",
+      "pk": 57,
+      "fields": {
+        "name": "Can add \u041f\u043e\u043f\u044b\u0442\u043a\u0430 \u0430\u043f\u0433\u0440\u0435\u0439\u0434\u0430",
+        "content_type": 15,
+        "codename": "add_upgradeattempt"
+      }
+    },
+    {
+      "model": "auth.permission",
+      "pk": 58,
+      "fields": {
+        "name": "Can change \u041f\u043e\u043f\u044b\u0442\u043a\u0430 \u0430\u043f\u0433\u0440\u0435\u0439\u0434\u0430",
+        "content_type": 15,
+        "codename": "change_upgradeattempt"
+      }
+    },
+    {
+      "model": "auth.permission",
+      "pk": 59,
+      "fields": {
+        "name": "Can delete \u041f\u043e\u043f\u044b\u0442\u043a\u0430 \u0430\u043f\u0433\u0440\u0435\u0439\u0434\u0430",
+        "content_type": 15,
+        "codename": "delete_upgradeattempt"
+      }
+    },
+    {
+      "model": "auth.permission",
+      "pk": 60,
+      "fields": {
+        "name": "Can view \u041f\u043e\u043f\u044b\u0442\u043a\u0430 \u0430\u043f\u0433\u0440\u0435\u0439\u0434\u0430",
+        "content_type": 15,
+        "codename": "view_upgradeattempt"
+      }
+    },
+    {
+      "model": "auth.permission",
+      "pk": 61,
+      "fields": {
+        "name": "Can add \u041a\u043e\u043d\u0442\u0440\u0430\u043a\u0442 \u043e\u0431\u043c\u0435\u043d\u0430",
+        "content_type": 16,
+        "codename": "add_contract"
+      }
+    },
+    {
+      "model": "auth.permission",
+      "pk": 62,
+      "fields": {
+        "name": "Can change \u041a\u043e\u043d\u0442\u0440\u0430\u043a\u0442 \u043e\u0431\u043c\u0435\u043d\u0430",
+        "content_type": 16,
+        "codename": "change_contract"
+      }
+    },
+    {
+      "model": "auth.permission",
+      "pk": 63,
+      "fields": {
+        "name": "Can delete \u041a\u043e\u043d\u0442\u0440\u0430\u043a\u0442 \u043e\u0431\u043c\u0435\u043d\u0430",
+        "content_type": 16,
+        "codename": "delete_contract"
+      }
+    },
+    {
+      "model": "auth.permission",
+      "pk": 64,
+      "fields": {
+        "name": "Can view \u041a\u043e\u043d\u0442\u0440\u0430\u043a\u0442 \u043e\u0431\u043c\u0435\u043d\u0430",
+        "content_type": 16,
+        "codename": "view_contract"
+      }
+    },
+    {
+      "model": "auth.permission",
+      "pk": 65,
+      "fields": {
+        "name": "Can add contract input item",
+        "content_type": 17,
+        "codename": "add_contractinputitem"
+      }
+    },
+    {
+      "model": "auth.permission",
+      "pk": 66,
+      "fields": {
+        "name": "Can change contract input item",
+        "content_type": 17,
+        "codename": "change_contractinputitem"
+      }
+    },
+    {
+      "model": "auth.permission",
+      "pk": 67,
+      "fields": {
+        "name": "Can delete contract input item",
+        "content_type": 17,
+        "codename": "delete_contractinputitem"
+      }
+    },
+    {
+      "model": "auth.permission",
+      "pk": 68,
+      "fields": {
+        "name": "Can view contract input item",
+        "content_type": 17,
+        "codename": "view_contractinputitem"
+      }
+    },
+    {
+      "model": "auth.permission",
+      "pk": 69,
+      "fields": {
+        "name": "Can add \u0411\u0438\u0442\u0432\u0430 \u043a\u0435\u0439\u0441\u043e\u0432",
+        "content_type": 18,
+        "codename": "add_battle"
+      }
+    },
+    {
+      "model": "auth.permission",
+      "pk": 70,
+      "fields": {
+        "name": "Can change \u0411\u0438\u0442\u0432\u0430 \u043a\u0435\u0439\u0441\u043e\u0432",
+        "content_type": 18,
+        "codename": "change_battle"
+      }
+    },
+    {
+      "model": "auth.permission",
+      "pk": 71,
+      "fields": {
+        "name": "Can delete \u0411\u0438\u0442\u0432\u0430 \u043a\u0435\u0439\u0441\u043e\u0432",
+        "content_type": 18,
+        "codename": "delete_battle"
+      }
+    },
+    {
+      "model": "auth.permission",
+      "pk": 72,
+      "fields": {
+        "name": "Can view \u0411\u0438\u0442\u0432\u0430 \u043a\u0435\u0439\u0441\u043e\u0432",
+        "content_type": 18,
+        "codename": "view_battle"
+      }
+    },
+    {
+      "model": "auth.permission",
+      "pk": 73,
+      "fields": {
+        "name": "Can add battle player",
+        "content_type": 19,
+        "codename": "add_battleplayer"
+      }
+    },
+    {
+      "model": "auth.permission",
+      "pk": 74,
+      "fields": {
+        "name": "Can change battle player",
+        "content_type": 19,
+        "codename": "change_battleplayer"
+      }
+    },
+    {
+      "model": "auth.permission",
+      "pk": 75,
+      "fields": {
+        "name": "Can delete battle player",
+        "content_type": 19,
+        "codename": "delete_battleplayer"
+      }
+    },
+    {
+      "model": "auth.permission",
+      "pk": 76,
+      "fields": {
+        "name": "Can view battle player",
+        "content_type": 19,
+        "codename": "view_battleplayer"
+      }
+    },
+    {
+      "model": "auth.permission",
+      "pk": 77,
+      "fields": {
+        "name": "Can add battle round",
+        "content_type": 20,
+        "codename": "add_battleround"
+      }
+    },
+    {
+      "model": "auth.permission",
+      "pk": 78,
+      "fields": {
+        "name": "Can change battle round",
+        "content_type": 20,
+        "codename": "change_battleround"
+      }
+    },
+    {
+      "model": "auth.permission",
+      "pk": 79,
+      "fields": {
+        "name": "Can delete battle round",
+        "content_type": 20,
+        "codename": "delete_battleround"
+      }
+    },
+    {
+      "model": "auth.permission",
+      "pk": 80,
+      "fields": {
+        "name": "Can view battle round",
+        "content_type": 20,
+        "codename": "view_battleround"
+      }
+    },
+    {
+      "model": "auth.permission",
+      "pk": 81,
+      "fields": {
+        "name": "Can add \u041f\u0440\u043e\u043c\u043e\u043a\u043e\u0434 (Promo Code)",
+        "content_type": 21,
+        "codename": "add_promocode"
+      }
+    },
+    {
+      "model": "auth.permission",
+      "pk": 82,
+      "fields": {
+        "name": "Can change \u041f\u0440\u043e\u043c\u043e\u043a\u043e\u0434 (Promo Code)",
+        "content_type": 21,
+        "codename": "change_promocode"
+      }
+    },
+    {
+      "model": "auth.permission",
+      "pk": 83,
+      "fields": {
+        "name": "Can delete \u041f\u0440\u043e\u043c\u043e\u043a\u043e\u0434 (Promo Code)",
+        "content_type": 21,
+        "codename": "delete_promocode"
+      }
+    },
+    {
+      "model": "auth.permission",
+      "pk": 84,
+      "fields": {
+        "name": "Can view \u041f\u0440\u043e\u043c\u043e\u043a\u043e\u0434 (Promo Code)",
+        "content_type": 21,
+        "codename": "view_promocode"
+      }
+    },
+    {
+      "model": "auth.permission",
+      "pk": 85,
+      "fields": {
+        "name": "Can add \u041f\u0435\u0440\u0441\u043e\u043d\u0430\u043b\u044c\u043d\u044b\u0439 \u0448\u0430\u043d\u0441 (Personal Case Chance)",
+        "content_type": 22,
+        "codename": "add_personalcasechance"
+      }
+    },
+    {
+      "model": "auth.permission",
+      "pk": 86,
+      "fields": {
+        "name": "Can change \u041f\u0435\u0440\u0441\u043e\u043d\u0430\u043b\u044c\u043d\u044b\u0439 \u0448\u0430\u043d\u0441 (Personal Case Chance)",
+        "content_type": 22,
+        "codename": "change_personalcasechance"
+      }
+    },
+    {
+      "model": "auth.permission",
+      "pk": 87,
+      "fields": {
+        "name": "Can delete \u041f\u0435\u0440\u0441\u043e\u043d\u0430\u043b\u044c\u043d\u044b\u0439 \u0448\u0430\u043d\u0441 (Personal Case Chance)",
+        "content_type": 22,
+        "codename": "delete_personalcasechance"
+      }
+    },
+    {
+      "model": "auth.permission",
+      "pk": 88,
+      "fields": {
+        "name": "Can view \u041f\u0435\u0440\u0441\u043e\u043d\u0430\u043b\u044c\u043d\u044b\u0439 \u0448\u0430\u043d\u0441 (Personal Case Chance)",
+        "content_type": 22,
+        "codename": "view_personalcasechance"
+      }
+    },
+    {
+      "model": "auth.permission",
+      "pk": 89,
+      "fields": {
+        "name": "Can add \u0411\u0435\u0441\u043f\u043b\u0430\u0442\u043d\u044b\u0435 \u043e\u0442\u043a\u0440\u044b\u0442\u0438\u044f \u043f\u043e\u043b\u044c\u0437\u043e\u0432\u0430\u0442\u0435\u043b\u044f",
+        "content_type": 23,
+        "codename": "add_userfreeopening"
+      }
+    },
+    {
+      "model": "auth.permission",
+      "pk": 90,
+      "fields": {
+        "name": "Can change \u0411\u0435\u0441\u043f\u043b\u0430\u0442\u043d\u044b\u0435 \u043e\u0442\u043a\u0440\u044b\u0442\u0438\u044f \u043f\u043e\u043b\u044c\u0437\u043e\u0432\u0430\u0442\u0435\u043b\u044f",
+        "content_type": 23,
+        "codename": "change_userfreeopening"
+      }
+    },
+    {
+      "model": "auth.permission",
+      "pk": 91,
+      "fields": {
+        "name": "Can delete \u0411\u0435\u0441\u043f\u043b\u0430\u0442\u043d\u044b\u0435 \u043e\u0442\u043a\u0440\u044b\u0442\u0438\u044f \u043f\u043e\u043b\u044c\u0437\u043e\u0432\u0430\u0442\u0435\u043b\u044f",
+        "content_type": 23,
+        "codename": "delete_userfreeopening"
+      }
+    },
+    {
+      "model": "auth.permission",
+      "pk": 92,
+      "fields": {
+        "name": "Can view \u0411\u0435\u0441\u043f\u043b\u0430\u0442\u043d\u044b\u0435 \u043e\u0442\u043a\u0440\u044b\u0442\u0438\u044f \u043f\u043e\u043b\u044c\u0437\u043e\u0432\u0430\u0442\u0435\u043b\u044f",
+        "content_type": 23,
+        "codename": "view_userfreeopening"
+      }
+    },
+    {
+      "model": "auth.permission",
+      "pk": 93,
+      "fields": {
+        "name": "Can add \u0418\u0441\u043f\u043e\u043b\u044c\u0437\u043e\u0432\u0430\u043d\u0438\u0435 \u043f\u0440\u043e\u043c\u043e\u043a\u043e\u0434\u0430",
+        "content_type": 24,
+        "codename": "add_promocodeuse"
+      }
+    },
+    {
+      "model": "auth.permission",
+      "pk": 94,
+      "fields": {
+        "name": "Can change \u0418\u0441\u043f\u043e\u043b\u044c\u0437\u043e\u0432\u0430\u043d\u0438\u0435 \u043f\u0440\u043e\u043c\u043e\u043a\u043e\u0434\u0430",
+        "content_type": 24,
+        "codename": "change_promocodeuse"
+      }
+    },
+    {
+      "model": "auth.permission",
+      "pk": 95,
+      "fields": {
+        "name": "Can delete \u0418\u0441\u043f\u043e\u043b\u044c\u0437\u043e\u0432\u0430\u043d\u0438\u0435 \u043f\u0440\u043e\u043c\u043e\u043a\u043e\u0434\u0430",
+        "content_type": 24,
+        "codename": "delete_promocodeuse"
+      }
+    },
+    {
+      "model": "auth.permission",
+      "pk": 96,
+      "fields": {
+        "name": "Can view \u0418\u0441\u043f\u043e\u043b\u044c\u0437\u043e\u0432\u0430\u043d\u0438\u0435 \u043f\u0440\u043e\u043c\u043e\u043a\u043e\u0434\u0430",
+        "content_type": 24,
+        "codename": "view_promocodeuse"
+      }
+    },
+    {
+      "model": "auth.permission",
+      "pk": 97,
+      "fields": {
+        "name": "Can add \u041d\u0430\u0441\u0442\u0440\u043e\u0439\u043a\u0430 \u043a\u0443\u0440\u0441\u043e\u0432 \u0432\u0430\u043b\u044e\u0442 (UC / UZS / USD)",
+        "content_type": 25,
+        "codename": "add_currencysetting"
+      }
+    },
+    {
+      "model": "auth.permission",
+      "pk": 98,
+      "fields": {
+        "name": "Can change \u041d\u0430\u0441\u0442\u0440\u043e\u0439\u043a\u0430 \u043a\u0443\u0440\u0441\u043e\u0432 \u0432\u0430\u043b\u044e\u0442 (UC / UZS / USD)",
+        "content_type": 25,
+        "codename": "change_currencysetting"
+      }
+    },
+    {
+      "model": "auth.permission",
+      "pk": 99,
+      "fields": {
+        "name": "Can delete \u041d\u0430\u0441\u0442\u0440\u043e\u0439\u043a\u0430 \u043a\u0443\u0440\u0441\u043e\u0432 \u0432\u0430\u043b\u044e\u0442 (UC / UZS / USD)",
+        "content_type": 25,
+        "codename": "delete_currencysetting"
+      }
+    },
+    {
+      "model": "auth.permission",
+      "pk": 100,
+      "fields": {
+        "name": "Can view \u041d\u0430\u0441\u0442\u0440\u043e\u0439\u043a\u0430 \u043a\u0443\u0440\u0441\u043e\u0432 \u0432\u0430\u043b\u044e\u0442 (UC / UZS / USD)",
+        "content_type": 25,
+        "codename": "view_currencysetting"
+      }
+    },
+    {
+      "model": "auth.user",
+      "pk": 1,
+      "fields": {
+        "password": "pbkdf2_sha256$1000000$xphIj091DQb3GtyrFXyEFG$B3Q+0Qu6bLIpIRcmSKwrpzUpJ+w5+/Qz33Stg4Tsszc=",
+        "last_login": "2026-09-06T16:56:30.238Z",
+        "is_superuser": true,
+        "username": "Smoke",
+        "first_name": "",
+        "last_name": "",
+        "email": "smoke@neondrop.gg",
+        "is_staff": true,
+        "is_active": true,
+        "date_joined": "2026-08-31T18:12:53.424Z",
+        "groups": [],
+        "user_permissions": []
+      }
+    },
+    {
+      "model": "auth.user",
+      "pk": 2,
+      "fields": {
+        "password": "pbkdf2_sha256$1000000$JVcW0ubrgfISSnn9ewqhZM$t+Xwr3iVPg3luTFmkgeIwU9S327HJ1Bpv/0bokeJYdg=",
+        "last_login": "2026-08-31T18:24:12.213Z",
+        "is_superuser": false,
+        "username": "avaz",
+        "first_name": "",
+        "last_name": "",
+        "email": "dostbekovhayotbek20@gmail.com",
+        "is_staff": false,
+        "is_active": true,
+        "date_joined": "2026-08-31T18:24:11.623Z",
+        "groups": [],
+        "user_permissions": []
+      }
+    },
+    {
+      "model": "users.profile",
+      "pk": 1,
+      "fields": {
+        "user": 1,
+        "balance": "1243.56",
+        "telegram_username": "@smoke_neondrop",
+        "avatar": "",
+        "avatar_url": "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80",
+        "total_opened": 42,
+        "total_winnings": "3890.50",
+        "created_at": "2026-08-31T18:12:53.424Z"
+      }
+    },
+    {
+      "model": "users.profile",
+      "pk": 2,
+      "fields": {
+        "user": 2,
+        "balance": "24.69",
+        "telegram_username": "avaz_akm",
+        "avatar": "",
+        "avatar_url": null,
+        "total_opened": 18,
+        "total_winnings": "393.15",
+        "created_at": "2026-08-31T18:24:12.197Z"
+      }
+    },
+    {
+      "model": "cases.category",
+      "pk": 1,
+      "fields": {
+        "name": "\u041f\u043e\u043f\u0443\u043b\u044f\u0440\u043d\u044b\u0435",
+        "slug": "popular",
+        "order": 1
+      }
+    },
+    {
+      "model": "cases.category",
+      "pk": 2,
+      "fields": {
+        "name": "\u041d\u043e\u0432\u044b\u0435",
+        "slug": "new",
+        "order": 2
+      }
+    },
+    {
+      "model": "cases.category",
+      "pk": 3,
+      "fields": {
+        "name": "\u0414\u043e\u0441\u0442\u0443\u043f\u043d\u044b\u0435",
+        "slug": "affordable",
+        "order": 3
+      }
+    },
+    {
+      "model": "cases.category",
+      "pk": 4,
+      "fields": {
+        "name": "\u0414\u043e\u0440\u043e\u0433\u0438\u0435",
+        "slug": "expensive",
+        "order": 4
+      }
+    },
+    {
+      "model": "cases.item",
+      "pk": 1,
+      "fields": {
+        "weapon_type": "Karambit",
+        "skin_name": "Fade",
+        "name": "Karambit | Fade",
+        "value": "1450.00",
+        "rarity": "knife",
+        "rarity_color": "#FFD700",
+        "image": "",
+        "image_url": "knife_karambit_fade",
+        "created_at": "2026-08-31T18:12:34.482Z"
+      }
+    },
+    {
+      "model": "cases.item",
+      "pk": 2,
+      "fields": {
+        "weapon_type": "Butterfly Knife",
+        "skin_name": "Doppler",
+        "name": "Butterfly Knife | Doppler",
+        "value": "1650.00",
+        "rarity": "knife",
+        "rarity_color": "#FFD700",
+        "image": "",
+        "image_url": "knife_butterfly_doppler",
+        "created_at": "2026-08-31T18:12:34.486Z"
+      }
+    },
+    {
+      "model": "cases.item",
+      "pk": 3,
+      "fields": {
+        "weapon_type": "M9 Bayonet",
+        "skin_name": "Gamma Doppler",
+        "name": "M9 Bayonet | Gamma Doppler",
+        "value": "1350.00",
+        "rarity": "knife",
+        "rarity_color": "#FFD700",
+        "image": "",
+        "image_url": "knife_m9_gamma",
+        "created_at": "2026-08-31T18:12:34.488Z"
+      }
+    },
+    {
+      "model": "cases.item",
+      "pk": 4,
+      "fields": {
+        "weapon_type": "M4A4",
+        "skin_name": "Howl",
+        "name": "M4A4 | Howl",
+        "value": "1850.00",
+        "rarity": "covert",
+        "rarity_color": "#EB4B4B",
+        "image": "",
+        "image_url": "m4a4_howl",
+        "created_at": "2026-08-31T18:12:34.490Z"
+      }
+    },
+    {
+      "model": "cases.item",
+      "pk": 5,
+      "fields": {
+        "weapon_type": "AWP",
+        "skin_name": "Dragon Lore",
+        "name": "AWP | Dragon Lore",
+        "value": "2100.00",
+        "rarity": "covert",
+        "rarity_color": "#EB4B4B",
+        "image": "",
+        "image_url": "awp_dragon_lore",
+        "created_at": "2026-08-31T18:12:34.492Z"
+      }
+    },
+    {
+      "model": "cases.item",
+      "pk": 6,
+      "fields": {
+        "weapon_type": "AK-47",
+        "skin_name": "Neon Rider",
+        "name": "AK-47 | Neon Rider",
+        "value": "42.31",
+        "rarity": "covert",
+        "rarity_color": "#EB4B4B",
+        "image": "",
+        "image_url": "ak47_neon_rider",
+        "created_at": "2026-08-31T18:12:34.495Z"
+      }
+    },
+    {
+      "model": "cases.item",
+      "pk": 7,
+      "fields": {
+        "weapon_type": "M4A4",
+        "skin_name": "The Emperor",
+        "name": "M4A4 | The Emperor",
+        "value": "25.41",
+        "rarity": "covert",
+        "rarity_color": "#EB4B4B",
+        "image": "",
+        "image_url": "m4a4_the_emperor",
+        "created_at": "2026-08-31T18:12:34.496Z"
+      }
+    },
+    {
+      "model": "cases.item",
+      "pk": 8,
+      "fields": {
+        "weapon_type": "USP-S",
+        "skin_name": "Kill Confirmed",
+        "name": "USP-S | Kill Confirmed",
+        "value": "75.00",
+        "rarity": "covert",
+        "rarity_color": "#EB4B4B",
+        "image": "",
+        "image_url": "usps_kill_confirmed",
+        "created_at": "2026-08-31T18:12:34.499Z"
+      }
+    },
+    {
+      "model": "cases.item",
+      "pk": 9,
+      "fields": {
+        "weapon_type": "AK-47",
+        "skin_name": "Asiimov",
+        "name": "AK-47 | Asiimov",
+        "value": "48.50",
+        "rarity": "covert",
+        "rarity_color": "#EB4B4B",
+        "image": "",
+        "image_url": "ak47_asiimov",
+        "created_at": "2026-08-31T18:12:34.501Z"
+      }
+    },
+    {
+      "model": "cases.item",
+      "pk": 10,
+      "fields": {
+        "weapon_type": "AWP",
+        "skin_name": "Containment Breach",
+        "name": "AWP | Containment Breach",
+        "value": "98.11",
+        "rarity": "classified",
+        "rarity_color": "#D32CE6",
+        "image": "",
+        "image_url": "awp_containment_breach",
+        "created_at": "2026-08-31T18:12:34.504Z"
+      }
+    },
+    {
+      "model": "cases.item",
+      "pk": 11,
+      "fields": {
+        "weapon_type": "AWP",
+        "skin_name": "Neo-Noir",
+        "name": "AWP | Neo-Noir",
+        "value": "38.50",
+        "rarity": "classified",
+        "rarity_color": "#D32CE6",
+        "image": "",
+        "image_url": "awp_neo_noir",
+        "created_at": "2026-08-31T18:12:34.506Z"
+      }
+    },
+    {
+      "model": "cases.item",
+      "pk": 12,
+      "fields": {
+        "weapon_type": "M4A1-S",
+        "skin_name": "Hyper Beast",
+        "name": "M4A1-S | Hyper Beast",
+        "value": "24.18",
+        "rarity": "classified",
+        "rarity_color": "#D32CE6",
+        "image": "",
+        "image_url": "m4a1s_hyper_beast",
+        "created_at": "2026-08-31T18:12:34.508Z"
+      }
+    },
+    {
+      "model": "cases.item",
+      "pk": 13,
+      "fields": {
+        "weapon_type": "USP-S",
+        "skin_name": "Cortex",
+        "name": "USP-S | Cortex",
+        "value": "18.73",
+        "rarity": "classified",
+        "rarity_color": "#D32CE6",
+        "image": "",
+        "image_url": "usps_cortex",
+        "created_at": "2026-08-31T18:12:34.510Z"
+      }
+    },
+    {
+      "model": "cases.item",
+      "pk": 14,
+      "fields": {
+        "weapon_type": "AK-47",
+        "skin_name": "Redline",
+        "name": "AK-47 | Redline",
+        "value": "19.80",
+        "rarity": "classified",
+        "rarity_color": "#D32CE6",
+        "image": "",
+        "image_url": "ak47_redline",
+        "created_at": "2026-08-31T18:12:34.513Z"
+      }
+    },
+    {
+      "model": "cases.item",
+      "pk": 15,
+      "fields": {
+        "weapon_type": "AWP",
+        "skin_name": "Hyper Beast",
+        "name": "AWP | Hyper Beast",
+        "value": "35.00",
+        "rarity": "classified",
+        "rarity_color": "#D32CE6",
+        "image": "",
+        "image_url": "awp_hyper_beast",
+        "created_at": "2026-08-31T18:12:34.515Z"
+      }
+    },
+    {
+      "model": "cases.item",
+      "pk": 16,
+      "fields": {
+        "weapon_type": "Desert Eagle",
+        "skin_name": "Printstream",
+        "name": "Desert Eagle | Printstream",
+        "value": "56.23",
+        "rarity": "restricted",
+        "rarity_color": "#8847FF",
+        "image": "",
+        "image_url": "deagle_printstream",
+        "created_at": "2026-08-31T18:12:34.516Z"
+      }
+    },
+    {
+      "model": "cases.item",
+      "pk": 17,
+      "fields": {
+        "weapon_type": "Glock-18",
+        "skin_name": "Water Elemental",
+        "name": "Glock-18 | Water Elemental",
+        "value": "11.50",
+        "rarity": "restricted",
+        "rarity_color": "#8847FF",
+        "image": "",
+        "image_url": "glock18_water_elemental",
+        "created_at": "2026-08-31T18:12:34.519Z"
+      }
+    },
+    {
+      "model": "cases.item",
+      "pk": 18,
+      "fields": {
+        "weapon_type": "M4A4",
+        "skin_name": "Neo-Noir",
+        "name": "M4A4 | Neo-Noir",
+        "value": "14.20",
+        "rarity": "restricted",
+        "rarity_color": "#8847FF",
+        "image": "",
+        "image_url": "m4a4_neo_noir",
+        "created_at": "2026-08-31T18:12:34.521Z"
+      }
+    },
+    {
+      "model": "cases.item",
+      "pk": 19,
+      "fields": {
+        "weapon_type": "USP-S",
+        "skin_name": "Neo-Noir",
+        "name": "USP-S | Neo-Noir",
+        "value": "16.80",
+        "rarity": "restricted",
+        "rarity_color": "#8847FF",
+        "image": "",
+        "image_url": "usps_neo_noir",
+        "created_at": "2026-08-31T18:12:34.523Z"
+      }
+    },
+    {
+      "model": "cases.item",
+      "pk": 20,
+      "fields": {
+        "weapon_type": "AK-47",
+        "skin_name": "Phantom Disruptor",
+        "name": "AK-47 | Phantom Disruptor",
+        "value": "12.50",
+        "rarity": "restricted",
+        "rarity_color": "#8847FF",
+        "image": "",
+        "image_url": "ak47_phantom_disruptor",
+        "created_at": "2026-08-31T18:12:34.526Z"
+      }
+    },
+    {
+      "model": "cases.item",
+      "pk": 21,
+      "fields": {
+        "weapon_type": "P90",
+        "skin_name": "Asiimov",
+        "name": "P90 | Asiimov",
+        "value": "15.23",
+        "rarity": "mil_spec",
+        "rarity_color": "#4B69FF",
+        "image": "",
+        "image_url": "p90_asiimov",
+        "created_at": "2026-08-31T18:12:34.528Z"
+      }
+    },
+    {
+      "model": "cases.item",
+      "pk": 22,
+      "fields": {
+        "weapon_type": "SG 553",
+        "skin_name": "Cyrex",
+        "name": "SG 553 | Cyrex",
+        "value": "7.43",
+        "rarity": "mil_spec",
+        "rarity_color": "#4B69FF",
+        "image": "",
+        "image_url": "sg553_cyrex",
+        "created_at": "2026-08-31T18:12:34.530Z"
+      }
+    },
+    {
+      "model": "cases.item",
+      "pk": 23,
+      "fields": {
+        "weapon_type": "Glock-18",
+        "skin_name": "Vogue",
+        "name": "Glock-18 | Vogue",
+        "value": "6.50",
+        "rarity": "mil_spec",
+        "rarity_color": "#4B69FF",
+        "image": "",
+        "image_url": "glock18_vogue",
+        "created_at": "2026-08-31T18:12:34.532Z"
+      }
+    },
+    {
+      "model": "cases.item",
+      "pk": 24,
+      "fields": {
+        "weapon_type": "M4A1-S",
+        "skin_name": "Flashback",
+        "name": "M4A1-S | Flashback",
+        "value": "4.80",
+        "rarity": "mil_spec",
+        "rarity_color": "#4B69FF",
+        "image": "",
+        "image_url": "m4a1s_flashback",
+        "created_at": "2026-08-31T18:12:34.534Z"
+      }
+    },
+    {
+      "model": "cases.item",
+      "pk": 25,
+      "fields": {
+        "weapon_type": "Desert Eagle",
+        "skin_name": "Light Rail",
+        "name": "Desert Eagle | Light Rail",
+        "value": "3.90",
+        "rarity": "mil_spec",
+        "rarity_color": "#4B69FF",
+        "image": "",
+        "image_url": "deagle_light_rail",
+        "created_at": "2026-08-31T18:12:34.537Z"
+      }
+    },
+    {
+      "model": "cases.item",
+      "pk": 26,
+      "fields": {
+        "weapon_type": "USP-S",
+        "skin_name": "Cyrex",
+        "name": "USP-S | Cyrex",
+        "value": "3.20",
+        "rarity": "mil_spec",
+        "rarity_color": "#4B69FF",
+        "image": "",
+        "image_url": "usps_cyrex",
+        "created_at": "2026-08-31T18:12:34.539Z"
+      }
+    },
+    {
+      "model": "cases.item",
+      "pk": 27,
+      "fields": {
+        "weapon_type": "MP9",
+        "skin_name": "Starlight Protector",
+        "name": "MP9 | Starlight Protector",
+        "value": "2.90",
+        "rarity": "mil_spec",
+        "rarity_color": "#4B69FF",
+        "image": "",
+        "image_url": "mp9_starlight",
+        "created_at": "2026-08-31T18:12:34.541Z"
+      }
+    },
+    {
+      "model": "cases.case",
+      "pk": 1,
+      "fields": {
+        "name": "Neon Case",
+        "slug": "neon-case",
+        "category": 1,
+        "price": "4.08",
+        "image": "",
+        "image_url": "case_neon_case",
+        "color_theme": "neon-green",
+        "active": true,
+        "is_popular": true,
+        "is_new": false,
+        "order": 1,
+        "created_at": "2026-08-31T18:12:53.275Z"
+      }
+    },
+    {
+      "model": "cases.case",
+      "pk": 2,
+      "fields": {
+        "name": "Cyber Case",
+        "slug": "cyber-case",
+        "category": 1,
+        "price": "4.99",
+        "image": "",
+        "image_url": "case_cyber_case",
+        "color_theme": "cyber-pink",
+        "active": true,
+        "is_popular": true,
+        "is_new": true,
+        "order": 2,
+        "created_at": "2026-08-31T18:12:53.296Z"
+      }
+    },
+    {
+      "model": "cases.case",
+      "pk": 3,
+      "fields": {
+        "name": "Galaxy Case",
+        "slug": "galaxy-case",
+        "category": 1,
+        "price": "9.99",
+        "image": "",
+        "image_url": "case_galaxy_case",
+        "color_theme": "galaxy-purple",
+        "active": true,
+        "is_popular": true,
+        "is_new": false,
+        "order": 3,
+        "created_at": "2026-08-31T18:12:53.319Z"
+      }
+    },
+    {
+      "model": "cases.case",
+      "pk": 4,
+      "fields": {
+        "name": "Frost Case",
+        "slug": "frost-case",
+        "category": 1,
+        "price": "19.99",
+        "image": "",
+        "image_url": "case_frost_case",
+        "color_theme": "frost-cyan",
+        "active": true,
+        "is_popular": true,
+        "is_new": false,
+        "order": 4,
+        "created_at": "2026-08-31T18:12:53.339Z"
+      }
+    },
+    {
+      "model": "cases.case",
+      "pk": 5,
+      "fields": {
+        "name": "Demon Case",
+        "slug": "demon-case",
+        "category": 1,
+        "price": "39.99",
+        "image": "",
+        "image_url": "case_demon_case",
+        "color_theme": "demon-orange",
+        "active": true,
+        "is_popular": true,
+        "is_new": false,
+        "order": 5,
+        "created_at": "2026-08-31T18:12:53.358Z"
+      }
+    },
+    {
+      "model": "cases.case",
+      "pk": 6,
+      "fields": {
+        "name": "Godlike Case",
+        "slug": "godlike-case",
+        "category": 4,
+        "price": "99.99",
+        "image": "",
+        "image_url": "case_godlike_case",
+        "color_theme": "godlike-gold",
+        "active": true,
+        "is_popular": true,
+        "is_new": true,
+        "order": 6,
+        "created_at": "2026-08-31T18:12:53.375Z"
+      }
+    },
+    {
+      "model": "cases.case",
+      "pk": 7,
+      "fields": {
+        "name": "Luxury Case",
+        "slug": "luxury-case",
+        "category": 4,
+        "price": "199.99",
+        "image": "",
+        "image_url": "case_luxury_case",
+        "color_theme": "luxury-silver",
+        "active": true,
+        "is_popular": false,
+        "is_new": false,
+        "order": 7,
+        "created_at": "2026-08-31T18:12:53.392Z"
+      }
+    },
+    {
+      "model": "cases.case",
+      "pk": 8,
+      "fields": {
+        "name": "Supreme Case",
+        "slug": "supreme-case",
+        "category": 4,
+        "price": "499.99",
+        "image": "",
+        "image_url": "case_supreme_case",
+        "color_theme": "supreme-red",
+        "active": true,
+        "is_popular": false,
+        "is_new": true,
+        "order": 8,
+        "created_at": "2026-08-31T18:12:53.410Z"
+      }
+    },
+    {
+      "model": "cases.caseitem",
+      "pk": 1,
+      "fields": {
+        "case": 1,
+        "item": 1,
+        "weight": 0.05
+      }
+    },
+    {
+      "model": "cases.caseitem",
+      "pk": 2,
+      "fields": {
+        "case": 1,
+        "item": 6,
+        "weight": 0.5
+      }
+    },
+    {
+      "model": "cases.caseitem",
+      "pk": 3,
+      "fields": {
+        "case": 1,
+        "item": 13,
+        "weight": 3.0
+      }
+    },
+    {
+      "model": "cases.caseitem",
+      "pk": 4,
+      "fields": {
+        "case": 1,
+        "item": 16,
+        "weight": 6.0
+      }
+    },
+    {
+      "model": "cases.caseitem",
+      "pk": 5,
+      "fields": {
+        "case": 1,
+        "item": 17,
+        "weight": 15.0
+      }
+    },
+    {
+      "model": "cases.caseitem",
+      "pk": 6,
+      "fields": {
+        "case": 1,
+        "item": 22,
+        "weight": 35.0
+      }
+    },
+    {
+      "model": "cases.caseitem",
+      "pk": 7,
+      "fields": {
+        "case": 1,
+        "item": 26,
+        "weight": 84.45
+      }
+    },
+    {
+      "model": "cases.caseitem",
+      "pk": 8,
+      "fields": {
+        "case": 2,
+        "item": 1,
+        "weight": 0.02
+      }
+    },
+    {
+      "model": "cases.caseitem",
+      "pk": 9,
+      "fields": {
+        "case": 2,
+        "item": 4,
+        "weight": 0.2
+      }
+    },
+    {
+      "model": "cases.caseitem",
+      "pk": 10,
+      "fields": {
+        "case": 2,
+        "item": 6,
+        "weight": 0.5
+      }
+    },
+    {
+      "model": "cases.caseitem",
+      "pk": 11,
+      "fields": {
+        "case": 2,
+        "item": 11,
+        "weight": 1.5
+      }
+    },
+    {
+      "model": "cases.caseitem",
+      "pk": 12,
+      "fields": {
+        "case": 2,
+        "item": 12,
+        "weight": 3.0
+      }
+    },
+    {
+      "model": "cases.caseitem",
+      "pk": 13,
+      "fields": {
+        "case": 2,
+        "item": 13,
+        "weight": 5.0
+      }
+    },
+    {
+      "model": "cases.caseitem",
+      "pk": 14,
+      "fields": {
+        "case": 2,
+        "item": 16,
+        "weight": 15.0
+      }
+    },
+    {
+      "model": "cases.caseitem",
+      "pk": 15,
+      "fields": {
+        "case": 2,
+        "item": 21,
+        "weight": 25.0
+      }
+    },
+    {
+      "model": "cases.caseitem",
+      "pk": 16,
+      "fields": {
+        "case": 2,
+        "item": 22,
+        "weight": 49.78
+      }
+    },
+    {
+      "model": "cases.caseitem",
+      "pk": 17,
+      "fields": {
+        "case": 3,
+        "item": 2,
+        "weight": 0.08
+      }
+    },
+    {
+      "model": "cases.caseitem",
+      "pk": 18,
+      "fields": {
+        "case": 3,
+        "item": 10,
+        "weight": 2.0
+      }
+    },
+    {
+      "model": "cases.caseitem",
+      "pk": 19,
+      "fields": {
+        "case": 3,
+        "item": 9,
+        "weight": 4.0
+      }
+    },
+    {
+      "model": "cases.caseitem",
+      "pk": 20,
+      "fields": {
+        "case": 3,
+        "item": 11,
+        "weight": 8.0
+      }
+    },
+    {
+      "model": "cases.caseitem",
+      "pk": 21,
+      "fields": {
+        "case": 3,
+        "item": 16,
+        "weight": 18.0
+      }
+    },
+    {
+      "model": "cases.caseitem",
+      "pk": 22,
+      "fields": {
+        "case": 3,
+        "item": 21,
+        "weight": 30.0
+      }
+    },
+    {
+      "model": "cases.caseitem",
+      "pk": 23,
+      "fields": {
+        "case": 3,
+        "item": 23,
+        "weight": 37.92
+      }
+    },
+    {
+      "model": "cases.caseitem",
+      "pk": 24,
+      "fields": {
+        "case": 4,
+        "item": 3,
+        "weight": 0.15
+      }
+    },
+    {
+      "model": "cases.caseitem",
+      "pk": 25,
+      "fields": {
+        "case": 4,
+        "item": 5,
+        "weight": 0.35
+      }
+    },
+    {
+      "model": "cases.caseitem",
+      "pk": 26,
+      "fields": {
+        "case": 4,
+        "item": 10,
+        "weight": 5.0
+      }
+    },
+    {
+      "model": "cases.caseitem",
+      "pk": 27,
+      "fields": {
+        "case": 4,
+        "item": 12,
+        "weight": 12.0
+      }
+    },
+    {
+      "model": "cases.caseitem",
+      "pk": 28,
+      "fields": {
+        "case": 4,
+        "item": 16,
+        "weight": 25.0
+      }
+    },
+    {
+      "model": "cases.caseitem",
+      "pk": 29,
+      "fields": {
+        "case": 4,
+        "item": 14,
+        "weight": 30.0
+      }
+    },
+    {
+      "model": "cases.caseitem",
+      "pk": 30,
+      "fields": {
+        "case": 4,
+        "item": 24,
+        "weight": 27.5
+      }
+    },
+    {
+      "model": "cases.caseitem",
+      "pk": 31,
+      "fields": {
+        "case": 5,
+        "item": 2,
+        "weight": 0.5
+      }
+    },
+    {
+      "model": "cases.caseitem",
+      "pk": 32,
+      "fields": {
+        "case": 5,
+        "item": 4,
+        "weight": 1.0
+      }
+    },
+    {
+      "model": "cases.caseitem",
+      "pk": 33,
+      "fields": {
+        "case": 5,
+        "item": 8,
+        "weight": 8.5
+      }
+    },
+    {
+      "model": "cases.caseitem",
+      "pk": 34,
+      "fields": {
+        "case": 5,
+        "item": 16,
+        "weight": 20.0
+      }
+    },
+    {
+      "model": "cases.caseitem",
+      "pk": 35,
+      "fields": {
+        "case": 5,
+        "item": 6,
+        "weight": 30.0
+      }
+    },
+    {
+      "model": "cases.caseitem",
+      "pk": 36,
+      "fields": {
+        "case": 5,
+        "item": 15,
+        "weight": 40.0
+      }
+    },
+    {
+      "model": "cases.caseitem",
+      "pk": 37,
+      "fields": {
+        "case": 6,
+        "item": 1,
+        "weight": 2.0
+      }
+    },
+    {
+      "model": "cases.caseitem",
+      "pk": 38,
+      "fields": {
+        "case": 6,
+        "item": 5,
+        "weight": 3.0
+      }
+    },
+    {
+      "model": "cases.caseitem",
+      "pk": 39,
+      "fields": {
+        "case": 6,
+        "item": 4,
+        "weight": 5.0
+      }
+    },
+    {
+      "model": "cases.caseitem",
+      "pk": 40,
+      "fields": {
+        "case": 6,
+        "item": 10,
+        "weight": 25.0
+      }
+    },
+    {
+      "model": "cases.caseitem",
+      "pk": 41,
+      "fields": {
+        "case": 6,
+        "item": 8,
+        "weight": 35.0
+      }
+    },
+    {
+      "model": "cases.caseitem",
+      "pk": 42,
+      "fields": {
+        "case": 6,
+        "item": 9,
+        "weight": 30.0
+      }
+    },
+    {
+      "model": "cases.caseitem",
+      "pk": 43,
+      "fields": {
+        "case": 7,
+        "item": 1,
+        "weight": 5.0
+      }
+    },
+    {
+      "model": "cases.caseitem",
+      "pk": 44,
+      "fields": {
+        "case": 7,
+        "item": 2,
+        "weight": 6.0
+      }
+    },
+    {
+      "model": "cases.caseitem",
+      "pk": 45,
+      "fields": {
+        "case": 7,
+        "item": 5,
+        "weight": 8.0
+      }
+    },
+    {
+      "model": "cases.caseitem",
+      "pk": 46,
+      "fields": {
+        "case": 7,
+        "item": 4,
+        "weight": 10.0
+      }
+    },
+    {
+      "model": "cases.caseitem",
+      "pk": 47,
+      "fields": {
+        "case": 7,
+        "item": 10,
+        "weight": 40.0
+      }
+    },
+    {
+      "model": "cases.caseitem",
+      "pk": 48,
+      "fields": {
+        "case": 7,
+        "item": 8,
+        "weight": 31.0
+      }
+    },
+    {
+      "model": "cases.caseitem",
+      "pk": 49,
+      "fields": {
+        "case": 8,
+        "item": 5,
+        "weight": 15.0
+      }
+    },
+    {
+      "model": "cases.caseitem",
+      "pk": 50,
+      "fields": {
+        "case": 8,
+        "item": 4,
+        "weight": 20.0
+      }
+    },
+    {
+      "model": "cases.caseitem",
+      "pk": 51,
+      "fields": {
+        "case": 8,
+        "item": 2,
+        "weight": 25.0
+      }
+    },
+    {
+      "model": "cases.caseitem",
+      "pk": 52,
+      "fields": {
+        "case": 8,
+        "item": 1,
+        "weight": 40.0
+      }
+    },
+    {
+      "model": "cases.opening",
+      "pk": 1,
+      "fields": {
+        "user": 1,
+        "case": 2,
+        "item": 6,
+        "price": "4.99",
+        "server_seed_hash": "ff4fa0647f76551037d92df37262e608b4b45150b5b2f46620bfdb9c7ffd7f60",
+        "server_seed": "b37e8cde6ea55e32ec90f67677ee5729bc9db7f1ac268e71d4c6a5c0b878e0c7",
+        "client_seed": "56df2cb44fc5beb9dd2e85c01b9ce798",
+        "nonce": 1,
+        "created_at": "2026-08-31T18:12:53.865Z"
+      }
+    },
+    {
+      "model": "cases.opening",
+      "pk": 2,
+      "fields": {
+        "user": 1,
+        "case": 4,
+        "item": 12,
+        "price": "19.99",
+        "server_seed_hash": "c31af349b7af7999b66b64ea28e238dabb2ee59dbf1ee5c3adafb7de78e3d92e",
+        "server_seed": "febc59aae0c0909b17d3af0927525e4e1057269e6d88ec34aa13a174db4d31ee",
+        "client_seed": "1626d6a1c851e662ccc712ae5177dfad",
+        "nonce": 1,
+        "created_at": "2026-08-31T18:12:53.866Z"
+      }
+    },
+    {
+      "model": "cases.opening",
+      "pk": 3,
+      "fields": {
+        "user": 1,
+        "case": 1,
+        "item": 13,
+        "price": "2.49",
+        "server_seed_hash": "1f104b7434e77a19ad0b6651b090c2a7ef5d62c7b1df48f00b0ba824192262dd",
+        "server_seed": "e48c2a3b4e093812681df2a329dc3f11f680aef1bcf0a21937e9ca74e18e135a",
+        "client_seed": "d4881ae1768aec6f53232ea82ff3f306",
+        "nonce": 1,
+        "created_at": "2026-08-31T18:12:53.869Z"
+      }
+    },
+    {
+      "model": "cases.opening",
+      "pk": 4,
+      "fields": {
+        "user": 2,
+        "case": 1,
+        "item": 22,
+        "price": "2.49",
+        "server_seed_hash": "994db0b24d542c4dbd32f9e1509dd78b8660d740f90cd1871208c84e11761dcc",
+        "server_seed": "23583696d1767f0c2e6fa8a45cbdc764cbcd1cfcf3d5b430d7cfca4b84620195",
+        "client_seed": "9qwgar6ayy7",
+        "nonce": 1,
+        "created_at": "2026-08-31T18:35:10.309Z"
+      }
+    },
+    {
+      "model": "cases.opening",
+      "pk": 5,
+      "fields": {
+        "user": 2,
+        "case": 1,
+        "item": 26,
+        "price": "2.49",
+        "server_seed_hash": "86884a8f9b058c7c79d96268e1b1677437c680f4c61cd6000b5076b292d8af1a",
+        "server_seed": "dc3fc97d658ccde15926caae84731dd88aa99e3b0aefb3d3a854a55f846d4059",
+        "client_seed": "muvit18f1ss",
+        "nonce": 2,
+        "created_at": "2026-08-31T18:35:23.339Z"
+      }
+    },
+    {
+      "model": "cases.opening",
+      "pk": 6,
+      "fields": {
+        "user": 2,
+        "case": 6,
+        "item": 10,
+        "price": "99.99",
+        "server_seed_hash": "dc228a0d4a29a852ccfd7a8ad6b15f4de849c755d85f47564eb760a23992ea2a",
+        "server_seed": "652755d17c3c972714c3bd5b2020166ee06c4919322f1e8bc11080c00b24df90",
+        "client_seed": "fjzq97vp5gt",
+        "nonce": 3,
+        "created_at": "2026-08-31T18:35:59.504Z"
+      }
+    },
+    {
+      "model": "cases.opening",
+      "pk": 7,
+      "fields": {
+        "user": 2,
+        "case": 2,
+        "item": 21,
+        "price": "4.99",
+        "server_seed_hash": "6ab84e24e2b0454f19b47e0a951794e742ffad2310063acc02c770db1d6ae40a",
+        "server_seed": "0d8b0d1e975c466e98ecbcde43b85de76c064037ca7b1eb7bb9389b2815b04dd",
+        "client_seed": "mdk38cefax",
+        "nonce": 4,
+        "created_at": "2026-08-31T18:36:17.131Z"
+      }
+    },
+    {
+      "model": "cases.opening",
+      "pk": 8,
+      "fields": {
+        "user": 2,
+        "case": 2,
+        "item": 22,
+        "price": "4.99",
+        "server_seed_hash": "222f21600266e683478c1a22c873156e240f64252c3c43fd8d92be38f140643f",
+        "server_seed": "725450c0248abd0337f3ff3f47b0d76b3cfa548687e76fda8e57aaf90381e269",
+        "client_seed": "khculfojyd",
+        "nonce": 5,
+        "created_at": "2026-08-31T18:36:26.698Z"
+      }
+    },
+    {
+      "model": "cases.opening",
+      "pk": 9,
+      "fields": {
+        "user": 2,
+        "case": 2,
+        "item": 21,
+        "price": "4.99",
+        "server_seed_hash": "7f91c79661212c9975c8a4bd0cd1a72f3b3b580a04a4d382a5925da0b463ee21",
+        "server_seed": "31c6a81798be33742c3b32e4d82c10e2a152fba32aa291e8d7c02a743c299bef",
+        "client_seed": "rnhuuxhhnu",
+        "nonce": 6,
+        "created_at": "2026-08-31T18:36:35.362Z"
+      }
+    },
+    {
+      "model": "cases.opening",
+      "pk": 10,
+      "fields": {
+        "user": 2,
+        "case": 2,
+        "item": 22,
+        "price": "4.99",
+        "server_seed_hash": "b627de773fe4be92ab5a161a35765c70bd17db753d14cc6a3782887e810ddfe9",
+        "server_seed": "82d81c6dfd98fe11dfc664ddd1cc3dd527fd5cfb2a23d2612097ac5e3ceabca3",
+        "client_seed": "jmx9x1myn1e",
+        "nonce": 7,
+        "created_at": "2026-08-31T18:36:44.970Z"
+      }
+    },
+    {
+      "model": "cases.opening",
+      "pk": 11,
+      "fields": {
+        "user": 2,
+        "case": 2,
+        "item": 21,
+        "price": "4.99",
+        "server_seed_hash": "8bcb66e65c8cb16adba3b11186de9e5a55c1c2b24dc16ec0cb3e2addb4a70b10",
+        "server_seed": "9054a28f42a981d32b1f8950f4d10adcbda432dab4630aa57fd91188cf7b4b0d",
+        "client_seed": "1qhzh45lwca",
+        "nonce": 8,
+        "created_at": "2026-08-31T18:36:53.979Z"
+      }
+    },
+    {
+      "model": "cases.opening",
+      "pk": 12,
+      "fields": {
+        "user": 2,
+        "case": 2,
+        "item": 22,
+        "price": "4.99",
+        "server_seed_hash": "207f35444ddce9dbce9b6218ddb9ca146ffa49952b72d0efbdaacb8641afa73f",
+        "server_seed": "7fe1582f5c7baa6b9d1be66af65e2b18f6774137d2acc115ee8ab756ae40f9bf",
+        "client_seed": "mnuwuo359xg",
+        "nonce": 9,
+        "created_at": "2026-08-31T18:37:02.994Z"
+      }
+    },
+    {
+      "model": "cases.opening",
+      "pk": 13,
+      "fields": {
+        "user": 2,
+        "case": 2,
+        "item": 21,
+        "price": "4.99",
+        "server_seed_hash": "bc78f51b5ca08ea3c4fad8a76179c15a845bbc8a7fff84b85ada78a208958dc8",
+        "server_seed": "ca1d8a502cd9980141b2834aafbcdb7d4c006aaf88009cb0754717fa9ee2a28f",
+        "client_seed": "jojkqshta4i",
+        "nonce": 10,
+        "created_at": "2026-08-31T18:37:21.478Z"
+      }
+    },
+    {
+      "model": "cases.opening",
+      "pk": 14,
+      "fields": {
+        "user": 2,
+        "case": 2,
+        "item": 22,
+        "price": "4.99",
+        "server_seed_hash": "cd1f1ff866f0bf6a215293367bce21a6c34a934ca5021e6fd83d507eb72db1d4",
+        "server_seed": "9a43c8178fee8267ef109eaf07b850c8b3c66f0b9d8df3108be8c7194d31ef8c",
+        "client_seed": "3xej3vnjare",
+        "nonce": 11,
+        "created_at": "2026-08-31T18:37:33.669Z"
+      }
+    },
+    {
+      "model": "cases.opening",
+      "pk": 15,
+      "fields": {
+        "user": 2,
+        "case": 5,
+        "item": 15,
+        "price": "39.99",
+        "server_seed_hash": "9e9b18820b120d523cb0c7319f373985e717926fdf758362b03f0fd11d3e64cf",
+        "server_seed": "e99024af226ccb7a52b63524efc1913808b0a74b69e52cdb7c19ce6f1acacf2f",
+        "client_seed": "rla2vnway9",
+        "nonce": 12,
+        "created_at": "2026-08-31T18:37:51.652Z"
+      }
+    },
+    {
+      "model": "cases.opening",
+      "pk": 16,
+      "fields": {
+        "user": 2,
+        "case": 4,
+        "item": 16,
+        "price": "19.99",
+        "server_seed_hash": "3c0498217621afa9545f61813f31a0e231a3fcdea019d5cddbcfa2696cb1140e",
+        "server_seed": "85d45a7ad88c634d41c1be1782fb14e128c7bb3795bd4b416c43ba5da26748f0",
+        "client_seed": "wwtxur89nq",
+        "nonce": 13,
+        "created_at": "2026-08-31T18:38:06.382Z"
+      }
+    },
+    {
+      "model": "cases.opening",
+      "pk": 17,
+      "fields": {
+        "user": 2,
+        "case": 4,
+        "item": 12,
+        "price": "19.99",
+        "server_seed_hash": "acbaa07877177cd6318e6a1668a9858033c052bde4b0289a67c6c3b48dc497fc",
+        "server_seed": "66823d9b5e2c4f8682221b399080fc3fba2872fc5cb01da79b46391396c1c795",
+        "client_seed": "dde9hjxojpd",
+        "nonce": 14,
+        "created_at": "2026-08-31T18:38:18.340Z"
+      }
+    },
+    {
+      "model": "cases.opening",
+      "pk": 18,
+      "fields": {
+        "user": 2,
+        "case": 4,
+        "item": 16,
+        "price": "19.99",
+        "server_seed_hash": "976510b33d0197f956de066f53b379dd34f7d4750040ed36e0c3cd2924c7c5a6",
+        "server_seed": "2bd7fc0edadb4d1381ff7a71d740efbd94131c0e75cce6c7d5e949553ba6845d",
+        "client_seed": "cjhdjoz7t55",
+        "nonce": 15,
+        "created_at": "2026-08-31T18:38:27.273Z"
+      }
+    },
+    {
+      "model": "cases.opening",
+      "pk": 19,
+      "fields": {
+        "user": 2,
+        "case": 1,
+        "item": 17,
+        "price": "2.49",
+        "server_seed_hash": "9543ed85b5b2629fb56b08ff91974234cae5720d8e0f46c836e81879eafba3e8",
+        "server_seed": "b268202842288ae1358a2e82f3a11bfb582dad274412e2880bff21e7ed300829",
+        "client_seed": "mbrqdxz0yd",
+        "nonce": 16,
+        "created_at": "2026-08-31T18:48:09.432Z"
+      }
+    },
+    {
+      "model": "cases.opening",
+      "pk": 20,
+      "fields": {
+        "user": 2,
+        "case": 2,
+        "item": 22,
+        "price": "4.99",
+        "server_seed_hash": "de4c2057c4fbdd2412dc9d84a41e3315dd0800a1445103c20422ecbe20772e72",
+        "server_seed": "9dfa8ed67ecdc482826b0149a4989052c978c6099e8ad3526306b8205e02da9b",
+        "client_seed": "f005havzhao",
+        "nonce": 17,
+        "created_at": "2026-08-31T19:27:28.531Z"
+      }
+    },
+    {
+      "model": "cases.opening",
+      "pk": 21,
+      "fields": {
+        "user": 2,
+        "case": 1,
+        "item": 26,
+        "price": "4.08",
+        "server_seed_hash": "ecb82e474a357af17b84452e22ee544154c3b481a7fbfb64c93d2483ed521933",
+        "server_seed": "df65f686b5c4b7dc43bfc16db56e5e458188c08ccbf6000672a3131bee2d70f7",
+        "client_seed": "21ide1av246",
+        "nonce": 18,
+        "created_at": "2026-08-31T19:27:45.021Z"
+      }
+    },
+    {
+      "model": "inventory.inventoryitem",
+      "pk": 1,
+      "fields": {
+        "user": 1,
+        "item": 6,
+        "is_sold": false,
+        "sold_price": null,
+        "sold_at": null,
+        "source": "case",
+        "opening": null,
+        "created_at": "2026-08-31T18:12:53.847Z"
+      }
+    },
+    {
+      "model": "inventory.inventoryitem",
+      "pk": 2,
+      "fields": {
+        "user": 1,
+        "item": 10,
+        "is_sold": false,
+        "sold_price": null,
+        "sold_at": null,
+        "source": "case",
+        "opening": null,
+        "created_at": "2026-08-31T18:12:53.849Z"
+      }
+    },
+    {
+      "model": "inventory.inventoryitem",
+      "pk": 3,
+      "fields": {
+        "user": 1,
+        "item": 7,
+        "is_sold": false,
+        "sold_price": null,
+        "sold_at": null,
+        "source": "case",
+        "opening": null,
+        "created_at": "2026-08-31T18:12:53.850Z"
+      }
+    },
+    {
+      "model": "inventory.inventoryitem",
+      "pk": 4,
+      "fields": {
+        "user": 1,
+        "item": 16,
+        "is_sold": false,
+        "sold_price": null,
+        "sold_at": null,
+        "source": "case",
+        "opening": null,
+        "created_at": "2026-08-31T18:12:53.852Z"
+      }
+    },
+    {
+      "model": "inventory.inventoryitem",
+      "pk": 5,
+      "fields": {
+        "user": 1,
+        "item": 13,
+        "is_sold": false,
+        "sold_price": null,
+        "sold_at": null,
+        "source": "case",
+        "opening": null,
+        "created_at": "2026-08-31T18:12:53.855Z"
+      }
+    },
+    {
+      "model": "inventory.inventoryitem",
+      "pk": 6,
+      "fields": {
+        "user": 1,
+        "item": 12,
+        "is_sold": false,
+        "sold_price": null,
+        "sold_at": null,
+        "source": "case",
+        "opening": null,
+        "created_at": "2026-08-31T18:12:53.857Z"
+      }
+    },
+    {
+      "model": "inventory.inventoryitem",
+      "pk": 7,
+      "fields": {
+        "user": 1,
+        "item": 21,
+        "is_sold": false,
+        "sold_price": null,
+        "sold_at": null,
+        "source": "case",
+        "opening": null,
+        "created_at": "2026-08-31T18:12:53.859Z"
+      }
+    },
+    {
+      "model": "inventory.inventoryitem",
+      "pk": 8,
+      "fields": {
+        "user": 1,
+        "item": 22,
+        "is_sold": false,
+        "sold_price": null,
+        "sold_at": null,
+        "source": "case",
+        "opening": null,
+        "created_at": "2026-08-31T18:12:53.861Z"
+      }
+    },
+    {
+      "model": "inventory.inventoryitem",
+      "pk": 9,
+      "fields": {
+        "user": 2,
+        "item": 22,
+        "is_sold": true,
+        "sold_price": "7.43",
+        "sold_at": null,
+        "source": "case",
+        "opening": 4,
+        "created_at": "2026-08-31T18:35:10.312Z"
+      }
+    },
+    {
+      "model": "inventory.inventoryitem",
+      "pk": 10,
+      "fields": {
+        "user": 2,
+        "item": 26,
+        "is_sold": true,
+        "sold_price": "3.20",
+        "sold_at": null,
+        "source": "case",
+        "opening": 5,
+        "created_at": "2026-08-31T18:35:23.342Z"
+      }
+    },
+    {
+      "model": "inventory.inventoryitem",
+      "pk": 11,
+      "fields": {
+        "user": 2,
+        "item": 10,
+        "is_sold": true,
+        "sold_price": "98.11",
+        "sold_at": null,
+        "source": "case",
+        "opening": 6,
+        "created_at": "2026-08-31T18:35:59.506Z"
+      }
+    },
+    {
+      "model": "inventory.inventoryitem",
+      "pk": 12,
+      "fields": {
+        "user": 2,
+        "item": 21,
+        "is_sold": true,
+        "sold_price": "15.23",
+        "sold_at": null,
+        "source": "case",
+        "opening": 7,
+        "created_at": "2026-08-31T18:36:17.147Z"
+      }
+    },
+    {
+      "model": "inventory.inventoryitem",
+      "pk": 13,
+      "fields": {
+        "user": 2,
+        "item": 22,
+        "is_sold": true,
+        "sold_price": "0.00",
+        "sold_at": null,
+        "source": "case",
+        "opening": 8,
+        "created_at": "2026-08-31T18:36:26.701Z"
+      }
+    },
+    {
+      "model": "inventory.inventoryitem",
+      "pk": 14,
+      "fields": {
+        "user": 2,
+        "item": 21,
+        "is_sold": true,
+        "sold_price": "0.00",
+        "sold_at": null,
+        "source": "case",
+        "opening": 9,
+        "created_at": "2026-08-31T18:36:35.364Z"
+      }
+    },
+    {
+      "model": "inventory.inventoryitem",
+      "pk": 15,
+      "fields": {
+        "user": 2,
+        "item": 22,
+        "is_sold": true,
+        "sold_price": "0.00",
+        "sold_at": null,
+        "source": "case",
+        "opening": 10,
+        "created_at": "2026-08-31T18:36:44.972Z"
+      }
+    },
+    {
+      "model": "inventory.inventoryitem",
+      "pk": 16,
+      "fields": {
+        "user": 2,
+        "item": 21,
+        "is_sold": true,
+        "sold_price": "0.00",
+        "sold_at": null,
+        "source": "case",
+        "opening": 11,
+        "created_at": "2026-08-31T18:36:53.981Z"
+      }
+    },
+    {
+      "model": "inventory.inventoryitem",
+      "pk": 17,
+      "fields": {
+        "user": 2,
+        "item": 22,
+        "is_sold": true,
+        "sold_price": "0.00",
+        "sold_at": null,
+        "source": "case",
+        "opening": 12,
+        "created_at": "2026-08-31T18:37:02.995Z"
+      }
+    },
+    {
+      "model": "inventory.inventoryitem",
+      "pk": 18,
+      "fields": {
+        "user": 2,
+        "item": 21,
+        "is_sold": true,
+        "sold_price": "0.00",
+        "sold_at": null,
+        "source": "case",
+        "opening": 13,
+        "created_at": "2026-08-31T18:37:21.478Z"
+      }
+    },
+    {
+      "model": "inventory.inventoryitem",
+      "pk": 19,
+      "fields": {
+        "user": 2,
+        "item": 22,
+        "is_sold": true,
+        "sold_price": "0.00",
+        "sold_at": null,
+        "source": "case",
+        "opening": 14,
+        "created_at": "2026-08-31T18:37:33.672Z"
+      }
+    },
+    {
+      "model": "inventory.inventoryitem",
+      "pk": 20,
+      "fields": {
+        "user": 2,
+        "item": 15,
+        "is_sold": true,
+        "sold_price": "35.00",
+        "sold_at": null,
+        "source": "case",
+        "opening": 15,
+        "created_at": "2026-08-31T18:37:51.654Z"
+      }
+    },
+    {
+      "model": "inventory.inventoryitem",
+      "pk": 21,
+      "fields": {
+        "user": 2,
+        "item": 16,
+        "is_sold": true,
+        "sold_price": "0.00",
+        "sold_at": null,
+        "source": "case",
+        "opening": 16,
+        "created_at": "2026-08-31T18:38:06.384Z"
+      }
+    },
+    {
+      "model": "inventory.inventoryitem",
+      "pk": 22,
+      "fields": {
+        "user": 2,
+        "item": 12,
+        "is_sold": true,
+        "sold_price": "0.00",
+        "sold_at": null,
+        "source": "case",
+        "opening": 17,
+        "created_at": "2026-08-31T18:38:18.341Z"
+      }
+    },
+    {
+      "model": "inventory.inventoryitem",
+      "pk": 23,
+      "fields": {
+        "user": 2,
+        "item": 16,
+        "is_sold": true,
+        "sold_price": "0.00",
+        "sold_at": null,
+        "source": "case",
+        "opening": 18,
+        "created_at": "2026-08-31T18:38:27.274Z"
+      }
+    },
+    {
+      "model": "inventory.inventoryitem",
+      "pk": 24,
+      "fields": {
+        "user": 2,
+        "item": 10,
+        "is_sold": true,
+        "sold_price": "0.00",
+        "sold_at": null,
+        "source": "contract",
+        "opening": null,
+        "created_at": "2026-08-31T18:38:48.475Z"
+      }
+    },
+    {
+      "model": "inventory.inventoryitem",
+      "pk": 25,
+      "fields": {
+        "user": 2,
+        "item": 17,
+        "is_sold": true,
+        "sold_price": "11.50",
+        "sold_at": null,
+        "source": "case",
+        "opening": 19,
+        "created_at": "2026-08-31T18:48:09.440Z"
+      }
+    },
+    {
+      "model": "inventory.inventoryitem",
+      "pk": 26,
+      "fields": {
+        "user": 2,
+        "item": 22,
+        "is_sold": true,
+        "sold_price": "7.43",
+        "sold_at": null,
+        "source": "case",
+        "opening": 20,
+        "created_at": "2026-08-31T19:27:28.534Z"
+      }
+    },
+    {
+      "model": "inventory.inventoryitem",
+      "pk": 27,
+      "fields": {
+        "user": 2,
+        "item": 26,
+        "is_sold": true,
+        "sold_price": "3.20",
+        "sold_at": null,
+        "source": "case",
+        "opening": 21,
+        "created_at": "2026-08-31T19:27:45.022Z"
+      }
+    },
+    {
+      "model": "upgrades.upgradeattempt",
+      "pk": 1,
+      "fields": {
+        "user": 2,
+        "source_item": 10,
+        "target_item": 4,
+        "chance": 4.88,
+        "roll": 99.94,
+        "is_success": false,
+        "server_seed": "f934bc04658bdfcdc21ddf7b78e59f0e9fa534d3f04d8e6b4f55695a9040617c",
+        "created_at": "2026-08-31T18:39:08.444Z"
+      }
+    },
+    {
+      "model": "contracts.contract",
+      "pk": 1,
+      "fields": {
+        "user": 2,
+        "total_input_value": "212.05",
+        "reward_item": 10,
+        "items_count": 10,
+        "created_at": "2026-08-31T18:38:48.476Z"
+      }
+    },
+    {
+      "model": "contracts.contractinputitem",
+      "pk": 1,
+      "fields": {
+        "contract": 1,
+        "item": 16
+      }
+    },
+    {
+      "model": "contracts.contractinputitem",
+      "pk": 2,
+      "fields": {
+        "contract": 1,
+        "item": 12
+      }
+    },
+    {
+      "model": "contracts.contractinputitem",
+      "pk": 3,
+      "fields": {
+        "contract": 1,
+        "item": 16
+      }
+    },
+    {
+      "model": "contracts.contractinputitem",
+      "pk": 4,
+      "fields": {
+        "contract": 1,
+        "item": 22
+      }
+    },
+    {
+      "model": "contracts.contractinputitem",
+      "pk": 5,
+      "fields": {
+        "contract": 1,
+        "item": 21
+      }
+    },
+    {
+      "model": "contracts.contractinputitem",
+      "pk": 6,
+      "fields": {
+        "contract": 1,
+        "item": 22
+      }
+    },
+    {
+      "model": "contracts.contractinputitem",
+      "pk": 7,
+      "fields": {
+        "contract": 1,
+        "item": 21
+      }
+    },
+    {
+      "model": "contracts.contractinputitem",
+      "pk": 8,
+      "fields": {
+        "contract": 1,
+        "item": 22
+      }
+    },
+    {
+      "model": "contracts.contractinputitem",
+      "pk": 9,
+      "fields": {
+        "contract": 1,
+        "item": 21
+      }
+    },
+    {
+      "model": "contracts.contractinputitem",
+      "pk": 10,
+      "fields": {
+        "contract": 1,
+        "item": 22
+      }
+    }
+  ]
+}

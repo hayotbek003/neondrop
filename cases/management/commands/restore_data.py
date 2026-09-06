@@ -137,6 +137,22 @@ class Command(BaseCommand):
             post_save.connect(create_or_update_user_profile, sender=User)
             self.stdout.write(" -> Reconnected User post_save signals.")
 
+        # Reset database sequences (crucial for PostgreSQL after importing explicit IDs)
+        if connection.vendor == 'postgresql':
+            try:
+                from django.core.management.color import no_style
+                from django.apps import apps
+                self.stdout.write(" -> Resetting PostgreSQL primary key auto-increment sequences...")
+                models_to_reset = [apps.get_model(label) for label in restored_counts.keys()]
+                sequence_sql = connection.ops.sequence_reset_sql(no_style(), models_to_reset)
+                if sequence_sql:
+                    with connection.cursor() as cursor:
+                        for sql in sequence_sql:
+                            cursor.execute(sql)
+                self.stdout.write(self.style.SUCCESS(" -> PostgreSQL sequences successfully synchronized."))
+            except Exception as seq_err:
+                self.stdout.write(self.style.WARNING(f" -> Sequence reset notice: {seq_err}"))
+
         total_restored = sum(restored_counts.values())
 
         self.stdout.write(self.style.SUCCESS("\n" + "=" * 65))
