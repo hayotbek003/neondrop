@@ -38,7 +38,9 @@ document.addEventListener('DOMContentLoaded', () => {
     selectedItems.forEach(v => totalVal += v);
 
     if (countDisplay) countDisplay.textContent = `${count} / 10`;
-    if (valueDisplay) valueDisplay.textContent = `$${totalVal.toFixed(2)}`;
+    if (valueDisplay) {
+      valueDisplay.innerHTML = window.renderUcBadgeHtml ? window.renderUcBadgeHtml(totalVal, true, 18) : `${totalVal} UC`;
+    }
 
     if (createBtn) {
       if (count >= 3 && count <= 10) {
@@ -85,7 +87,7 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('contractWinName').textContent = item.name;
         document.getElementById('contractWinRarity').textContent = item.rarity_name;
         document.getElementById('contractWinRarity').style.color = item.rarity_color;
-        document.getElementById('contractWinPrice').textContent = `$${item.value.toFixed(2)}`;
+        document.getElementById('contractWinPrice').innerHTML = window.renderUcBadgeHtml ? window.renderUcBadgeHtml(item.value, true, 18) : `${item.value} UC`;
         
         const svgUse = document.getElementById('contractWinSvgUse');
         if (svgUse) {

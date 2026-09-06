@@ -50,3 +50,19 @@ class TransactionAdmin(admin.ModelAdmin):
     def has_delete_permission(self, request, obj=None):
         # Prevent deletion of financial ledger records except by superusers
         return request.user.is_superuser
+
+
+from .models import CurrencySetting
+
+@admin.register(CurrencySetting)
+class CurrencySettingAdmin(admin.ModelAdmin):
+    list_display = ('__str__', 'uc_to_uzs', 'usd_to_uzs', 'calculated_uc_in_usd', 'is_active', 'updated_at')
+    list_editable = ('uc_to_uzs', 'usd_to_uzs', 'is_active')
+    
+    def calculated_uc_in_usd(self, obj):
+        if obj.usd_to_uzs > 0:
+            rate = obj.uc_to_uzs / obj.usd_to_uzs
+            return f"1 UC ≈ ${rate:.4f} USD (60 UC ≈ ${(60 * rate):.2f})"
+        return "N/A"
+    calculated_uc_in_usd.short_description = "Расчёт стоимости 1 UC"
+

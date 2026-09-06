@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% load static humanize %}
+{% load static humanize currency_tags %}
 
 {% block title %}NEONDROP - Апгрейд Скинов{% endblock %}
 
@@ -75,7 +75,10 @@
               <svg style="width: 100%; height: 100%;"><use href="#icon-{{ inv.item.image_url|default:'generic_weapon' }}"></use></svg>
             </div>
             <div style="font-family: var(--font-display); font-size: 11px; font-weight: 700; color: #fff; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;">{{ inv.item.name }}</div>
-            <div style="font-family: var(--font-display); font-size: 11px; color: #38bdf8; font-weight: 800;">${{ inv.item.value|floatformat:2 }}</div>
+            <div style="font-family: var(--font-display); font-size: 11px; color: #38bdf8; font-weight: 800; display: flex; align-items: center; gap: 3px;">
+              <img src="{% static 'images/uc_icon.svg' %}" class="uc-icon-sm" alt="UC" style="width: 12px; height: 12px;">
+              <span>{{ inv.item.value|uc }}</span>
+            </div>
           </div>
         {% empty %}
           <p style="grid-column: 1 / -1; color: #64748b; font-size: 13px; text-align: center; padding: 30px;">Инвентарь пуст. Откройте кейс!</p>
@@ -94,7 +97,10 @@
               <svg style="width: 100%; height: 100%;"><use href="#icon-{{ it.image_url|default:'generic_weapon' }}"></use></svg>
             </div>
             <div style="font-family: var(--font-display); font-size: 11px; font-weight: 700; color: #fff; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;">{{ it.name }}</div>
-            <div style="font-family: var(--font-display); font-size: 11px; color: #38bdf8; font-weight: 800;">${{ it.value|floatformat:2 }}</div>
+            <div style="font-family: var(--font-display); font-size: 11px; color: #38bdf8; font-weight: 800; display: flex; align-items: center; gap: 3px;">
+              <img src="{% static 'images/uc_icon.svg' %}" class="uc-icon-sm" alt="UC" style="width: 12px; height: 12px;">
+              <span>{{ it.value|uc }}</span>
+            </div>
           </div>
         {% endfor %}
       </div>

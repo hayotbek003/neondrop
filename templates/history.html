@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% load static humanize %}
+{% load static humanize currency_tags %}
 
 {% block title %}NEONDROP - Полная история открытий{% endblock %}
 
@@ -14,14 +14,14 @@
   <div class="panel-card" style="padding: 20px;">
     <div style="display: flex; flex-direction: column; gap: 12px;">
       {% for op in openings %}
-        <div style="display: grid; grid-template-columns: 140px 1fr 120px 200px; align-items: center; background: #090c14; padding: 14px 20px; border-radius: 10px; border: 1px solid var(--border-color); gap: 16px;">
+        <div style="display: grid; grid-template-columns: 140px 1fr 140px 200px; align-items: center; background: #090c14; padding: 14px 20px; border-radius: 10px; border: 1px solid var(--border-color); gap: 16px;">
           
           <!-- Case -->
           <div style="display: flex; align-items: center; gap: 10px;">
             <svg style="width: 40px; height: 32px;"><use href="#icon-case-{{ op.case.color_theme }}"></use></svg>
             <div>
               <div style="font-family: var(--font-display); font-size: 13px; font-weight: 700; color: #fff;">{{ op.case.name }}</div>
-              <div style="font-size: 11px; color: #64748b;">${{ op.price|floatformat:2 }}</div>
+              <div style="font-size: 11px; color: #64748b;">{{ op.price|uc }}</div>
             </div>
           </div>
 
@@ -35,8 +35,9 @@
           </div>
 
           <!-- Value -->
-          <div style="font-family: var(--font-display); font-size: 15px; font-weight: 800; color: #22c55e;">
-            +${{ op.item.value|floatformat:2 }}
+          <div style="font-family: var(--font-display); font-size: 15px; font-weight: 800; color: #22c55e; display: flex; align-items: center; gap: 4px;">
+            <img src="{% static 'images/uc_icon.svg' %}" class="uc-icon-sm" alt="UC">
+            <span>+{{ op.item.value|uc }}</span>
           </div>
 
           <!-- Date & Provably Fair Hash -->

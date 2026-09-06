@@ -9,6 +9,7 @@ from django.http import JsonResponse
 from django.conf import settings
 
 from .models import Transaction
+from .currency import format_uc, format_usd_approx, format_uzs_approx, get_currency_rates
 from config.security import rate_limit, get_client_ip
 
 security_logger = logging.getLogger('neondrop.security')
@@ -19,10 +20,12 @@ audit_logger = logging.getLogger('neondrop.audit')
 def deposit_view(request):
     tg_admin = getattr(settings, 'TELEGRAM_BOT_USERNAME', 'neondrop_admin').lstrip('@')
     transactions = Transaction.objects.filter(user=request.user, transaction_type='deposit').order_by('-created_at')[:20]
+    rates = get_currency_rates()
     return render(request, 'deposit.html', {
         'transactions': transactions,
         'active_tab': 'deposit',
         'telegram_admin': tg_admin,
+        'currency_rates': rates,
     })
 
 @rate_limit(key_prefix='deposit_req', limit=10, period=60, by_user=True)
@@ -34,16 +37,14 @@ def create_deposit_request_api(request):
     
     try:
         amount = Decimal(amount_raw)
-        if amount < Decimal('1.00') or amount > Decimal('50000.00'):
-            return JsonResponse({'success': False, 'error': 'Сумма пополнения должна быть от $1.00 до $50,000.00.'}, status=400)
+        if amount < Decimal('1.00') or amount > Decimal('500000.00'):
+            return JsonResponse({'success': False, 'error': 'Сумма пополнения должна быть от 1 UC до 500,000 UC.'}, status=400)
     except Exception:
         return JsonResponse({'success': False, 'error': 'Некорректная сумма пополнения.'}, status=400)
 
-    # Format amount cleanly
-    if amount == amount.to_integral():
-        amount_display = f"${int(amount)}"
-    else:
-        amount_display = f"${amount:.2f}"
+    amount_display = format_uc(amount)
+    usd_display = format_usd_approx(amount)
+    uzs_display = format_uzs_approx(amount)
 
     # Create pending transaction record (NO AUTOMATIC BALANCE CREDIT)
     tx = Transaction.objects.create(
@@ -56,7 +57,7 @@ def create_deposit_request_api(request):
         payment_method='telegram',
         telegram_username=request.user.profile.telegram_username,
         ip_address=ip,
-        description=f"Заявка на пополнение через Telegram на сумму {amount_display}"
+        description=f"Заявка на пополнение через Telegram на сумму {amount_display} ({uzs_display} / {usd_display})"
     )
 
     audit_logger.info(
@@ -71,7 +72,7 @@ def create_deposit_request_api(request):
         f"Здравствуйте! Хочу пополнить баланс NEONDROP.\n\n"
         f"Мой логин: {request.user.username}\n"
         f"Мой ID: {request.user.id}\n"
-        f"Сумма пополнения: {amount_display}"
+        f"Сумма пополнения: {amount_display} ({uzs_display} / {usd_display})"
     )
     encoded_msg = urllib.parse.quote(msg_template)
     telegram_url = f"https://t.me/{tg_admin}?text={encoded_msg}"

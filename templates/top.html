@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% load static humanize %}
+{% load static humanize currency_tags %}
 
 {% block title %}NEONDROP - Топ игроков платформы{% endblock %}
 
@@ -23,7 +23,10 @@
             <div class="winner-username">{{ prof.user.username }}</div>
             <div style="font-size: 11px; color: #64748b;">Открыто кейсов: {{ prof.total_opened }}</div>
           </div>
-          <span class="winner-amount">+${{ prof.total_winnings|floatformat:2|intcomma }}</span>
+          <span class="winner-amount" style="display: flex; align-items: center; gap: 4px; justify-content: flex-end;">
+            <img src="{% static 'images/uc_icon.svg' %}" class="uc-icon-sm" alt="UC">
+            <span>+{{ prof.total_winnings|uc }}</span>
+          </span>
         </div>
       {% empty %}
         <p style="color: #64748b; text-align: center; padding: 30px;">Таблица лидеров формируется...</p>

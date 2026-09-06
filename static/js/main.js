@@ -104,6 +104,36 @@ class NeonSoundFX {
 
 window.soundFX = new NeonSoundFX();
 
+// Currency Format Helpers
+function formatUC(amount, suffix = true) {
+  if (amount === null || amount === undefined) return suffix ? '0 UC' : '0';
+  const num = parseFloat(amount);
+  if (isNaN(num)) return suffix ? '0 UC' : '0';
+  const isWhole = num % 1 === 0;
+  const valStr = isWhole ? Math.round(num).toLocaleString('ru-RU') : num.toLocaleString('ru-RU', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  return suffix ? `${valStr} UC` : valStr;
+}
+
+function formatUsdApprox(amount) {
+  if (amount === null || amount === undefined) return '≈ $0.00';
+  const num = parseFloat(amount);
+  if (isNaN(num)) return '≈ $0.00';
+  const rate = (window.NEONDROP_CURRENCY && window.NEONDROP_CURRENCY.ucToUsdRate) ? window.NEONDROP_CURRENCY.ucToUsdRate : (250.0 / 12000.0);
+  const usdVal = num * rate;
+  return `≈ $${usdVal.toFixed(2)}`;
+}
+
+function renderUcBadgeHtml(amount, showUsd = true, size = 16) {
+  const ucText = formatUC(amount);
+  const usdText = formatUsdApprox(amount);
+  const usdHtml = showUsd ? `<span class="usd-approx">${usdText}</span>` : '';
+  return `<span class="uc-price-wrap"><span class="uc-badge"><img src="/static/images/uc_icon.svg" class="uc-icon" width="${size}" height="${size}" alt="UC" /><span class="uc-val">${ucText}</span></span>${usdHtml}</span>`;
+}
+
+window.formatUC = formatUC;
+window.formatUsdApprox = formatUsdApprox;
+window.renderUcBadgeHtml = renderUcBadgeHtml;
+
 // Live Drops Ticker Poller
 function initLiveDrops() {
   const tickerTrack = document.getElementById('liveDropsTrack');
@@ -116,13 +146,15 @@ function initLiveDrops() {
         if (data.success && data.drops && data.drops.length > 0) {
           let html = '';
           data.drops.forEach(drop => {
+            const formattedVal = formatUC(drop.item_value);
+            const usdApprox = formatUsdApprox(drop.item_value);
             html += `
               <div class="drop-item-chip" style="border-bottom-color: ${drop.rarity_color}">
                 <img src="${drop.user_avatar}" class="drop-chip-user-avatar" alt="${drop.username}">
                 <svg class="drop-chip-weapon-icon"><use href="#icon-${drop.image_url || 'generic_weapon'}"></use></svg>
                 <div class="drop-chip-info">
                   <span class="drop-chip-name">${drop.item_name}</span>
-                  <span class="drop-chip-price">$${drop.item_value.toFixed(2)}</span>
+                  <span class="drop-chip-price"><img src="/static/images/uc_icon.svg" class="uc-icon-sm" alt="UC"> ${formattedVal}</span>
                 </div>
               </div>
             `;
@@ -172,7 +204,12 @@ function initMobileDrawer() {
 window.updateUserBalance = function(newBalance) {
   const balanceElements = document.querySelectorAll('.user-balance-val');
   balanceElements.forEach(el => {
-    el.textContent = `$${parseFloat(newBalance).toFixed(2)}`;
+    el.textContent = formatUC(newBalance);
+  });
+
+  const usdElements = document.querySelectorAll('.user-balance-usd');
+  usdElements.forEach(el => {
+    el.textContent = formatUsdApprox(newBalance);
   });
 };
 

@@ -1,4 +1,4 @@
-{% load static humanize %}
+{% load static humanize currency_tags %}
 <!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -10,6 +10,14 @@
   <link rel="stylesheet" href="{% static 'css/components.css' %}">
   <link rel="stylesheet" href="{% static 'css/roulette.css' %}">
   <link rel="stylesheet" href="{% static 'css/responsive.css' %}">
+  <script>
+    window.NEONDROP_CURRENCY = {
+      ucToUzs: {{ currency_rates.uc_to_uzs|default:250 }},
+      usdToUzs: {{ currency_rates.usd_to_uzs|default:12000 }},
+      ucToUsdRate: {{ currency_rates.uc_to_usd_rate|default:0.020833333333333333 }},
+      ucIconUrl: "{% static 'images/uc_icon.svg' %}"
+    };
+  </script>
   {% block extra_css %}{% endblock %}
 </head>
 <body>
@@ -31,7 +39,10 @@
         <img src="{{ user_profile.display_avatar }}" alt="{{ user.username }}" class="drawer-user-avatar">
         <div class="drawer-user-info">
           <span class="drawer-user-name">{{ user.username }}</span>
-          <span class="drawer-user-balance user-balance-val">${{ user_balance|floatformat:2|intcomma }}</span>
+          <span class="drawer-user-balance user-balance-val">
+            <img src="{% static 'images/uc_icon.svg' %}" class="uc-icon" alt="UC">
+            <span>{{ user_balance|uc }}</span>
+          </span>
         </div>
         <a href="{% url 'payments:deposit' %}" class="btn-topup-mini" title="Пополнить">+</a>
       </div>
@@ -111,7 +122,7 @@
         <svg class="drop-chip-weapon-icon"><use href="#icon-{{ drop.item.image_url|default:'generic_weapon' }}"></use></svg>
         <div class="drop-chip-info">
           <span class="drop-chip-name">{{ drop.item.name }}</span>
-          <span class="drop-chip-price">${{ drop.item.value|floatformat:2 }}</span>
+          <span class="drop-chip-price"><img src="{% static 'images/uc_icon.svg' %}" class="uc-icon-sm" alt="UC"> {{ drop.item.value|uc }}</span>
         </div>
       </div>
       {% empty %}
@@ -120,7 +131,7 @@
         <svg class="drop-chip-weapon-icon"><use href="#icon-knife_karambit_fade"></use></svg>
         <div class="drop-chip-info">
           <span class="drop-chip-name">Karambit | Fade</span>
-          <span class="drop-chip-price">$1450.00</span>
+          <span class="drop-chip-price"><img src="{% static 'images/uc_icon.svg' %}" class="uc-icon-sm" alt="UC"> 1450 UC</span>
         </div>
       </div>
       <div class="drop-item-chip" style="border-bottom-color: #eb4b4b;">
@@ -128,7 +139,7 @@
         <svg class="drop-chip-weapon-icon"><use href="#icon-m4a4_howl"></use></svg>
         <div class="drop-chip-info">
           <span class="drop-chip-name">M4A4 | Howl</span>
-          <span class="drop-chip-price">$1850.00</span>
+          <span class="drop-chip-price"><img src="{% static 'images/uc_icon.svg' %}" class="uc-icon-sm" alt="UC"> 1850 UC</span>
         </div>
       </div>
       <div class="drop-item-chip" style="border-bottom-color: #d32ce6;">
@@ -136,7 +147,7 @@
         <svg class="drop-chip-weapon-icon"><use href="#icon-ak47_neon_rider"></use></svg>
         <div class="drop-chip-info">
           <span class="drop-chip-name">AK-47 | Neon Rider</span>
-          <span class="drop-chip-price">$42.31</span>
+          <span class="drop-chip-price"><img src="{% static 'images/uc_icon.svg' %}" class="uc-icon-sm" alt="UC"> 42 UC</span>
         </div>
       </div>
       {% endfor %}
@@ -175,9 +186,10 @@
       <!-- Right: User / Auth Section -->
       <div class="header-actions">
         {% if user.is_authenticated %}
-          <!-- Balance Pill -->
-          <div class="balance-pill">
-            <span class="balance-amount user-balance-val">${{ user_balance|floatformat:2|intcomma }}</span>
+          <!-- Balance Pill (UC + approx USD tooltip/subtext) -->
+          <div class="balance-pill" title="≈ {{ user_balance|usd_approx }}">
+            <img src="{% static 'images/uc_icon.svg' %}" class="uc-icon" alt="UC">
+            <span class="balance-amount user-balance-val">{{ user_balance|uc }}</span>
             <a href="{% url 'payments:deposit' %}" class="btn-topup-plus" title="Пополнить баланс">+</a>
           </div>
 

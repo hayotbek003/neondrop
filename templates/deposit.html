@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% load static humanize %}
+{% load static humanize currency_tags %}
 
 {% block title %}NEONDROP - Пополнение баланса через Telegram{% endblock %}
 
@@ -20,25 +20,43 @@
         ИНСТРУКЦИЯ ПО РУЧНОМУ ПОПОЛНЕНИЮ
       </h4>
       <p style="font-size: 13.5px; color: #cbd5e1; line-height: 1.6;">
-        1. Укажите сумму пополнения и нажмите <strong>«Пополнить через Telegram»</strong>.<br>
+        1. Выберите пакет UC или укажите свою сумму и нажмите <strong>«Пополнить через Telegram»</strong>.<br>
         2. Откроется чат с администратором <strong>@{{ telegram_admin }}</strong> с автоматически заполненным сообщением.<br>
         3. Отправьте сообщение и следуйте реквизитам администратора.<br>
-        4. После проверки перевода администратор подтвердит заявку, и баланс мгновенно зачислится на ваш аккаунт!
+        4. После проверки перевода администратор подтвердит заявку, и UC мгновенно зачислятся на ваш баланс!
       </p>
     </div>
 
     <!-- Quick Presets -->
     <div style="margin-bottom: 20px;">
       <label style="font-family: var(--font-sub); font-size: 13px; font-weight: 700; color: #94a3b8; text-transform: uppercase; margin-bottom: 10px; display: block;">
-        ВЫБЕРИТЕ СУММУ ИЛИ ВВЕДИТЕ СВОЮ:
+        ВЫБЕРИТЕ ПАКЕТ UC:
       </label>
-      <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-        <button type="button" class="filter-chip preset-amt" data-val="5">$5.00</button>
-        <button type="button" class="filter-chip preset-amt" data-val="10">$10.00</button>
-        <button type="button" class="filter-chip preset-amt active" data-val="25">$25.00</button>
-        <button type="button" class="filter-chip preset-amt" data-val="50">$50.00</button>
-        <button type="button" class="filter-chip preset-amt" data-val="100">$100.00</button>
-        <button type="button" class="filter-chip preset-amt" data-val="250">$250.00</button>
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px;">
+        <button type="button" class="filter-chip preset-amt" data-val="60" style="display: flex; flex-direction: column; align-items: center; padding: 10px 8px; gap: 2px;">
+          <span style="font-weight: 800; display: flex; align-items: center; gap: 4px;"><img src="{% static 'images/uc_icon.svg' %}" class="uc-icon-sm" alt="UC"> 60 UC</span>
+          <span style="font-size: 10px; color: #94a3b8;">≈ 15 000 UZS / $1.25</span>
+        </button>
+        <button type="button" class="filter-chip preset-amt active" data-val="325" style="display: flex; flex-direction: column; align-items: center; padding: 10px 8px; gap: 2px;">
+          <span style="font-weight: 800; display: flex; align-items: center; gap: 4px;"><img src="{% static 'images/uc_icon.svg' %}" class="uc-icon-sm" alt="UC"> 325 UC</span>
+          <span style="font-size: 10px; color: #94a3b8;">≈ 81 250 UZS / $6.77</span>
+        </button>
+        <button type="button" class="filter-chip preset-amt" data-val="660" style="display: flex; flex-direction: column; align-items: center; padding: 10px 8px; gap: 2px;">
+          <span style="font-weight: 800; display: flex; align-items: center; gap: 4px;"><img src="{% static 'images/uc_icon.svg' %}" class="uc-icon-sm" alt="UC"> 660 UC</span>
+          <span style="font-size: 10px; color: #94a3b8;">≈ 165 000 UZS / $13.75</span>
+        </button>
+        <button type="button" class="filter-chip preset-amt" data-val="1800" style="display: flex; flex-direction: column; align-items: center; padding: 10px 8px; gap: 2px;">
+          <span style="font-weight: 800; display: flex; align-items: center; gap: 4px;"><img src="{% static 'images/uc_icon.svg' %}" class="uc-icon-sm" alt="UC"> 1800 UC</span>
+          <span style="font-size: 10px; color: #94a3b8;">≈ 450 000 UZS / $37.50</span>
+        </button>
+        <button type="button" class="filter-chip preset-amt" data-val="3850" style="display: flex; flex-direction: column; align-items: center; padding: 10px 8px; gap: 2px;">
+          <span style="font-weight: 800; display: flex; align-items: center; gap: 4px;"><img src="{% static 'images/uc_icon.svg' %}" class="uc-icon-sm" alt="UC"> 3850 UC</span>
+          <span style="font-size: 10px; color: #94a3b8;">≈ 962 500 UZS / $80.21</span>
+        </button>
+        <button type="button" class="filter-chip preset-amt" data-val="8100" style="display: flex; flex-direction: column; align-items: center; padding: 10px 8px; gap: 2px;">
+          <span style="font-weight: 800; display: flex; align-items: center; gap: 4px;"><img src="{% static 'images/uc_icon.svg' %}" class="uc-icon-sm" alt="UC"> 8100 UC</span>
+          <span style="font-size: 10px; color: #94a3b8;">≈ 2 025 000 UZS</span>
+        </button>
       </div>
     </div>
 
@@ -47,9 +65,15 @@
       {% csrf_token %}
       <div>
         <label for="depositAmount" style="font-family: var(--font-sub); font-size: 13px; font-weight: 700; color: #94a3b8; text-transform: uppercase; margin-bottom: 6px; display: block;">
-          СУММА ПОПОЛНЕНИЯ ($):
+          СУММА ПОПОЛНЕНИЯ (UC):
         </label>
-        <input type="number" step="any" min="1" max="50000" id="depositAmount" name="amount" value="25" class="input-cyber" style="font-size: 20px; font-family: var(--font-display); font-weight: 800; color: #38bdf8;" required>
+        <div style="position: relative;">
+          <img src="{% static 'images/uc_icon.svg' %}" class="uc-icon" alt="UC" style="position: absolute; left: 14px; top: 50%; transform: translateY(-50%); width: 22px; height: 22px;">
+          <input type="number" step="any" min="1" max="500000" id="depositAmount" name="amount" value="325" class="input-cyber" style="font-size: 20px; font-family: var(--font-display); font-weight: 800; color: #ffd700; padding-left: 46px;" required>
+        </div>
+        <div id="approxCalcPreview" style="font-size: 13px; color: #94a3b8; margin-top: 8px;">
+          Примерная стоимость: <strong style="color: #38bdf8;" id="approxUzs">≈ 81 250 UZS</strong> &bull; <strong style="color: #cbd5e1;" id="approxUsd">≈ $6.77</strong>
+        </div>
       </div>
 
       <button type="submit" id="depositBtn" class="btn-neon" style="width: 100%; font-size: 16px; padding: 15px 0;">
@@ -80,8 +104,13 @@
       {% for tx in transactions %}
         <div class="winner-row" style="display: flex; align-items: center; justify-content: space-between; background: #090c14; padding: 14px 18px; border-radius: 10px; border: 1px solid var(--border-color); flex-wrap: wrap; gap: 10px;">
           <div>
-            <div style="font-family: var(--font-display); font-size: 15px; font-weight: 800; color: #fff;">
-              Заявка #{{ tx.id }} &bull; ${{ tx.amount|floatformat:2 }}
+            <div style="font-family: var(--font-display); font-size: 15px; font-weight: 800; color: #fff; display: flex; align-items: center; gap: 6px;">
+              <span>Заявка #{{ tx.id }} &bull;</span>
+              <span class="uc-badge">
+                <img src="{% static 'images/uc_icon.svg' %}" class="uc-icon" alt="UC">
+                <span class="uc-val">{{ tx.amount|uc }}</span>
+              </span>
+              <span class="usd-approx-sub">{{ tx.amount|usd_approx }}</span>
             </div>
             <div style="font-size: 12px; color: #64748b; margin-top: 3px;">
               {{ tx.created_at|date:"d.m.Y H:i" }} &bull; {{ tx.get_payment_method_display }}
@@ -122,14 +151,38 @@ document.addEventListener('DOMContentLoaded', () => {
   const depositBtn = document.getElementById('depositBtn');
   const successNotice = document.getElementById('depositSuccessNotice');
   const directTgLink = document.getElementById('directTgLink');
+  const approxUzs = document.getElementById('approxUzs');
+  const approxUsd = document.getElementById('approxUsd');
+
+  function updateApproximations() {
+    const amt = parseFloat(amountInput.value) || 0;
+    const ucToUzs = (window.NEONDROP_CURRENCY && window.NEONDROP_CURRENCY.ucToUzsRate) ? window.NEONDROP_CURRENCY.ucToUzsRate : 250.0;
+    const ucToUsd = (window.NEONDROP_CURRENCY && window.NEONDROP_CURRENCY.ucToUsdRate) ? window.NEONDROP_CURRENCY.ucToUsdRate : (250.0 / 12000.0);
+
+    const uzsVal = Math.round(amt * ucToUzs);
+    const usdVal = (amt * ucToUsd).toFixed(2);
+
+    if (approxUzs) approxUzs.textContent = `≈ ${uzsVal.toLocaleString('ru-RU')} UZS`;
+    if (approxUsd) approxUsd.textContent = `≈ $${usdVal}`;
+  }
 
   presets.forEach(btn => {
     btn.addEventListener('click', () => {
       presets.forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
       amountInput.value = btn.getAttribute('data-val');
+      updateApproximations();
     });
   });
+
+  if (amountInput) {
+    amountInput.addEventListener('input', () => {
+      presets.forEach(b => {
+        b.classList.toggle('active', b.getAttribute('data-val') === amountInput.value);
+      });
+      updateApproximations();
+    });
+  }
 
   if (depositForm) {
     depositForm.addEventListener('submit', async (e) => {
@@ -137,7 +190,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const amount = parseFloat(amountInput.value);
 
       if (isNaN(amount) || amount < 1) {
-        alert('Пожалуйста, укажите корректную сумму пополнения от $1.00');
+        alert('Пожалуйста, укажите корректную сумму пополнения от 1 UC');
         return;
       }
 

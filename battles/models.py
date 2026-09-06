@@ -13,7 +13,7 @@ class Battle(models.Model):
     creator = models.ForeignKey(User, on_delete=models.CASCADE, related_name='created_battles', verbose_name="Создатель")
     case = models.ForeignKey(Case, on_delete=models.CASCADE, related_name='battles', verbose_name="Кейс")
     rounds_count = models.PositiveIntegerField(default=1, verbose_name="Количество раундов (кейсов)")
-    total_cost = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="Стоимость участия ($)")
+    total_cost = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="Стоимость участия (UC)")
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='waiting', verbose_name="Статус")
     winner = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='won_battles', verbose_name="Победитель")
     is_bot_opponent = models.BooleanField(default=False, verbose_name="Против бота")
@@ -25,14 +25,14 @@ class Battle(models.Model):
         ordering = ['-created_at']
 
     def __str__(self):
-        return f"Битва #{self.id}: {self.case.name} x{self.rounds_count} (${self.total_cost})"
+        return f"Битва #{self.id}: {self.case.name} x{self.rounds_count} ({self.total_cost} UC)"
 
 class BattlePlayer(models.Model):
     battle = models.ForeignKey(Battle, on_delete=models.CASCADE, related_name='players', verbose_name="Битва")
     user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True, related_name='battle_participations', verbose_name="Пользователь")
     is_bot = models.BooleanField(default=False, verbose_name="Бот")
     bot_name = models.CharField(max_length=100, default='CyberBot', verbose_name="Имя бота")
-    total_loot_value = models.DecimalField(max_digits=12, decimal_places=2, default=Decimal('0.00'), verbose_name="Итоговый выигрыш ($)")
+    total_loot_value = models.DecimalField(max_digits=12, decimal_places=2, default=Decimal('0.00'), verbose_name="Итоговый выигрыш (UC)")
 
     def __str__(self):
         name = self.bot_name if self.is_bot else (self.user.username if self.user else "Unknown")

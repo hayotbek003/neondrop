@@ -312,6 +312,6 @@ class Command(BaseCommand):
                 nonce=1
             )
 
-        self.stdout.write(self.style.SUCCESS("[OK] Demo user 'Smoke' created successfully (Password: neondrop123, Balance: $1243.56)."))
+        self.stdout.write(self.style.SUCCESS("[OK] Demo user 'Smoke' created successfully (Password: neondrop123, Balance: 1243.56 UC)."))
         self.stdout.write(self.style.SUCCESS("[OK] NEONDROP database setup completed successfully!"))
 

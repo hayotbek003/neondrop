@@ -884,6 +884,60 @@ class NeonDropComprehensiveTests(TestCase):
             if test_file.exists():
                 test_file.unlink()
 
+    # ==================== UC CURRENCY SYSTEM TESTS ====================
+    def test_uc_currency_conversions(self):
+        """Verify UC to USD and UZS conversions and formatting."""
+        from payments.currency import (
+            get_currency_rates, uc_to_usd, uc_to_uzs,
+            format_uc, format_usd_approx, format_uzs_approx
+        )
+        from payments.models import CurrencySetting
+
+        # Default rates (1 UC = 250 UZS, 1 USD = 12000 UZS)
+        rates = get_currency_rates()
+        self.assertEqual(rates['uc_to_uzs'], Decimal('250.00'))
+        self.assertEqual(rates['usd_to_uzs'], Decimal('12000.00'))
+
+        # 60 UC -> $1.25 USD, 15,000 UZS
+        self.assertEqual(uc_to_usd(Decimal('60')), Decimal('1.25'))
+        self.assertEqual(uc_to_uzs(Decimal('60')), Decimal('15000'))
+        self.assertEqual(format_uc(Decimal('60')), '60 UC')
+        self.assertEqual(format_usd_approx(Decimal('60')), '≈ $1.25')
+        self.assertEqual(format_uzs_approx(Decimal('60')), '≈ 15 000 UZS')
+
+        # Test custom CurrencySetting
+        CurrencySetting.objects.all().delete()
+        setting = CurrencySetting.objects.create(
+            uc_to_uzs=Decimal('300.00'),
+            usd_to_uzs=Decimal('12000.00')
+        )
+        cache.clear()
+        updated_rates = get_currency_rates()
+        self.assertEqual(updated_rates['uc_to_uzs'], Decimal('300.00'))
+        # 60 UC * (300 / 12000) = $1.50
+        self.assertEqual(uc_to_usd(Decimal('60')), Decimal('1.50'))
+
+    def test_uc_template_tags(self):
+        """Verify template tags render UC badges, icons, and approximations."""
+        from cases.templatetags.currency_tags import (
+            uc_filter, uc_amount_filter, usd_approx_filter, uzs_approx_filter,
+            uc_icon, uc_badge
+        )
+
+        self.assertEqual(uc_filter(1800), '1 800 UC')
+        self.assertEqual(uc_amount_filter(1800), '1 800')
+        self.assertIn('$', usd_approx_filter(60))
+        self.assertIn('UZS', uzs_approx_filter(60))
+
+        icon_html = uc_icon(size=20)
+        self.assertIn('uc_icon.svg', icon_html)
+        self.assertIn('width="20"', icon_html)
+
+        badge_html = uc_badge(60, show_usd=True)
+        self.assertIn('uc-badge', badge_html)
+        self.assertIn('60 UC', badge_html)
+        self.assertIn('usd-approx', badge_html)
+
 
 
 

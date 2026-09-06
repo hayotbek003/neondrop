@@ -10,5 +10,5 @@ class InventoryItemAdmin(admin.ModelAdmin):
     autocomplete_fields = ('user', 'item', 'opening')
 
     def get_value(self, obj):
-        return f"${obj.item.value}"
+        return f"{obj.item.value} UC"
     get_value.short_description = 'Стоимость'

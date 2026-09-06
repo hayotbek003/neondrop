@@ -15,5 +15,5 @@ class ContractAdmin(admin.ModelAdmin):
     ordering = ('-created_at',)
 
     def get_reward_value(self, obj):
-        return f"${obj.reward_item.value}"
+        return f"{obj.reward_item.value} UC"
     get_reward_value.short_description = 'Стоимость награды'

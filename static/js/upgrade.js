@@ -115,7 +115,8 @@ document.addEventListener('DOMContentLoaded', () => {
           if (data.is_won) {
             window.soundFX.playWin();
             upgradeOutcomeBox.className = 'upgrade-result-banner win';
-            upgradeOutcomeBox.innerHTML = `🎉 ПОБЕДА! Вы получили: <strong>${data.target_item.name} ($${data.target_item.value.toFixed(2)})</strong>`;
+            const priceStr = window.formatUC ? window.formatUC(data.target_item.value) : `${data.target_item.value} UC`;
+            upgradeOutcomeBox.innerHTML = `🎉 ПОБЕДА! Вы получили: <strong>${data.target_item.name} (${priceStr})</strong>`;
           } else {
             upgradeOutcomeBox.className = 'upgrade-result-banner lose';
             upgradeOutcomeBox.innerHTML = `💀 НЕУДАЧА. Предмет сгорел. Выпало: ${data.roll}%, требовалось <= ${data.chance}%`;

@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% load static humanize %}
+{% load static humanize currency_tags %}
 
 {% block title %}NEONDROP - Профиль {{ user.username }}{% endblock %}
 
@@ -26,9 +26,11 @@
     <div class="profile-balance-section">
       <div>
         <div class="profile-balance-label">БАЛАНС</div>
-        <div class="profile-balance-val user-balance-val">
-          ${{ profile.balance|floatformat:2|intcomma }}
+        <div class="profile-balance-val user-balance-val" style="display: flex; align-items: center; gap: 6px;">
+          <img src="{% static 'images/uc_icon.svg' %}" class="uc-icon" alt="UC">
+          <span>{{ profile.balance|uc }}</span>
         </div>
+        <div class="usd-approx-sub user-balance-usd" style="font-size: 11px; color: #94a3b8; text-align: left; margin-top: 2px;">{{ profile.balance|usd_approx }}</div>
       </div>
       <a href="{% url 'payments:deposit' %}" class="btn-neon profile-topup-btn">ПОПОЛНИТЬ БАЛАНС</a>
     </div>
@@ -42,7 +44,7 @@
           <span>🎟️</span> ЕСТЬ ПРОМОКОД?
         </h3>
         <p style="font-size: 13px; color: #cbd5e1; margin: 0;">
-          Активируйте промокод для получения Coins, бонусов к пополнению или бесплатных открытий кейсов!
+          Активируйте промокод для получения UC, бонусов к пополнению или бесплатных открытий кейсов!
         </p>
       </div>
       <form id="promoForm" style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
@@ -223,7 +225,7 @@
                 <svg style="width: 32px; height: 26px;"><use href="#icon-case-{{ op.case.color_theme }}"></use></svg>
                 <div>
                   <div style="font-family: var(--font-display); font-size: 11px; font-weight: 700; color: #fff;">{{ op.case.name }}</div>
-                  <div style="font-size: 10px; color: #64748b;">${{ op.price|floatformat:2 }}</div>
+                  <div style="font-size: 10px; color: #64748b;">{{ op.price|uc }}</div>
                 </div>
               </div>
 
@@ -237,8 +239,9 @@
               </div>
 
               <!-- Value -->
-              <div style="font-family: var(--font-display); font-size: 13px; font-weight: 800; color: #22c55e; text-align: right;">
-                +${{ op.item.value|floatformat:2 }}
+              <div style="font-family: var(--font-display); font-size: 13px; font-weight: 800; color: #22c55e; text-align: right; display: flex; align-items: center; justify-content: flex-end; gap: 4px;">
+                <img src="{% static 'images/uc_icon.svg' %}" class="uc-icon-sm" alt="UC">
+                <span>+{{ op.item.value|uc }}</span>
               </div>
             </div>
           {% empty %}

@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% load static humanize %}
+{% load static humanize currency_tags %}
 
 {% block title %}NEONDROP - Мой Инвентарь{% endblock %}
 
@@ -9,15 +9,21 @@
   <div class="section-header" style="flex-wrap: wrap; gap: 14px; margin-bottom: 16px;">
     <div>
       <h1 class="section-title">ИНВЕНТАРЬ</h1>
-      <p style="color: #94a3b8; font-size: 13px; margin-top: 2px;">
-        Стоимость: <strong style="color: #38bdf8; font-family: var(--font-display);">${{ total_value|floatformat:2|intcomma }}</strong> &bull; Всего: <strong style="color: #fff;">{{ total_count }}</strong> шт.
+      <p style="color: #94a3b8; font-size: 13px; margin-top: 2px; display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
+        <span>Стоимость:</span>
+        <span class="uc-badge">
+          <img src="{% static 'images/uc_icon.svg' %}" class="uc-icon" alt="UC">
+          <strong style="color: #38bdf8; font-family: var(--font-display);">{{ total_value|uc }}</strong>
+        </span>
+        <span class="usd-approx-sub">{{ total_value|usd_approx }}</span>
+        <span>&bull; Всего: <strong style="color: #fff;">{{ total_count }}</strong> шт.</span>
       </p>
     </div>
 
     {% if total_count > 0 %}
       <button id="sellAllBtn" class="btn-neon-green" style="font-size: 12px; padding: 8px 18px;">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
-        ПРОДАТЬ ВСЁ (${{ total_value|floatformat:2 }})
+        ПРОДАТЬ ВСЁ ({{ total_value|uc }})
       </button>
     {% endif %}
   </div>
@@ -47,7 +53,12 @@
         <div class="item-card-skin">{{ inv.item.skin_name }}</div>
         
         <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 8px;">
-          <span class="item-card-price">${{ inv.item.value|floatformat:2 }}</span>
+          <span class="item-card-price">
+            <span class="uc-badge">
+              <img src="{% static 'images/uc_icon.svg' %}" class="uc-icon-sm" alt="UC">
+              <span class="uc-val">{{ inv.item.value|uc }}</span>
+            </span>
+          </span>
           <button class="btn-cyber-outline btn-sell-single" data-id="{{ inv.id }}" data-price="{{ inv.item.value }}" style="font-size: 10px; padding: 3px 8px;">
             Продать
           </button>

@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% load static humanize %}
+{% load static humanize currency_tags %}
 
 {% block title %}NEONDROP - Контракты Обмена CS:GO{% endblock %}
 
@@ -19,7 +19,7 @@
 
     <div>
       <div style="font-family: var(--font-sub); font-size: 12px; font-weight: 700; color: #94a3b8; text-transform: uppercase;">ОБЩАЯ СТОИМОСТЬ:</div>
-      <div id="contractTotalValue" style="font-family: var(--font-display); font-size: 24px; font-weight: 900; color: #38bdf8;">$0.00</div>
+      <div id="contractTotalValue" style="font-family: var(--font-display); font-size: 24px; font-weight: 900; color: #38bdf8;">0 UC</div>
     </div>
 
     <button id="createContractBtn" class="btn-neon" style="padding: 12px 30px;" disabled>
@@ -42,7 +42,12 @@
           </div>
           <div class="item-card-weapon">{{ inv.item.weapon_type }}</div>
           <div class="item-card-skin">{{ inv.item.skin_name }}</div>
-          <div class="item-card-price">${{ inv.item.value|floatformat:2 }}</div>
+          <div class="item-card-price">
+            <span class="uc-badge">
+              <img src="{% static 'images/uc_icon.svg' %}" class="uc-icon-sm" alt="UC">
+              <span class="uc-val">{{ inv.item.value|uc }}</span>
+            </span>
+          </div>
         </div>
       {% empty %}
         <div style="grid-column: 1 / -1; text-align: center; padding: 40px; color: #64748b;">
@@ -64,7 +69,7 @@
     </div>
     <div class="win-item-name" id="contractWinName">M4A4 | The Emperor</div>
     <div class="win-item-rarity" id="contractWinRarity">ТАЙНОЕ</div>
-    <div class="win-item-price" id="contractWinPrice">$55.00</div>
+    <div class="win-item-price" id="contractWinPrice">0 UC</div>
 
     <div class="win-actions">
       <button onclick="window.location.reload();" class="btn-neon">

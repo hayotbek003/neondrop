@@ -119,8 +119,8 @@ class Command(BaseCommand):
         self.stdout.write(self.style.NOTICE(" 1. USERS & PROFILES:"))
         self.stdout.write(f"    - Users:                  {users_count:>8}")
         self.stdout.write(f"    - Profiles:               {profiles_count:>8} (1:1 Match: {'OK' if users_count == profiles_count else 'MISMATCH'})")
-        self.stdout.write(f"    - Total User Balances:    ${total_balance:>10.2f}")
-        self.stdout.write(f"    - Total Winnings Recorded:${total_winnings:>10.2f}")
+        self.stdout.write(f"    - Total User Balances:     {total_balance:>10.2f} UC")
+        self.stdout.write(f"    - Total Winnings Recorded: {total_winnings:>10.2f} UC")
 
         self.stdout.write(self.style.NOTICE("\n 2. CASES & SKINS CATALOG:"))
         self.stdout.write(f"    - Categories:             {categories_count:>8}")
@@ -136,9 +136,9 @@ class Command(BaseCommand):
 
         self.stdout.write(self.style.NOTICE("\n 4. FINANCIAL LEDGER (TRANSACTIONS):"))
         self.stdout.write(f"    - Total Transactions:     {transactions_count:>8}")
-        self.stdout.write(f"    - Completed Deposits:     ${tx_deposits:>10.2f}")
-        self.stdout.write(f"    - Case Openings Spent:    ${tx_case_opens:>10.2f}")
-        self.stdout.write(f"    - Item Sells Credited:    ${tx_item_sells:>10.2f}")
+        self.stdout.write(f"    - Completed Deposits:      {tx_deposits:>10.2f} UC")
+        self.stdout.write(f"    - Case Openings Spent:     {tx_case_opens:>10.2f} UC")
+        self.stdout.write(f"    - Item Sells Credited:     {tx_item_sells:>10.2f} UC")
 
         self.stdout.write(self.style.NOTICE("\n 5. PROMOS, CHANCES & MINI-GAMES:"))
         self.stdout.write(f"    - PromoCodes:             {promocodes_count:>8}")

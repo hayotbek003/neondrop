@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% load static humanize %}
+{% load static humanize currency_tags %}
 
 {% block title %}NEONDROP - Каталог Кейсов CS:GO{% endblock %}
 
@@ -54,7 +54,13 @@
           </svg>
         </div>
         <h3 class="case-card-name">{{ case.name }}</h3>
-        <div class="case-card-price">${{ case.price|floatformat:2 }}</div>
+        <div class="case-card-price">
+          <span class="uc-badge">
+            <img src="{% static 'images/uc_icon.svg' %}" class="uc-icon" alt="UC">
+            <span class="uc-val">{{ case.price|uc }}</span>
+          </span>
+          <span class="usd-approx-sub">{{ case.price|usd_approx }}</span>
+        </div>
         <button class="case-card-btn">ОТКРЫТЬ КЕЙС</button>
       </a>
     {% empty %}

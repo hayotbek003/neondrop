@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
-{% load static humanize %}
+{% load static humanize currency_tags %}
 
-{% block title %}NEONDROP - {{ case.name }} (${{ case.price|floatformat:2 }}){% endblock %}
+{% block title %}NEONDROP - {{ case.name }} ({{ case.price|uc }}){% endblock %}
 
 {% block content %}
 <div class="container" style="padding-top: 24px; padding-bottom: 60px;">
@@ -51,7 +51,13 @@
     </div>
 
     <h1 class="case-hero-title">{{ case.name }}</h1>
-    <div class="case-hero-price" id="caseUnitPrice" data-price="{{ case.price }}">${{ case.price|floatformat:2 }}</div>
+    <div class="case-hero-price" id="caseUnitPrice" data-price="{{ case.price }}">
+      <span class="uc-badge">
+        <img src="{% static 'images/uc_icon.svg' %}" class="uc-icon" alt="UC">
+        <span class="uc-val">{{ case.price|uc }}</span>
+      </span>
+      <span class="usd-approx-sub">{{ case.price|usd_approx }}</span>
+    </div>
 
     <!-- Multi-Case Quantity Selector (1 to 5) -->
     <div class="case-quantity-panel">
@@ -72,13 +78,13 @@
 
     <!-- Live Calculation Display -->
     <div class="case-calc-summary" id="caseCalcSummary">
-      <span>1 кейс = ${{ case.price|floatformat:2 }}</span> &bull; <span>Итого: <strong id="totalCostDisplay" class="text-cyan">${{ case.price|floatformat:2 }}</strong></span>
+      <span>1 кейс = {{ case.price|uc }}</span> &bull; <span>Итого: <strong id="totalCostDisplay" class="text-cyan">{{ case.price|uc }}</strong> <span class="usd-approx-sub">({{ case.price|usd_approx }})</span></span>
     </div>
 
     <div class="case-hero-actions">
       {% if user.is_authenticated %}
         <button id="openCaseBtn" data-case-slug="{{ case.slug }}" data-free-openings="{{ free_openings_count }}" class="btn-neon btn-open-main">
-          <span id="openBtnText">ОТКРЫТЬ ×1</span>
+          <span id="openBtnText">ОТКРЫТЬ ×1 ({{ case.price|uc }})</span>
         </button>
       {% else %}
         <a href="{% url 'users:login' %}?next={{ request.path }}" class="btn-neon btn-open-main">
@@ -135,7 +141,13 @@
         </div>
         <div class="item-card-weapon">{{ entry.item.weapon_type }}</div>
         <div class="item-card-skin">{{ entry.item.skin_name }}</div>
-        <div class="item-card-price">${{ entry.item.value|floatformat:2 }}</div>
+        <div class="item-card-price">
+          <span class="uc-badge">
+            <img src="{% static 'images/uc_icon.svg' %}" class="uc-icon-sm" alt="UC">
+            <span class="uc-val">{{ entry.item.value|uc }}</span>
+          </span>
+          <span class="usd-approx-sub">{{ entry.item.value|usd_approx }}</span>
+        </div>
       </div>
     {% endfor %}
   </div>
@@ -156,12 +168,12 @@
     </div>
 
     <div class="win-total-summary" id="winTotalSummary">
-      <span>Общая стоимость: <strong id="winTotalValueDisplay" class="text-green">$0.00</strong></span>
+      <span>Общая стоимость: <strong id="winTotalValueDisplay" class="text-green">0 UC</strong></span>
     </div>
 
     <div class="win-actions">
       <button id="modalSellAllBtn" class="btn-neon-green" style="font-size: 14px; padding: 12px 24px;">
-        ПРОДАТЬ ВСЕ ЗА $0.00
+        ПРОДАТЬ ВСЕ
       </button>
       <button id="closeWinModalBtn" class="btn-neon" style="font-size: 14px; padding: 12px 24px;">
         ЗАБРАТЬ ВСЕ В ИНВЕНТАРЬ

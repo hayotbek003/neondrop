@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32" fill="none">
+  <defs>
+    <linearGradient id="ucGoldGrad" x1="2" y1="2" x2="30" y2="30" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#FFE066" />
+      <stop offset="35%" stop-color="#F59E0B" />
+      <stop offset="70%" stop-color="#D97706" />
+      <stop offset="100%" stop-color="#92400E" />
+    </linearGradient>
+    <linearGradient id="ucInnerGrad" x1="6" y1="6" x2="26" y2="26" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#1E1B18" />
+      <stop offset="50%" stop-color="#12100E" />
+      <stop offset="100%" stop-color="#080706" />
+    </linearGradient>
+    <linearGradient id="ucTextGrad" x1="8" y1="10" x2="24" y2="22" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#FFFFFF" />
+      <stop offset="40%" stop-color="#FFFBEB" />
+      <stop offset="80%" stop-color="#FDE68A" />
+      <stop offset="100%" stop-color="#F59E0B" />
+    </linearGradient>
+    <filter id="ucGlow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="1" stdDeviation="1.5" flood-color="#F59E0B" flood-opacity="0.6"/>
+    </filter>
+  </defs>
+  
+  <!-- Outer Gold Hexagon Shield -->
+  <polygon points="16,2 29,8 29,24 16,30 3,24 3,8" fill="url(#ucGoldGrad)" filter="url(#ucGlow)" />
+  
+  <!-- Outer Border Highlight -->
+  <polygon points="16,3.5 27.5,9 27.5,23 16,28.5 4.5,23 4.5,9" fill="#292524" />
+  
+  <!-- Inner Background Shield -->
+  <polygon points="16,5 26,10 26,22 16,27 6,22 6,10" fill="url(#ucInnerGrad)" />
+  
+  <!-- Gold Inner Border Accent -->
+  <polygon points="16,6.5 24.5,10.8 24.5,21.2 16,25.5 7.5,21.2 7.5,10.8" fill="none" stroke="url(#ucGoldGrad)" stroke-width="0.8" stroke-opacity="0.7" />
+  
+  <!-- UC Stylized Bold Typography -->
+  <text x="16" y="20.5" font-family="'Impact', 'Arial Black', 'Montserrat', sans-serif" font-size="13" font-weight="900" font-style="italic" fill="url(#ucTextGrad)" text-anchor="middle" letter-spacing="-0.5">UC</text>
+  
+  <!-- Top Highlight Shine -->
+  <path d="M7 10.5 L16 6 L25 10.5" stroke="#FFF" stroke-width="1" stroke-linecap="round" stroke-opacity="0.4" />
+</svg>

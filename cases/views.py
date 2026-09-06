@@ -327,7 +327,7 @@ def open_case_api(request, slug=None, case_id=None):
     audit_logger.info(
         f"CASE_OPEN_SUCCESS: user={request.user.username} (id={request.user.id}) | "
         f"case={case.name} | qty={quantity} (paid={paid_quantity}, free={free_used}) | "
-        f"cost=${total_price} | winnings=${total_winnings} | ip={ip}"
+        f"cost={total_price} UC | winnings={total_winnings} UC | ip={ip}"
     )
 
     free_remaining = user_free.openings_left if user_free else 0
@@ -401,7 +401,7 @@ def redeem_promocode_api(request):
         if user_deposits < promo.min_deposit:
             return JsonResponse({
                 'success': False,
-                'error': f'✕ Для активации промокода требуется сумма пополнений от ${promo.min_deposit:.2f}.'
+                'error': f'✕ Для активации промокода требуется сумма пополнений от {promo.min_deposit:.2f} UC.'
             }, status=400)
 
     # 5. Apply Bonus
@@ -416,10 +416,10 @@ def redeem_promocode_api(request):
             amount_delta=promo.bonus_value,
             transaction_type='promo_bonus',
             reference_id=f"promo:{promo.id}",
-            description=f"Активация промокода {promo.code} (+${promo.bonus_value:.2f})",
+            description=f"Активация промокода {promo.code} (+{promo.bonus_value:.2f} UC)",
             ip_address=ip
         )
-        msg = f"✓ Промокод активирован! Начислено +${promo.bonus_value:.2f} Coins."
+        msg = f"✓ Промокод активирован! Начислено +{promo.bonus_value:.2f} UC."
 
     elif promo.bonus_type == 'free_case_opens':
         free_count = int(promo.bonus_value)

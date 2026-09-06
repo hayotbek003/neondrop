@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% load static humanize %}
+{% load static humanize currency_tags %}
 
 {% block title %}NEONDROP - Главная страница | Открывай лучшие кейсы CS:GO{% endblock %}
 
@@ -11,7 +11,11 @@
     <div class="mobile-quick-balance-strip">
       <div class="quick-balance-left">
         <span class="quick-balance-lbl">ВАШ БАЛАНС</span>
-        <span class="quick-balance-amt user-balance-val">${{ user_balance|floatformat:2|intcomma }}</span>
+        <div style="display: flex; align-items: baseline; gap: 6px;">
+          <img src="{% static 'images/uc_icon.svg' %}" class="uc-icon" alt="UC">
+          <span class="quick-balance-amt user-balance-val">{{ user_balance|uc }}</span>
+          <span class="usd-approx-sub user-balance-usd" style="font-size: 11px; color: #94a3b8;">{{ user_balance|usd_approx }}</span>
+        </div>
       </div>
       <a href="{% url 'payments:deposit' %}" class="btn-neon" style="padding: 8px 18px; font-size: 12px;">
         + ПОПОЛНИТЬ
@@ -117,7 +121,13 @@
             </svg>
           </div>
           <h3 class="case-card-name">{{ case.name }}</h3>
-          <div class="case-card-price">${{ case.price|floatformat:2 }}</div>
+          <div class="case-card-price">
+            <span class="uc-badge">
+              <img src="{% static 'images/uc_icon.svg' %}" class="uc-icon" alt="UC">
+              <span class="uc-val">{{ case.price|uc }}</span>
+            </span>
+            <span class="usd-approx-sub">{{ case.price|usd_approx }}</span>
+          </div>
           <button class="case-card-btn">ОТКРЫТЬ КЕЙС</button>
         </a>
       {% empty %}
@@ -138,7 +148,10 @@
             <img src="{{ winner.avatar }}" alt="{{ winner.username }}" class="winner-avatar">
             <span class="winner-username">{{ winner.username }}</span>
             <svg class="winner-weapon-thumb"><use href="#icon-{{ winner.weapon_image }}"></use></svg>
-            <span class="winner-amount">+${{ winner.winnings|floatformat:2|intcomma }}</span>
+            <span class="winner-amount">
+              <img src="{% static 'images/uc_icon.svg' %}" class="uc-icon-sm" alt="UC">
+              +{{ winner.winnings|uc }}
+            </span>
           </div>
         {% endfor %}
       </div>

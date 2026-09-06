@@ -280,14 +280,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const paidQuantity = Math.max(0, selectedQuantity - freeOpeningsAvailable);
     const totalCost = paidQuantity * unitPrice;
+    const formattedUnitPrice = window.formatUC ? window.formatUC(unitPrice) : `${unitPrice} UC`;
+    const formattedTotalCost = window.formatUC ? window.formatUC(totalCost) : `${totalCost} UC`;
+    const formattedTotalUsd = window.formatUsdApprox ? window.formatUsdApprox(totalCost) : '';
 
     if (caseCalcSummary) {
       if (freeOpeningsAvailable >= selectedQuantity) {
         caseCalcSummary.innerHTML = `<span>Количество: ${selectedQuantity}</span> &bull; <span>Оплата: <strong class="text-green">БЕСПЛАТНО (${selectedQuantity} шт.)</strong></span>`;
       } else if (freeOpeningsAvailable > 0) {
-        caseCalcSummary.innerHTML = `<span>Бесплатно: ${freeOpeningsAvailable} шт. &bull; К оплате: ${paidQuantity} × $${unitPrice.toFixed(2)}</span> &bull; <span>Итого: <strong class="text-cyan">$${totalCost.toFixed(2)}</strong></span>`;
+        caseCalcSummary.innerHTML = `<span>Бесплатно: ${freeOpeningsAvailable} шт. &bull; К оплате: ${paidQuantity} × ${formattedUnitPrice}</span> &bull; <span>Итого: <strong class="text-cyan">${formattedTotalCost}</strong> <span class="usd-approx-sub">(${formattedTotalUsd})</span></span>`;
       } else {
-        caseCalcSummary.innerHTML = `<span>1 кейс = $${unitPrice.toFixed(2)} &bull; ${selectedQuantity} шт.</span> &bull; <span>Итого: <strong class="text-cyan">$${totalCost.toFixed(2)}</strong></span>`;
+        caseCalcSummary.innerHTML = `<span>1 кейс = ${formattedUnitPrice} &bull; ${selectedQuantity} шт.</span> &bull; <span>Итого: <strong class="text-cyan">${formattedTotalCost}</strong> <span class="usd-approx-sub">(${formattedTotalUsd})</span></span>`;
       }
     }
 
@@ -295,7 +298,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (paidQuantity === 0) {
         openBtnText.textContent = `ОТКРЫТЬ БЕСПЛАТНО (×${selectedQuantity})`;
       } else {
-        openBtnText.textContent = `ОТКРЫТЬ ×${selectedQuantity} ($${totalCost.toFixed(2)})`;
+        openBtnText.textContent = `ОТКРЫТЬ ×${selectedQuantity} (${formattedTotalCost})`;
       }
     }
   }
@@ -432,13 +435,14 @@ document.addEventListener('DOMContentLoaded', () => {
         card.style.setProperty('--r-color', item.rarity_color);
         card.setAttribute('data-index', itemIdx);
 
+        const priceBadgeHtml = window.renderUcBadgeHtml ? window.renderUcBadgeHtml(item.value, false, 14) : `${item.value} UC`;
         card.innerHTML = `
           <div class="roulette-item-weapon">${item.weapon_type}</div>
           <div class="roulette-item-img-box">
             <svg class="roulette-item-img"><use href="#icon-${item.image_url || 'generic_weapon'}"></use></svg>
           </div>
           <div class="roulette-item-skin">${item.skin_name}</div>
-          <div class="roulette-item-price">$${item.value.toFixed(2)}</div>
+          <div class="roulette-item-price">${priceBadgeHtml}</div>
         `;
         track.appendChild(card);
       });
@@ -561,13 +565,14 @@ document.addEventListener('DOMContentLoaded', () => {
       card.className = 'win-single-card';
       card.style.setProperty('--card-color', item.rarity_color);
 
+      const cardPriceHtml = window.renderUcBadgeHtml ? window.renderUcBadgeHtml(item.value, true, 14) : `${item.value} UC`;
       card.innerHTML = `
         <div class="win-card-weapon">${item.weapon_type}</div>
         <div class="win-card-img-box">
           <svg class="win-card-img"><use href="#icon-${item.image_url || 'generic_weapon'}"></use></svg>
         </div>
         <div class="win-card-skin">${item.skin_name}</div>
-        <div class="win-card-price">$${item.value.toFixed(2)}</div>
+        <div class="win-card-price">${cardPriceHtml}</div>
       `;
       winItemsGrid.appendChild(card);
     });
@@ -581,14 +586,15 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     if (winTotalValueDisplay) {
-      winTotalValueDisplay.textContent = `$${totalValue.toFixed(2)}`;
+      winTotalValueDisplay.innerHTML = window.renderUcBadgeHtml ? window.renderUcBadgeHtml(totalValue, true, 16) : `${totalValue} UC`;
     }
 
     if (modalSellAllBtn) {
+      const formattedTotal = window.formatUC ? window.formatUC(totalValue) : `${totalValue} UC`;
       if (results.length === 1) {
-        modalSellAllBtn.textContent = `ПРОДАТЬ ЗА $${totalValue.toFixed(2)}`;
+        modalSellAllBtn.textContent = `ПРОДАТЬ ЗА ${formattedTotal}`;
       } else {
-        modalSellAllBtn.textContent = `ПРОДАТЬ ВСЕ ЗА $${totalValue.toFixed(2)}`;
+        modalSellAllBtn.textContent = `ПРОДАТЬ ВСЕ ЗА ${formattedTotal}`;
       }
       modalSellAllBtn.onclick = () => sellBatchWonItems(invIds);
     }

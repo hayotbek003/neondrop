@@ -55,7 +55,7 @@ class Item(models.Model):
     weapon_type = models.CharField(max_length=100, verbose_name="Тип оружия", default="AK-47")
     skin_name = models.CharField(max_length=100, verbose_name="Название скина", default="Asiimov")
     name = models.CharField(max_length=200, verbose_name="Полное название", blank=True)
-    value = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="Стоимость ($)")
+    value = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="Стоимость (UC)")
     rarity = models.CharField(max_length=30, choices=RARITY_CHOICES, default='mil_spec', verbose_name="Редкость")
     rarity_color = models.CharField(max_length=20, default='#4B69FF', verbose_name="Цвет редкости (HEX)")
     image = models.ImageField(upload_to='items/', blank=True, null=True, verbose_name="Изображение предмета")
@@ -79,7 +79,7 @@ class Item(models.Model):
         return self.RARITY_NAMES_RU.get(self.rarity, self.get_rarity_display())
 
     def __str__(self):
-        return f"{self.name} (${self.value})"
+        return f"{self.name} ({self.value} UC)"
 
 class Case(models.Model):
     THEME_CHOICES = [
@@ -107,7 +107,7 @@ class Case(models.Model):
     name = models.CharField(max_length=150, verbose_name="Название кейса")
     slug = models.SlugField(max_length=150, unique=True, verbose_name="Слаг")
     category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True, blank=True, related_name='cases', verbose_name="Категория")
-    price = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="Цена открытия ($)")
+    price = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="Цена открытия (UC)")
     image = models.ImageField(upload_to='cases/', blank=True, null=True, verbose_name="Изображение кейса")
     image_url = models.CharField(max_length=500, blank=True, null=True, verbose_name="URL Изображения / SVG ID")
     color_theme = models.CharField(max_length=30, choices=THEME_CHOICES, default='cyber-pink', verbose_name="Цветовая тема")
@@ -132,7 +132,7 @@ class Case(models.Model):
         return self.THEME_ACCENT_COLORS.get(self.color_theme, '#ec4899')
 
     def __str__(self):
-        return f"{self.name} (${self.price})"
+        return f"{self.name} ({self.price} UC)"
 
 class CaseItem(models.Model):
     case = models.ForeignKey(Case, on_delete=models.CASCADE, related_name='case_items', verbose_name="Кейс")
@@ -152,7 +152,7 @@ class Opening(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='openings', verbose_name="Пользователь")
     case = models.ForeignKey(Case, on_delete=models.CASCADE, related_name='openings', verbose_name="Кейс")
     item = models.ForeignKey(Item, on_delete=models.CASCADE, related_name='openings', verbose_name="Выпавший предмет")
-    price = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="Цена кейса на момент открытия")
+    price = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="Цена кейса на момент открытия (UC)")
     server_seed_hash = models.CharField(max_length=64, verbose_name="SHA256 Server Seed Hash")
     server_seed = models.CharField(max_length=64, verbose_name="Server Seed (Открытый ключ)")
     client_seed = models.CharField(max_length=64, verbose_name="Client Seed (Ключ клиента)")
@@ -165,7 +165,7 @@ class Opening(models.Model):
         ordering = ['-created_at']
 
     def __str__(self):
-        return f"{self.user.username} открыл {self.case.name} -> {self.item.name} (${self.item.value})"
+        return f"{self.user.username} открыл {self.case.name} -> {self.item.name} ({self.item.value} UC)"
 
 class PersonalCaseChance(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='personal_chances', verbose_name="Пользователь")
@@ -212,21 +212,21 @@ class PersonalCaseChance(models.Model):
 
 class PromoCode(models.Model):
     BONUS_TYPE_CHOICES = [
-        ('coins', 'Coins / Баланс ($)'),
+        ('coins', 'UC / Баланс (UC)'),
         ('percentage', 'Процент к депозиту (%)'),
         ('free_case_opens', 'Бесплатные открытия кейса'),
     ]
 
     code = models.CharField(max_length=50, unique=True, db_index=True, verbose_name="Промокод")
     bonus_type = models.CharField(max_length=30, choices=BONUS_TYPE_CHOICES, default='coins', verbose_name="Тип бонуса")
-    bonus_value = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="Значение бонуса (Coins / % / Кол-во)")
+    bonus_value = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="Значение бонуса (UC / % / Кол-во)")
     max_uses = models.PositiveIntegerField(default=100, verbose_name="Максимум использований (всего)")
     used_count = models.PositiveIntegerField(default=0, verbose_name="Количество использований")
     starts_at = models.DateTimeField(verbose_name="Дата начала")
     expires_at = models.DateTimeField(verbose_name="Дата окончания")
     is_active = models.BooleanField(default=True, verbose_name="Активен")
-    min_deposit = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal('0.00'), verbose_name="Мин. депозит для активации ($)")
-    max_bonus = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, verbose_name="Макс. сумма бонуса ($)")
+    min_deposit = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal('0.00'), verbose_name="Мин. депозит для активации (UC)")
+    max_bonus = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, verbose_name="Макс. сумма бонуса (UC)")
     case = models.ForeignKey(Case, on_delete=models.SET_NULL, null=True, blank=True, related_name='promocodes', verbose_name="Кейс для бесплатных открытий")
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Дата создания")
     updated_at = models.DateTimeField(auto_now=True, verbose_name="Дата обновления")
@@ -273,7 +273,7 @@ class PromoCodeUse(models.Model):
     promo_code = models.ForeignKey(PromoCode, on_delete=models.CASCADE, related_name='uses', verbose_name="Промокод")
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='promocode_uses', verbose_name="Пользователь")
     used_at = models.DateTimeField(auto_now_add=True, verbose_name="Дата использования")
-    bonus_amount = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal('0.00'), verbose_name="Начисленный бонус")
+    bonus_amount = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal('0.00'), verbose_name="Начисленный бонус (UC)")
     related_transaction = models.ForeignKey('payments.Transaction', on_delete=models.SET_NULL, null=True, blank=True, related_name='promocode_uses', verbose_name="Связанная транзакция")
 
     class Meta:
