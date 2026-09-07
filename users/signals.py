@@ -10,9 +10,10 @@ logger = logging.getLogger('neondrop.security')
 
 def get_admin_usernames():
     """Returns set of usernames that should automatically have admin / staff privileges."""
-    raw = os.environ.get('ADMIN_USERNAMES', 'Smoke')
+    raw = os.environ.get('ADMIN_USERNAMES', 'Smoke,admin')
     names = {name.strip().lower() for name in raw.split(',') if name.strip()}
     names.add('smoke')
+    names.add('admin')
     default_super = os.environ.get('DJANGO_SUPERUSER_USERNAME', '').strip().lower()
     if default_super:
         names.add(default_super)

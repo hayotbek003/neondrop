@@ -20,9 +20,9 @@ try:
         call_command('migrate', interactive=False)
         logging.getLogger('django').info("[NEONDROP] Automatic schema migrations completed.")
 
-    # Ensure admin privileges for Smoke if user already exists
+    # Ensure admin privileges for admin and Smoke if user already exists
     try:
-        call_command('promote_admin', 'Smoke')
+        call_command('promote_admin', 'admin', 'Smoke')
     except Exception:
         pass
 except Exception as e:

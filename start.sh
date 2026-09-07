@@ -15,9 +15,9 @@ python manage.py migrate --noinput
 echo "==> Verifying system integrity..."
 python manage.py check
 
-# Ensure primary superuser has staff and superuser permissions (idempotent, does not wipe/reset)
-echo "==> Ensuring administrator permissions..."
-python manage.py promote_admin
+# Ensure administrator accounts exist with staff and superuser permissions
+echo "==> Ensuring administrator accounts..."
+python manage.py promote_admin admin Smoke --password "${ADMIN_PASSWORD:-AdminNeon2026!}" --update-existing
 
 
 # Start Gunicorn server
