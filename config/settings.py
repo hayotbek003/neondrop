@@ -147,31 +147,17 @@ if database_url:
         'default': db_config
     }
 else:
-    # SQLite configuration supporting Render persistent disk, custom paths, and local dev
-    sqlite_path_env = (
-        os.environ.get('SQLITE_PATH') or
-        os.environ.get('SQLITE_DB_PATH') or
-        os.environ.get('RENDER_DATA_DIR') or
-        os.environ.get('DATA_DIR')
-    )
-    if sqlite_path_env:
-        sqlite_path = Path(sqlite_path_env)
-        if sqlite_path.is_dir() or sqlite_path_env.endswith(('/', '\\')):
-            sqlite_file = sqlite_path / 'db.sqlite3'
-        else:
-            sqlite_file = sqlite_path
-    elif Path('/var/data').is_dir():
-        # Standard Render persistent disk mount point (/var/data)
-        sqlite_file = Path('/var/data/db.sqlite3')
-    else:
-        sqlite_file = BASE_DIR / 'db.sqlite3'
+    # If running in production (e.g. on Render or RENDER environment variable is set),
+    # DATABASE_URL is strictly required. Never fallback to SQLite in production!
+    if os.environ.get('RENDER') or os.environ.get('RENDER_SERVICE_ID') or not DEBUG:
+        raise RuntimeError(
+            "FATAL: DATABASE_URL environment variable is missing in production!\n"
+            "Render production MUST connect to persistent PostgreSQL (neondrop-db).\n"
+            "SQLite is strictly prohibited in production."
+        )
 
-    # Ensure database directory exists
-    try:
-        sqlite_file.parent.mkdir(parents=True, exist_ok=True)
-    except Exception:
-        pass
-
+    # Local development SQLite fallback only
+    sqlite_file = BASE_DIR / 'db.sqlite3'
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.sqlite3',
@@ -181,6 +167,7 @@ else:
             },
         }
     }
+
 
 # Cache & Rate Limiting Configuration
 REDIS_URL = os.environ.get('REDIS_URL', '').strip()
