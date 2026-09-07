@@ -27,3 +27,19 @@ class Profile(models.Model):
         if self.avatar_url:
             return self.avatar_url
         return f"https://api.dicebear.com/7.x/bottts/svg?seed={self.user.username}"
+
+
+class GoogleAccount(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='google_account', verbose_name="Пользователь")
+    google_id = models.CharField(max_length=255, unique=True, db_index=True, verbose_name="Google Sub ID")
+    email = models.EmailField(verbose_name="Google Email")
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Дата привязки")
+    updated_at = models.DateTimeField(auto_now=True, verbose_name="Дата обновления")
+
+    class Meta:
+        verbose_name = "Google аккаунт"
+        verbose_name_plural = "Google аккаунты"
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.user.username} (Google ID: {self.google_id})"

@@ -1,6 +1,6 @@
 import logging
 from django.shortcuts import render, redirect
-from django.contrib.auth import login, logout
+from django.contrib.auth import login, logout, authenticate
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_POST, require_http_methods
 from django.views.decorators.csrf import ensure_csrf_cookie
@@ -8,9 +8,20 @@ from django.contrib import messages
 from django.http import JsonResponse
 from django.conf import settings
 from decimal import Decimal
+import hmac
+import secrets
 
 from .forms import RegistrationForm, LoginForm, ProfileSettingsForm
 from .models import Profile
+from .oauth import (
+    is_google_oauth_configured,
+    get_google_redirect_uri,
+    build_google_auth_url,
+    exchange_code_for_tokens,
+    fetch_google_user_info,
+    get_or_create_google_user,
+    GoogleOAuthError,
+)
 from cases.models import Opening
 from payments.services import modify_user_balance
 from config.security import rate_limit, get_client_ip
@@ -42,7 +53,14 @@ def register_view(request):
             ip = get_client_ip(request)
             audit_logger.info(f"USER_REGISTRATION: username={user.username}, id={user.id}, email={user.email}, ip={ip}")
             
-            login(request, user)
+            # Authenticate user and explicitly pass backend to prevent multiple-backend ValueError
+            auth_user = authenticate(
+                request=request,
+                username=user.username,
+                password=form.cleaned_data['password']
+            )
+            login_target = auth_user if auth_user is not None else user
+            login(request, login_target, backend='users.backends.CaseInsensitiveModelBackend')
             request.session.set_expiry(getattr(settings, 'SESSION_COOKIE_AGE', 2592000))
             
             messages.success(request, f"Добро пожаловать в NEONDROP, {user.username}! Вам начислен приветственный баланс $100.00.")
@@ -67,7 +85,8 @@ def login_view(request):
         ip = get_client_ip(request)
         if form.is_valid():
             user = form.user
-            login(request, user)
+            backend = getattr(user, 'backend', 'users.backends.CaseInsensitiveModelBackend')
+            login(request, user, backend=backend)
             request.session.set_expiry(getattr(settings, 'SESSION_COOKIE_AGE', 2592000))
             
             audit_logger.info(f"USER_LOGIN_SUCCESS: username={user.username}, id={user.id}, ip={ip}")
@@ -80,6 +99,108 @@ def login_view(request):
         form = LoginForm(request=request)
         
     return render(request, 'login.html', {'form': form})
+
+@ensure_csrf_cookie
+def google_login_view(request):
+    """
+    Initiates Google OAuth 2.0 authorization flow.
+    Generates cryptographic state, stores in session, and redirects to Google.
+    """
+    if request.user.is_authenticated:
+        return redirect('cases:home')
+
+    if not is_google_oauth_configured():
+        messages.warning(
+            request,
+            "Вход через Google временно недоступен (не настроены GOOGLE_CLIENT_ID и GOOGLE_CLIENT_SECRET в переменных окружения)."
+        )
+        return redirect('users:login')
+
+    next_url = request.GET.get('next', 'cases:home')
+    if next_url and next_url.startswith('/'):
+        request.session['google_oauth_next'] = next_url
+    else:
+        request.session['google_oauth_next'] = 'cases:home'
+
+    state = secrets.token_urlsafe(32)
+    request.session['google_oauth_state'] = state
+
+    redirect_uri = get_google_redirect_uri(request)
+    try:
+        auth_url = build_google_auth_url(request, state, redirect_uri)
+        return redirect(auth_url)
+    except GoogleOAuthError as e:
+        messages.error(request, str(e))
+        return redirect('users:login')
+
+@ensure_csrf_cookie
+def google_callback_view(request):
+    """
+    Handles callback from Google OAuth 2.0 / OpenID Connect.
+    Validates state parameter, exchanges authorization code for tokens,
+    retrieves userinfo, idempotently associates/creates User, and logs in.
+    """
+    if request.user.is_authenticated:
+        return redirect('cases:home')
+
+    ip = get_client_ip(request)
+
+    # 1. Handle user cancellation or error from Google
+    error = request.GET.get('error')
+    if error:
+        security_logger.info(f"Google OAuth cancelled or returned error '{error}' from IP {ip}")
+        if error == 'access_denied':
+            messages.info(request, "Вход через Google был отменён.")
+        else:
+            messages.warning(request, f"Ошибка авторизации через Google: {error}")
+        return redirect('users:login')
+
+    # 2. Validate cryptographic state parameter (CSRF protection)
+    stored_state = request.session.pop('google_oauth_state', None)
+    incoming_state = request.GET.get('state', '')
+
+    if not stored_state or not incoming_state or not hmac.compare_digest(stored_state, incoming_state):
+        security_logger.warning(f"Google OAuth state mismatch from IP {ip}. Possible CSRF or expired session.")
+        messages.error(request, "Ошибка безопасности при входе через Google (сессия устарела). Попробуйте снова.")
+        return redirect('users:login')
+
+    code = request.GET.get('code')
+    if not code:
+        messages.error(request, "Код авторизации от Google не получен.")
+        return redirect('users:login')
+
+    redirect_uri = get_google_redirect_uri(request)
+
+    try:
+        token_data = exchange_code_for_tokens(code, redirect_uri)
+        access_token = token_data.get('access_token')
+        google_info = fetch_google_user_info(access_token)
+        user, is_created = get_or_create_google_user(google_info)
+    except GoogleOAuthError as e:
+        messages.error(request, str(e))
+        return redirect('users:login')
+    except Exception as e:
+        security_logger.error(f"Unexpected error during Google OAuth callback from IP {ip}: {e}")
+        messages.error(request, "Произошла непредвиденная ошибка при авторизации через Google.")
+        return redirect('users:login')
+
+    # 3. Log user in with persistent 30-day session
+    login(request, user, backend='users.backends.CaseInsensitiveModelBackend')
+    request.session.set_expiry(getattr(settings, 'SESSION_COOKIE_AGE', 2592000))
+
+    if is_created:
+        audit_logger.info(f"GOOGLE_AUTH_NEW_USER: user={user.username} (id={user.id}), ip={ip}")
+        messages.success(request, f"Добро пожаловать в NEONDROP, {user.username}! Аккаунт успешно создан через Google.")
+    else:
+        audit_logger.info(f"GOOGLE_AUTH_LOGIN: user={user.username} (id={user.id}), ip={ip}")
+        messages.success(request, f"С возвращением, {user.username}!")
+
+    next_url = request.session.pop('google_oauth_next', 'cases:home')
+    if not next_url or not next_url.startswith('/'):
+        next_url = 'cases:home'
+
+    return redirect(next_url)
+
 
 @require_http_methods(["GET", "POST"])
 def logout_view(request):
