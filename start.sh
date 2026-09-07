@@ -15,9 +15,11 @@ python manage.py migrate --noinput
 echo "==> Verifying system integrity..."
 python manage.py check
 
-# Ensure administrator accounts exist with staff and superuser permissions
+# Ensure administrator accounts exist with staff and superuser permissions.
+# ADMIN_PASSWORD must be set in Render Dashboard -> Environment Variables.
+# It is NEVER stored in source code or Git.
 echo "==> Ensuring administrator accounts..."
-python manage.py promote_admin admin Smoke --password "${ADMIN_PASSWORD:-AdminNeon2026!}" --update-existing
+python manage.py promote_admin admin Smoke --update-existing
 
 
 # Start Gunicorn server

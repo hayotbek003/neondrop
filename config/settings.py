@@ -147,13 +147,16 @@ if database_url:
         'default': db_config
     }
 else:
-    # If running in production (e.g. on Render or RENDER environment variable is set),
-    # DATABASE_URL is strictly required. Never fallback to SQLite in production!
-    if os.environ.get('RENDER') or os.environ.get('RENDER_SERVICE_ID') or not DEBUG:
+    # RENDER env var is only set at RUNTIME (not during the build phase).
+    # DATABASE_URL is a runtime environment variable and is NOT available during build.
+    # Only raise RuntimeError if we're definitely running at runtime on Render.
+    is_render_runtime = bool(os.environ.get('RENDER') or os.environ.get('RENDER_SERVICE_ID'))
+    if is_render_runtime:
         raise RuntimeError(
             "FATAL: DATABASE_URL environment variable is missing in production!\n"
             "Render production MUST connect to persistent PostgreSQL (neondrop-db).\n"
-            "SQLite is strictly prohibited in production."
+            "SQLite is strictly prohibited in production.\n"
+            "Set DATABASE_URL in Render Dashboard -> Environment Variables."
         )
 
     # Local development SQLite fallback only

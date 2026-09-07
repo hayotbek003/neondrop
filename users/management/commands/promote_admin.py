@@ -40,11 +40,12 @@ class Command(BaseCommand):
                 if n_clean and n_clean not in usernames:
                     usernames.append(n_clean)
 
+        # Read password from env vars only — never hardcode in source!
+        # Set ADMIN_PASSWORD in Render Dashboard -> Environment Variables.
         pwd = (
             options['password']
             or os.environ.get('ADMIN_PASSWORD')
             or os.environ.get('DJANGO_SUPERUSER_PASSWORD')
-            or 'AdminNeon2026!'
         )
         update_existing = (
             options['update_existing']
@@ -63,18 +64,26 @@ class Command(BaseCommand):
                     update_fields.append('password')
                 user.save(update_fields=update_fields)
                 Profile.objects.get_or_create(user=user)
-                pwd_status = " (password updated)" if (update_existing and pwd) else ""
+                pwd_status = " (password updated via ADMIN_PASSWORD)" if (update_existing and pwd) else " (existing password unchanged)"
                 self.stdout.write(
                     self.style.SUCCESS(
                         f" [OK] User '{user.username}' (id={user.id}) is Staff and Superuser with full /admin/ access!{pwd_status}"
                     )
                 )
             else:
+                if not pwd:
+                    self.stdout.write(
+                        self.style.WARNING(
+                            f" [SKIP] User '{name}' does not exist and ADMIN_PASSWORD env var is not set. "
+                            f"Set ADMIN_PASSWORD in Render Dashboard to create this superuser automatically."
+                        )
+                    )
+                    continue
                 email = os.environ.get('DJANGO_SUPERUSER_EMAIL', f'{name.lower()}@neondrop.gg')
                 new_user = User.objects.create_superuser(username=name, email=email, password=pwd)
                 Profile.objects.get_or_create(user=new_user)
                 self.stdout.write(
                     self.style.SUCCESS(
-                        f" [CREATED] Superuser '{new_user.username}' (id={new_user.id}) successfully created with password!"
+                        f" [CREATED] Superuser '{new_user.username}' (id={new_user.id}) successfully created!"
                     )
                 )
