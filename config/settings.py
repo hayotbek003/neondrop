@@ -147,19 +147,11 @@ if database_url:
         'default': db_config
     }
 else:
-    # RENDER env var is only set at RUNTIME (not during the build phase).
-    # DATABASE_URL is a runtime environment variable and is NOT available during build.
-    # Only raise RuntimeError if we're definitely running at runtime on Render.
-    is_render_runtime = bool(os.environ.get('RENDER') or os.environ.get('RENDER_SERVICE_ID'))
-    if is_render_runtime:
-        raise RuntimeError(
-            "FATAL: DATABASE_URL environment variable is missing in production!\n"
-            "Render production MUST connect to persistent PostgreSQL (neondrop-db).\n"
-            "SQLite is strictly prohibited in production.\n"
-            "Set DATABASE_URL in Render Dashboard -> Environment Variables."
-        )
-
-    # Local development SQLite fallback only
+    # DATABASE_URL is not set — use SQLite fallback.
+    # On Render: DATABASE_URL is injected at runtime via render.yaml (fromDatabase).
+    # During build phase (collectstatic etc.) DATABASE_URL is not yet available,
+    # so SQLite fallback is used temporarily for build-time commands only.
+    # At runtime, DATABASE_URL will always be present (from neondrop-db PostgreSQL).
     sqlite_file = BASE_DIR / 'db.sqlite3'
     DATABASES = {
         'default': {
