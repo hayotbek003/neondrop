@@ -46,14 +46,6 @@ python manage.py check_database_config
 echo "==> Running Django database migrations..."
 python manage.py migrate --noinput
 
-# Ensure persistent catalog and zero data loss on fresh PostgreSQL connections
-echo "==> Verifying case catalog persistence..."
-python manage.py ensure_persistent_data
-
-# Ensure Paradise Eruption case and cropped item images exist
-echo "==> Ensuring Paradise Eruption case catalog and media..."
-python manage.py setup_paradise_eruption_case || true
-
 # Verify system integrity
 echo "==> Verifying system integrity..."
 python manage.py check

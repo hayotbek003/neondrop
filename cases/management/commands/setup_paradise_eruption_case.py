@@ -19,11 +19,32 @@ class Command(BaseCommand):
             choices=['balanced', 'high_volatility'],
             help='Calculation mode: balanced or high_volatility'
         )
+        parser.add_argument(
+            '--force',
+            action='store_true',
+            help='Explicitly force recreation or updating of existing case and chances'
+        )
 
     def handle(self, *args, **options):
         self.stdout.write(self.style.NOTICE("\n======================================================="))
         self.stdout.write(self.style.NOTICE("  NEONDROP: Setting up Case «Райское извержение» (15 UC)"))
         self.stdout.write(self.style.NOTICE("=======================================================\n"))
+
+        # Safety Guard: Check if case already exists and has items
+        existing_case = Case.objects.filter(slug__in=['paradise-eruption', 'paradise_eruption']).first()
+        if not existing_case:
+            existing_case = Case.objects.filter(name="Райское извержение").first()
+
+        if existing_case and existing_case.case_items.exists() and not options.get('force'):
+            self.stdout.write(
+                self.style.SUCCESS(
+                    f"[IDEMPOTENT CHECK] Case «{existing_case.name}» already exists (ID: {existing_case.id}, "
+                    f"Price: {existing_case.price} UC, Items: {existing_case.case_items.count()}).\n"
+                    f"Zero modification policy: existing case, prices, chances, items, and data are left completely intact.\n"
+                    f"Pass --force to explicitly re-calculate and overwrite."
+                )
+            )
+            return
 
         # Find images in cases/resources or local brain dir
         resources_dir = Path(settings.BASE_DIR) / 'cases' / 'resources'
