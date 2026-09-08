@@ -8,7 +8,9 @@ from decimal import Decimal
 from django.shortcuts import render, redirect
 from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib import messages
-from django.http import HttpResponse, FileResponse, Http404, HttpResponseForbidden
+import json
+from django.http import HttpResponse, FileResponse, Http404, HttpResponseForbidden, JsonResponse
+
 from django.views.decorators.http import require_http_methods
 from django.conf import settings
 from django.contrib.auth.models import User
@@ -335,3 +337,320 @@ def export_transactions_csv_view(request):
         })
     filename = f"neondrop_transactions_{datetime.utcnow().strftime('%Y%m%d_%H%M%S')}.csv"
     return _create_csv_response(filename, fieldnames, rows)
+
+
+# ==============================================================================
+# IMAGE-BASED MASS ITEM IMPORT & RTP CALCULATOR VIEWS
+# ==============================================================================
+
+from cases.rtp_calculator import calculate_rtp_chances, classify_tier, validate_case_chances
+from cases.image_importer import PARADISE_ITEMS_METADATA, extract_items_from_grid_image, import_or_update_items
+from django.db import transaction
+
+
+def _can_manage_case_imports(user):
+    return user.is_superuser or has_admin_perm(user, 'can_add_cases') or has_admin_perm(user, 'can_add_items')
+
+
+@staff_member_required
+@require_http_methods(["GET"])
+def admin_image_import_view(request):
+    """
+    Dedicated GUI for uploading item grid screenshots, automatically recognizing
+    and cropping items, adjusting prices, and calculating mathematically precise RTP odds.
+    """
+    if not _can_manage_case_imports(request.user):
+        return HttpResponseForbidden("⛔ Ошибка доступа: требуются права на создание/редактирование кейсов (can_add_cases).")
+
+    # Initial default items from «Райское извержение» preset
+    initial_items = []
+    for meta in PARADISE_ITEMS_METADATA:
+        initial_items.append({
+            'name': meta['name'],
+            'weapon_type': meta['weapon_type'],
+            'skin_name': meta['skin_name'],
+            'rarity': meta['rarity'],
+            'price': float(meta['value']),
+            'image_url': f"{settings.MEDIA_URL}items/{meta['slug']}.png",
+            'image_filename': f"{meta['slug']}.png",
+            'slug': meta['slug'],
+        })
+
+    # Pre-calculate chances for initial 15 UC case at 90% RTP balanced mode
+    calc_res = calculate_rtp_chances(
+        [{'name': it['name'], 'price': it['price'], 'rarity': it['rarity']} for it in initial_items],
+        case_price=Decimal("15.00"),
+        target_rtp=0.90,
+        mode='balanced'
+    )
+
+    # Attach calculated chance and tier to items
+    chance_map = {item['name']: item for item in calc_res['items']}
+    for it in initial_items:
+        c_info = chance_map.get(it['name'], {})
+        it['chance_pct'] = c_info.get('chance_pct', 0.0)
+        it['tier'] = c_info.get('tier', 'Common')
+        it['tier_class'] = c_info.get('tier_class', 'common')
+        it['expected_contribution'] = c_info.get('expected_contribution', 0.0)
+
+    context = {
+        'title': '📦 Массовый импорт предметов из изображения & RTP Калькулятор',
+        'app_label': 'cases',
+        'is_nav_sidebar_enabled': True,
+        'has_permission': True,
+        'categories': Category.objects.all(),
+        'themes': Case.THEME_CHOICES,
+        'rarities': Item.RARITY_CHOICES,
+        'initial_items_json': json.dumps(initial_items),
+        'initial_summary_json': json.dumps({
+            'case_price': float(calc_res['case_price']),
+            'target_rtp': calc_res['target_rtp'],
+            'actual_rtp': calc_res['actual_rtp'],
+            'expected_return': calc_res['expected_return'],
+            'house_edge': calc_res['house_edge'],
+            'total_prob': calc_res['total_prob'],
+            'tier_summary': calc_res['tier_summary'],
+        }),
+    }
+    return render(request, 'admin/image_import.html', context)
+
+
+@staff_member_required
+@require_http_methods(["POST"])
+def ajax_calculate_rtp_view(request):
+    """
+    AJAX endpoint: calculates odds based on dynamic item prices and target RTP / volatility.
+    """
+    if not _can_manage_case_imports(request.user):
+        return JsonResponse({'status': 'error', 'message': 'Доступ запрещён'}, status=403)
+
+    try:
+        data = json.loads(request.body.decode('utf-8'))
+        items = data.get('items', [])
+        if not items:
+            return JsonResponse({'status': 'error', 'message': 'Список предметов пуст'}, status=400)
+
+        case_price = Decimal(str(data.get('case_price', '15.00')))
+        target_rtp_raw = float(data.get('target_rtp', 90.0))
+        target_rtp = target_rtp_raw / 100.0 if target_rtp_raw > 1.0 else target_rtp_raw
+        mode = data.get('mode', 'balanced')
+
+        calc_result = calculate_rtp_chances(
+            items=items,
+            case_price=case_price,
+            target_rtp=target_rtp,
+            mode=mode
+        )
+
+        return JsonResponse({
+            'status': 'success',
+            'result': {
+                'case_price': float(calc_result['case_price']),
+                'target_rtp': calc_result['target_rtp'],
+                'actual_rtp': calc_result['actual_rtp'],
+                'expected_return': calc_result['expected_return'],
+                'house_edge': calc_result['house_edge'],
+                'total_prob': calc_result['total_prob'],
+                'items': calc_result['items'],
+                'tier_summary': calc_result['tier_summary']
+            }
+        })
+    except Exception as e:
+        return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
+
+
+@staff_member_required
+@require_http_methods(["POST"])
+def ajax_create_case_from_import_view(request):
+    """
+    AJAX endpoint: creates or updates a case, imports items, and sets CaseItem chances.
+    Includes strict validation that chances sum to 100.000% before saving.
+    """
+    if not _can_manage_case_imports(request.user):
+        return JsonResponse({'status': 'error', 'message': 'Доступ запрещён'}, status=403)
+
+    try:
+        data = json.loads(request.body.decode('utf-8'))
+        case_name = data.get('case_name', '').strip()
+        case_slug = data.get('case_slug', '').strip()
+        case_price = Decimal(str(data.get('case_price', '15.00')))
+        color_theme = data.get('color_theme', 'demon-orange')
+        category_slug = data.get('category_slug', 'limited')
+        items_data = data.get('items', [])
+
+        if not case_name:
+            return JsonResponse({'status': 'error', 'message': 'Укажите название кейса'}, status=400)
+        if not items_data:
+            return JsonResponse({'status': 'error', 'message': 'Нет предметов для добавления в кейс'}, status=400)
+
+        # Validate total probability sum
+        total_prob = sum(float(it.get('chance_pct', 0.0)) for it in items_data)
+        if abs(total_prob - 100.0) > 0.01:
+            return JsonResponse({
+                'status': 'error',
+                'message': f'Сумма вероятностей составляет {total_prob:.3f}%, а должна быть ровно 100.000%! Нажмите «Пересчитать шансы».'
+            }, status=400)
+
+        with transaction.atomic():
+            category = None
+            if category_slug:
+                category = Category.objects.filter(slug=category_slug).first()
+                if not category:
+                    category = Category.objects.create(name='Лимитированные кейсы', slug=category_slug, order=10)
+
+            # 1. Create / Update items
+            item_objs = []
+            for it in items_data:
+                item_name = it.get('name', '').strip()
+                if not item_name:
+                    continue
+                
+                weapon_type = it.get('weapon_type', 'Weapon')
+                skin_name = it.get('skin_name', item_name)
+                rarity = it.get('rarity', 'mil_spec')
+                price = Decimal(str(it.get('price', '10.00')))
+                img_rel = it.get('image_filename')
+                image_path = f"items/{img_rel}" if img_rel else None
+
+                item, _ = Item.objects.get_or_create(
+                    name=item_name,
+                    defaults={
+                        'weapon_type': weapon_type,
+                        'skin_name': skin_name,
+                        'rarity': rarity,
+                        'value': price,
+                        'image': image_path
+                    }
+                )
+                # Update properties if item already existed
+                item.weapon_type = weapon_type
+                item.skin_name = skin_name
+                item.rarity = rarity
+                item.value = price
+                if image_path and not item.image:
+                    item.image = image_path
+                item.save()
+
+                item_objs.append({
+                    'item': item,
+                    'chance_pct': float(it.get('chance_pct', 0.0))
+                })
+
+            # 2. Create / Update Case
+            if not case_slug:
+                from django.utils.text import slugify
+                case_slug = slugify(case_name) or 'paradise-case'
+
+            case, created = Case.objects.get_or_create(
+                slug=case_slug,
+                defaults={
+                    'name': case_name,
+                    'price': case_price,
+                    'category': category,
+                    'color_theme': color_theme,
+                    'active': True,
+                    'is_new': True,
+                    'is_popular': True,
+                }
+            )
+
+            case.name = case_name
+            case.price = case_price
+            case.category = category
+            case.color_theme = color_theme
+            case.active = True
+            case.is_new = True
+            case.is_popular = True
+
+            # If cover image exists on disk, link it
+            cover_path = Path(settings.MEDIA_ROOT) / 'cases' / 'paradise_eruption.jpg'
+            if cover_path.exists():
+                case.image = 'cases/paradise_eruption.jpg'
+
+            case.save()
+
+            # 3. Associate items and chances in CaseItem
+            CaseItem.objects.filter(case=case).delete()
+            created_case_items = []
+            for entry in item_objs:
+                created_case_items.append(
+                    CaseItem(
+                        case=case,
+                        item=entry['item'],
+                        weight=entry['chance_pct']
+                    )
+                )
+            CaseItem.objects.bulk_create(created_case_items)
+
+            # 4. Strict verification
+            validate_case_chances(CaseItem.objects.filter(case=case))
+
+        return JsonResponse({
+            'status': 'success',
+            'message': f'Кейс «{case.name}» успешно сохранён! Привязано предметов: {len(created_case_items)} с суммарной вероятностью 100.000%.',
+            'case_id': case.id,
+            'case_name': case.name,
+            'case_slug': case.slug,
+            'case_price': float(case.price),
+            'case_url': f"/case/{case.slug}/",
+            'admin_url': f"/admin/cases/case/{case.id}/change/"
+        })
+
+    except Exception as e:
+        return JsonResponse({'status': 'error', 'message': f"Ошибка сохранения: {str(e)}"}, status=400)
+
+
+@staff_member_required
+@require_http_methods(["POST"])
+def ajax_upload_grid_image_view(request):
+    """
+    AJAX endpoint: receives an uploaded grid image screenshot, slices it into tiles,
+    crops item icons, and returns metadata for the GUI table.
+    """
+    if not _can_manage_case_imports(request.user):
+        return JsonResponse({'status': 'error', 'message': 'Доступ запрещён'}, status=403)
+
+    try:
+        grid_file = request.FILES.get('grid_image')
+        if not grid_file:
+            return JsonResponse({'status': 'error', 'message': 'Файл изображения не загружен'}, status=400)
+
+        # Save temporary file
+        temp_dir = Path(settings.BASE_DIR) / 'temp_uploads'
+        temp_dir.mkdir(parents=True, exist_ok=True)
+        temp_path = temp_dir / grid_file.name
+
+        with open(temp_path, 'wb+') as dest:
+            for chunk in grid_file.chunks():
+                dest.write(chunk)
+
+        # Process extraction
+        extracted_items = extract_items_from_grid_image(
+            grid_image_path=str(temp_path),
+            output_dir=os.path.join(settings.MEDIA_ROOT, 'items'),
+            rows=4,
+            cols=6
+        )
+
+        # Build response items
+        items_response = []
+        for it in extracted_items:
+            items_response.append({
+                'name': it['name'],
+                'weapon_type': it.get('weapon_type', 'Weapon'),
+                'skin_name': it.get('skin_name', it['name']),
+                'rarity': it.get('rarity', 'mil_spec'),
+                'price': float(it.get('value', 10.0)),
+                'tier': it.get('tier', 'Common'),
+                'image_url': f"{settings.MEDIA_URL}items/{it['slug']}.png",
+                'image_filename': f"{it['slug']}.png",
+                'slug': it['slug'],
+            })
+
+        return JsonResponse({
+            'status': 'success',
+            'message': f'Успешно распознано и нарезано {len(items_response)} предметов!',
+            'items': items_response
+        })
+    except Exception as e:
+        return JsonResponse({'status': 'error', 'message': f'Ошибка обработки изображения: {str(e)}'}, status=400)

@@ -50,6 +50,10 @@ python manage.py migrate --noinput
 echo "==> Verifying case catalog persistence..."
 python manage.py ensure_persistent_data
 
+# Ensure Paradise Eruption case and cropped item images exist
+echo "==> Ensuring Paradise Eruption case catalog and media..."
+python manage.py setup_paradise_eruption_case || true
+
 # Verify system integrity
 echo "==> Verifying system integrity..."
 python manage.py check

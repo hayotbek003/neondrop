@@ -1,0 +1,954 @@
+{% extends "admin/base_site.html" %}
+{% load i18n static %}
+
+{% block extrastyle %}
+{{ block.super }}
+<style>
+    .import-container {
+        max-width: 1440px;
+        margin: 0 auto;
+        padding: 10px 20px 60px;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    }
+    .cyber-card {
+        background: #090d16;
+        border: 1px solid #1e293b;
+        border-radius: 12px;
+        padding: 22px 26px;
+        margin-bottom: 24px;
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
+    }
+    .cyber-card.accent-purple {
+        border-color: #7e22ce;
+        box-shadow: 0 0 25px rgba(126, 34, 206, 0.2);
+    }
+    .cyber-card.accent-green {
+        border-color: #10b981;
+        box-shadow: 0 0 25px rgba(16, 185, 129, 0.2);
+    }
+    .cyber-card.accent-cyan {
+        border-color: #06b6d4;
+        box-shadow: 0 0 25px rgba(6, 182, 212, 0.2);
+    }
+    .cyber-title {
+        font-size: 20px;
+        font-weight: 800;
+        margin-top: 0;
+        margin-bottom: 8px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        color: #f8fafc;
+    }
+    .stat-badge-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+        gap: 14px;
+        margin: 16px 0;
+    }
+    .stat-badge {
+        background: #0f172a;
+        border: 1px solid #334155;
+        border-radius: 10px;
+        padding: 14px 18px;
+        display: flex;
+        flex-direction: column;
+        transition: transform 0.15s ease, border-color 0.15s ease;
+    }
+    .stat-badge:hover {
+        border-color: #7e22ce;
+        transform: translateY(-2px);
+    }
+    .stat-badge-label {
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 0.6px;
+        color: #94a3b8;
+        margin-bottom: 6px;
+        font-weight: 700;
+    }
+    .stat-badge-val {
+        font-size: 22px;
+        font-weight: 900;
+        color: #38bdf8;
+    }
+    .stat-badge-sub {
+        font-size: 11px;
+        color: #64748b;
+        margin-top: 4px;
+    }
+    .tier-pills-container {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+        gap: 10px;
+        margin-top: 14px;
+    }
+    .tier-pill {
+        border-radius: 8px;
+        padding: 10px 14px;
+        font-size: 12px;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        border: 1px solid transparent;
+    }
+    .tier-pill.jackpot {
+        background: rgba(234, 179, 8, 0.12);
+        border-color: #eab308;
+        color: #fde047;
+    }
+    .tier-pill.legendary {
+        background: rgba(239, 68, 68, 0.12);
+        border-color: #ef4444;
+        color: #fca5a5;
+    }
+    .tier-pill.epic {
+        background: rgba(217, 70, 239, 0.12);
+        border-color: #d946ef;
+        color: #f0abfc;
+    }
+    .tier-pill.rare {
+        background: rgba(59, 130, 246, 0.12);
+        border-color: #3b82f6;
+        color: #93c5fd;
+    }
+    .tier-pill.uncommon {
+        background: rgba(16, 185, 129, 0.12);
+        border-color: #10b981;
+        color: #6ee7b7;
+    }
+    .tier-pill.common {
+        background: rgba(148, 163, 184, 0.12);
+        border-color: #64748b;
+        color: #cbd5e1;
+    }
+
+    /* Form and inputs */
+    .form-row-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 16px;
+        margin-bottom: 16px;
+    }
+    .form-group {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+    .form-group label {
+        font-size: 12px;
+        font-weight: 700;
+        color: #cbd5e1;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    .cyber-input {
+        background: #0f172a;
+        border: 1px solid #334155;
+        border-radius: 6px;
+        padding: 9px 12px;
+        color: #f8fafc;
+        font-size: 14px;
+        font-weight: 600;
+        outline: none;
+        transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+    .cyber-input:focus {
+        border-color: #a855f7;
+        box-shadow: 0 0 10px rgba(168, 85, 247, 0.3);
+    }
+
+    /* Items Table */
+    .table-container {
+        overflow-x: auto;
+        border-radius: 8px;
+        border: 1px solid #1e293b;
+        margin: 16px 0;
+    }
+    .cyber-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 13px;
+        text-align: left;
+    }
+    .cyber-table th {
+        background: #0f172a;
+        color: #94a3b8;
+        font-weight: 800;
+        text-transform: uppercase;
+        font-size: 11px;
+        letter-spacing: 0.6px;
+        padding: 12px 14px;
+        border-bottom: 2px solid #334155;
+    }
+    .cyber-table td {
+        padding: 10px 14px;
+        border-bottom: 1px solid #1e293b;
+        background: #090d16;
+        vertical-align: middle;
+        color: #e2e8f0;
+    }
+    .cyber-table tr:hover td {
+        background: #111827;
+    }
+    .item-thumb-box {
+        width: 48px;
+        height: 48px;
+        background: #0f172a;
+        border: 1px solid #334155;
+        border-radius: 6px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+    }
+    .item-thumb-img {
+        max-width: 100%;
+        max-height: 100%;
+        object-fit: contain;
+    }
+    .badge-rarity {
+        font-size: 10px;
+        font-weight: 800;
+        padding: 3px 8px;
+        border-radius: 4px;
+        text-transform: uppercase;
+        display: inline-block;
+    }
+    .btn-cyber {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 20px;
+        border-radius: 6px;
+        font-size: 13px;
+        font-weight: 800;
+        cursor: pointer;
+        border: none;
+        text-decoration: none;
+        transition: all 0.15s ease;
+    }
+    .btn-green {
+        background: linear-gradient(135deg, #059669, #10b981);
+        color: #ffffff;
+        box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+    }
+    .btn-green:hover {
+        background: linear-gradient(135deg, #047857, #059669);
+        box-shadow: 0 6px 20px rgba(16, 185, 129, 0.45);
+        color: #ffffff;
+    }
+    .btn-purple {
+        background: linear-gradient(135deg, #7e22ce, #a855f7);
+        color: #ffffff;
+        box-shadow: 0 4px 15px rgba(168, 85, 247, 0.3);
+    }
+    .btn-purple:hover {
+        background: linear-gradient(135deg, #6b21a8, #7e22ce);
+        box-shadow: 0 6px 20px rgba(168, 85, 247, 0.45);
+        color: #ffffff;
+    }
+    .btn-cyan {
+        background: linear-gradient(135deg, #0284c7, #06b6d4);
+        color: #ffffff;
+        box-shadow: 0 4px 15px rgba(6, 182, 212, 0.3);
+    }
+    .btn-cyan:hover {
+        background: linear-gradient(135deg, #0369a1, #0284c7);
+        box-shadow: 0 6px 20px rgba(6, 182, 212, 0.45);
+        color: #ffffff;
+    }
+    .btn-outline {
+        background: transparent;
+        border: 1px solid #475569;
+        color: #cbd5e1;
+    }
+    .btn-outline:hover {
+        background: #1e293b;
+        border-color: #94a3b8;
+        color: #ffffff;
+    }
+    .btn-danger-sm {
+        background: rgba(239, 68, 68, 0.15);
+        border: 1px solid #ef4444;
+        color: #fca5a5;
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-size: 11px;
+        cursor: pointer;
+    }
+    .btn-danger-sm:hover {
+        background: #ef4444;
+        color: #ffffff;
+    }
+    .alert-box {
+        padding: 12px 18px;
+        border-radius: 8px;
+        margin-bottom: 18px;
+        font-size: 13px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+    .alert-info {
+        background: rgba(6, 182, 212, 0.1);
+        border: 1px solid #06b6d4;
+        color: #67e8f9;
+    }
+    .alert-success {
+        background: rgba(16, 185, 129, 0.12);
+        border: 1px solid #10b981;
+        color: #6ee7b7;
+    }
+    .alert-error {
+        background: rgba(239, 68, 68, 0.15);
+        border: 1px solid #ef4444;
+        color: #fca5a5;
+    }
+    .mode-selector {
+        display: flex;
+        gap: 8px;
+        background: #0f172a;
+        padding: 4px;
+        border-radius: 8px;
+        border: 1px solid #334155;
+    }
+    .mode-btn {
+        flex: 1;
+        padding: 8px 12px;
+        font-size: 12px;
+        font-weight: 700;
+        border: none;
+        border-radius: 6px;
+        background: transparent;
+        color: #94a3b8;
+        cursor: pointer;
+        transition: all 0.15s ease;
+        text-align: center;
+    }
+    .mode-btn.active {
+        background: linear-gradient(135deg, #7e22ce, #a855f7);
+        color: #ffffff;
+        box-shadow: 0 2px 8px rgba(168, 85, 247, 0.4);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="import-container">
+
+    <!-- TOP HEADER -->
+    <div class="cyber-card accent-purple" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
+        <div>
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <h1 class="cyber-title" style="margin: 0; font-size: 24px;">
+                    <span>📦</span> МАССОВЫЙ ИМПОРТ ПРЕДМЕТОВ ИЗ ИЗОБРАЖЕНИЯ & RTP КАЛЬКУЛЯТОР
+                </h1>
+                <span style="background: rgba(16, 185, 129, 0.15); border: 1px solid #10b981; color: #34d399; font-size: 11px; font-weight: 800; padding: 3px 8px; border-radius: 4px;">
+                    RTP ENGINE v2.0
+                </span>
+            </div>
+            <p style="margin: 6px 0 0 0; color: #94a3b8; font-size: 13px;">
+                Автоматическая нарезка скриншота сетки 6×4, распознавание предметов, строгий математический расчёт шансов без отрицательных вероятностей и честная серверная генерация.
+            </p>
+        </div>
+
+        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+            <button type="button" class="btn-cyber btn-cyan" onclick="loadParadisePreset()">
+                <span>✨</span> Пресет «Райское извержение»
+            </button>
+            <a href="{% url 'admin:cases_case_changelist' %}" class="btn-cyber btn-outline">
+                <span>↩️</span> Все кейсы
+            </a>
+        </div>
+    </div>
+
+    <!-- NOTIFICATION AREA -->
+    <div id="statusAlert" style="display: none;" class="alert-box"></div>
+
+    <!-- CASE & RTP CONFIGURATION PANEL -->
+    <div class="cyber-card">
+        <h2 class="cyber-title" style="font-size: 16px; margin-bottom: 16px;">
+            <span>⚙️</span> ПАРАМЕТРЫ КЕЙСА И МАТЕМАТИЧЕСКАЯ МОДЕЛЬ
+        </h2>
+
+        <div class="form-row-grid">
+            <div class="form-group">
+                <label>Название кейса</label>
+                <input type="text" id="caseNameInput" class="cyber-input" value="Райское извержение">
+            </div>
+            <div class="form-group">
+                <label>Слаг (URL)</label>
+                <input type="text" id="caseSlugInput" class="cyber-input" value="paradise_eruption">
+            </div>
+            <div class="form-group">
+                <label>Цена кейса (UC)</label>
+                <input type="number" id="casePriceInput" class="cyber-input" value="15.00" step="0.5" min="1" onchange="recalculateChances()">
+            </div>
+            <div class="form-group">
+                <label>Целевой RTP (% возврата)</label>
+                <div style="display: flex; gap: 8px; align-items: center;">
+                    <input type="number" id="targetRtpInput" class="cyber-input" value="90.0" step="0.5" min="10" max="99" onchange="recalculateChances()" style="width: 100px;">
+                    <span style="color: #94a3b8; font-size: 13px;">% (Маржа сайта: <strong id="houseEdgeDisplay" style="color: #f59e0b;">10.0%</strong>)</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-row-grid" style="grid-template-columns: 2fr 1fr 1fr;">
+            <div class="form-group">
+                <label>Режим распределения шансов</label>
+                <div class="mode-selector">
+                    <button type="button" id="modeBalancedBtn" class="mode-btn active" onclick="setVolatilityMode('balanced')">
+                        ⚖️ Сбалансированный (Balanced)
+                    </button>
+                    <button type="button" id="modeVolatileBtn" class="mode-btn" onclick="setVolatilityMode('volatile')">
+                        🔥 Более азартный (Высокая волатильность)
+                    </button>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Цветовая тема кейса</label>
+                <select id="caseThemeSelect" class="cyber-input">
+                    {% for code, label in themes %}
+                    <option value="{{ code }}" {% if code == 'demon-orange' %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Категория кейсов</label>
+                <select id="caseCategorySelect" class="cyber-input">
+                    <option value="limited">Лимитированные кейсы (limited)</option>
+                    {% for cat in categories %}
+                    <option value="{{ cat.slug }}">{{ cat.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <!-- LIVE MATHEMATICAL STATS HUD -->
+    <div class="cyber-card accent-green">
+        <h2 class="cyber-title" style="font-size: 16px; margin-bottom: 4px; color: #34d399;">
+            <span>📊</span> LIVE МОНИТОРИНГ МАТЕМАТИКИ И ВЕРОЯТНОСТЕЙ
+        </h2>
+        <p style="margin: 0 0 14px 0; color: #94a3b8; font-size: 12px;">
+            Все вероятности вычисляются аналитически. Строгая проверка гарантирует отсутствие кассового разрыва и 100.000% суммы.
+        </p>
+
+        <div class="stat-badge-grid">
+            <div class="stat-badge">
+                <span class="stat-badge-label">Сумма всех вероятностей</span>
+                <span class="stat-badge-val" id="hudTotalProb" style="color: #10b981;">100.000%</span>
+                <span class="stat-badge-sub" id="hudProbStatus">✅ Строго 100.000% (Нормировано)</span>
+            </div>
+
+            <div class="stat-badge">
+                <span class="stat-badge-label">Мат. ожидание возврата (EV)</span>
+                <span class="stat-badge-val" id="hudExpectedReturn">13.50 UC</span>
+                <span class="stat-badge-sub">на 1 открытие кейса</span>
+            </div>
+
+            <div class="stat-badge">
+                <span class="stat-badge-label">Фактический RTP</span>
+                <span class="stat-badge-val" id="hudActualRtp" style="color: #a855f7;">90.00%</span>
+                <span class="stat-badge-sub">от стоимости кейса (15 UC)</span>
+            </div>
+
+            <div class="stat-badge">
+                <span class="stat-badge-label">Доход казино (House Edge)</span>
+                <span class="stat-badge-val" id="hudHouseEdge" style="color: #f59e0b;">10.00%</span>
+                <span class="stat-badge-sub">~1.50 UC с каждого открытия</span>
+            </div>
+
+            <div class="stat-badge">
+                <span class="stat-badge-label">Всего предметов в кейсе</span>
+                <span class="stat-badge-val" id="hudItemCount" style="color: #38bdf8;">24 шт.</span>
+                <span class="stat-badge-sub">Сетка 6 × 4</span>
+            </div>
+        </div>
+
+        <!-- EXCITEMENT TIERS BREAKDOWN -->
+        <div style="margin-top: 18px;">
+            <div style="font-size: 12px; font-weight: 700; color: #cbd5e1; text-transform: uppercase; letter-spacing: 0.5px;">
+                Распределение по категориям азарта (Tiers):
+            </div>
+            <div class="tier-pills-container" id="tierPillsContainer">
+                <!-- Injected dynamically by JS -->
+            </div>
+        </div>
+    </div>
+
+    <!-- BATCH PRICE CONTROLS & IMPORT ACTIONS -->
+    <div class="cyber-card" style="padding: 16px 22px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px;">
+            <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+                <strong style="color: #cbd5e1; font-size: 13px;">Массовое управление ценами скинов:</strong>
+                
+                <button type="button" class="btn-cyber btn-outline" style="padding: 6px 12px; font-size: 12px;" onclick="batchMultiplyPrices(1.10)">
+                    +10% ко всем ценам
+                </button>
+                <button type="button" class="btn-cyber btn-outline" style="padding: 6px 12px; font-size: 12px;" onclick="batchMultiplyPrices(0.90)">
+                    -10% ко всем ценам
+                </button>
+                <button type="button" class="btn-cyber btn-outline" style="padding: 6px 12px; font-size: 12px;" onclick="batchMultiplyPrices(1.25)">
+                    +25%
+                </button>
+                <button type="button" class="btn-cyber btn-outline" style="padding: 6px 12px; font-size: 12px;" onclick="resetItemPricesToDefault()">
+                    ↩️ Исходные цены
+                </button>
+            </div>
+
+            <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+                <label class="btn-cyber btn-outline" style="padding: 8px 14px; font-size: 12px; cursor: pointer; margin: 0;">
+                    <span>📁</span> Загрузить новый скриншот
+                    <input type="file" id="gridImageUploader" accept="image/*" style="display: none;" onchange="handleGridUpload(this)">
+                </label>
+                <button type="button" class="btn-cyber btn-purple" onclick="recalculateChances()">
+                    <span>⚡</span> Пересчитать шансы
+                </button>
+                <button type="button" class="btn-cyber btn-green" onclick="saveAndCreateCase()">
+                    <span>🚀</span> Сохранить и создать кейс в БД
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ITEMS TABLE -->
+    <div class="cyber-card">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+            <h2 class="cyber-title" style="font-size: 16px; margin: 0;">
+                <span>🔫</span> ПРЕДМЕТЫ В КЕЙСЕ (<span id="tableItemCount">24</span>)
+            </h2>
+            <div style="font-size: 12px; color: #94a3b8;">
+                Изменение стоимости скина мгновенно влияет на его вероятность и математику кейса.
+            </div>
+        </div>
+
+        <div class="table-container">
+            <table class="cyber-table" id="itemsTable">
+                <thead>
+                    <tr>
+                        <th style="width: 50px;">Иконка</th>
+                        <th>Название предмета</th>
+                        <th>Оружие / Тип</th>
+                        <th>Редкость</th>
+                        <th style="width: 130px;">Цена скина (UC)</th>
+                        <th style="width: 90px;">Множитель</th>
+                        <th style="width: 120px;">Категория (Tier)</th>
+                        <th style="width: 120px;">Шанс выпадения (%)</th>
+                        <th style="width: 110px;">Вклад в EV</th>
+                        <th style="width: 50px;"></th>
+                    </tr>
+                </thead>
+                <tbody id="itemsTableBody">
+                    <!-- Populated by JavaScript -->
+                </tbody>
+            </table>
+        </div>
+
+        <!-- SIMULATE DROP TEST -->
+        <div style="margin-top: 20px; background: #0f172a; border: 1px solid #1e293b; border-radius: 8px; padding: 16px 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px;">
+            <div>
+                <strong style="color: #f8fafc; font-size: 14px; display: flex; align-items: center; gap: 8px;">
+                    <span>🎲</span> Симуляция честного серверного RNG (Monte Carlo Test)
+                </strong>
+                <p style="margin: 3px 0 0 0; color: #94a3b8; font-size: 12px;">
+                    Проверьте работу вероятностного алгоритма на выборке в 1,000 виртуальных открытий с проверкой фактического RTP.
+                </p>
+            </div>
+            <div style="display: flex; gap: 10px; align-items: center;">
+                <button type="button" class="btn-cyber btn-outline" onclick="runRngSimulation(1000)">
+                    🎰 Запустить 1,000 симуляций
+                </button>
+            </div>
+        </div>
+
+        <div id="simResultsBox" style="display: none; margin-top: 14px; background: #111827; border: 1px solid #374151; border-radius: 8px; padding: 14px 18px; font-size: 12px; color: #cbd5e1;">
+        </div>
+    </div>
+
+</div>
+
+<!-- DATA EMBEDDED FROM VIEW -->
+<script>
+    const INITIAL_ITEMS = {{ initial_items_json|safe }};
+    const INITIAL_SUMMARY = {{ initial_summary_json|safe }};
+    const RARITY_CHOICES = {{ rarities|safe }};
+    const CSRF_TOKEN = "{{ csrf_token }}";
+
+    let currentItems = JSON.parse(JSON.stringify(INITIAL_ITEMS));
+    let currentMode = 'balanced';
+    let currentSummary = INITIAL_SUMMARY;
+
+    // Rarity Color Map
+    const RARITY_COLORS = {
+        'knife': '#FFD700',
+        'covert': '#EB4B4B',
+        'classified': '#D32CE6',
+        'restricted': '#8847FF',
+        'mil_spec': '#4B69FF',
+        'industrial': '#5E98D9',
+        'consumer': '#B0C3D9'
+    };
+
+    document.addEventListener('DOMContentLoaded', function() {
+        renderTable();
+        updateHud(currentSummary);
+    });
+
+    function setVolatilityMode(mode) {
+        currentMode = mode;
+        document.getElementById('modeBalancedBtn').classList.toggle('active', mode === 'balanced');
+        document.getElementById('modeVolatileBtn').classList.toggle('active', mode === 'volatile');
+        recalculateChances();
+    }
+
+    function renderTable() {
+        const tbody = document.getElementById('itemsTableBody');
+        tbody.innerHTML = '';
+
+        const casePrice = parseFloat(document.getElementById('casePriceInput').value) || 15.0;
+
+        currentItems.forEach((item, index) => {
+            const mult = (item.price / casePrice).toFixed(2);
+            const tr = document.createElement('tr');
+
+            const rarityColor = RARITY_COLORS[item.rarity] || '#4B69FF';
+            const tierClass = (item.tier_class || 'common').toLowerCase();
+
+            tr.innerHTML = `
+                <td>
+                    <div class="item-thumb-box" style="border-color: ${rarityColor};">
+                        <img src="${item.image_url}" class="item-thumb-img" alt="${item.name}" onerror="this.src='/static/images/case-placeholder.png'">
+                    </div>
+                </td>
+                <td>
+                    <input type="text" class="cyber-input" style="padding: 6px 8px; font-size: 12px; width: 100%;" value="${item.name}" onchange="updateItemField(${index}, 'name', this.value)">
+                </td>
+                <td>
+                    <input type="text" class="cyber-input" style="padding: 6px 8px; font-size: 12px; width: 110px;" value="${item.weapon_type || ''}" onchange="updateItemField(${index}, 'weapon_type', this.value)">
+                </td>
+                <td>
+                    <select class="cyber-input" style="padding: 6px 8px; font-size: 11px; width: 140px; color: ${rarityColor}; font-weight: 700;" onchange="updateItemField(${index}, 'rarity', this.value)">
+                        <option value="knife" ${item.rarity === 'knife' ? 'selected' : ''}>★ Золотое / Нож</option>
+                        <option value="covert" ${item.rarity === 'covert' ? 'selected' : ''}>Тайное (Красное)</option>
+                        <option value="classified" ${item.rarity === 'classified' ? 'selected' : ''}>Засекреченное (Розовое)</option>
+                        <option value="restricted" ${item.rarity === 'restricted' ? 'selected' : ''}>Запрещенное (Фиол.)</option>
+                        <option value="mil_spec" ${item.rarity === 'mil_spec' ? 'selected' : ''}>Армейское (Синее)</option>
+                        <option value="industrial" ${item.rarity === 'industrial' ? 'selected' : ''}>Промышленное</option>
+                        <option value="consumer" ${item.rarity === 'consumer' ? 'selected' : ''}>Ширпотреб</option>
+                    </select>
+                </td>
+                <td>
+                    <div style="display: flex; align-items: center; gap: 4px;">
+                        <input type="number" class="cyber-input" style="padding: 6px 8px; font-size: 13px; width: 85px; text-align: right;" step="0.5" min="0.1" value="${item.price.toFixed(2)}" onchange="updateItemPrice(${index}, this.value)">
+                        <span style="color: #94a3b8; font-size: 11px;">UC</span>
+                    </div>
+                </td>
+                <td>
+                    <span style="font-weight: 700; color: ${mult >= 1.0 ? '#34d399' : '#94a3b8'};">${mult}x</span>
+                </td>
+                <td>
+                    <span class="tier-pill ${tierClass}" style="display: inline-block; padding: 4px 8px; font-size: 11px; font-weight: 800;">
+                        ${item.tier || 'Common'}
+                    </span>
+                </td>
+                <td>
+                    <strong style="color: #38bdf8; font-size: 13px;">${(item.chance_pct || 0).toFixed(3)}%</strong>
+                </td>
+                <td>
+                    <span style="color: #94a3b8; font-size: 12px;">${((item.price * (item.chance_pct || 0)) / 100).toFixed(3)} UC</span>
+                </td>
+                <td>
+                    <button type="button" class="btn-danger-sm" onclick="removeItemRow(${index})" title="Удалить скин">✕</button>
+                </td>
+            `;
+            tbody.appendChild(tr);
+        });
+
+        document.getElementById('tableItemCount').textContent = currentItems.length;
+        document.getElementById('hudItemCount').textContent = `${currentItems.length} шт.`;
+    }
+
+    function updateItemField(index, field, value) {
+        currentItems[index][field] = value;
+    }
+
+    function updateItemPrice(index, value) {
+        currentItems[index].price = Math.max(0.1, parseFloat(value) || 1.0);
+        recalculateChances();
+    }
+
+    function removeItemRow(index) {
+        if (currentItems.length <= 1) {
+            showAlert('Кейс должен содержать хотя бы один предмет!', 'error');
+            return;
+        }
+        currentItems.splice(index, 1);
+        renderTable();
+        recalculateChances();
+    }
+
+    function batchMultiplyPrices(factor) {
+        currentItems.forEach(item => {
+            item.price = Math.round(item.price * factor * 10) / 10;
+            if (item.price < 0.5) item.price = 0.5;
+        });
+        renderTable();
+        recalculateChances();
+        showAlert(`Все цены умножены на ${factor}x. Шансы пересчитаны.`, 'info');
+    }
+
+    function resetItemPricesToDefault() {
+        currentItems = JSON.parse(JSON.stringify(INITIAL_ITEMS));
+        renderTable();
+        recalculateChances();
+        showAlert('Цены и параметры возвращены к исходным значениям «Райское извержение».', 'info');
+    }
+
+    function recalculateChances() {
+        const casePrice = parseFloat(document.getElementById('casePriceInput').value) || 15.0;
+        const targetRtp = parseFloat(document.getElementById('targetRtpInput').value) || 90.0;
+
+        document.getElementById('houseEdgeDisplay').textContent = `${(100.0 - targetRtp).toFixed(1)}%`;
+
+        const payload = {
+            case_price: casePrice,
+            target_rtp: targetRtp,
+            mode: currentMode,
+            items: currentItems.map(it => ({
+                name: it.name,
+                price: it.price,
+                rarity: it.rarity
+            }))
+        };
+
+        fetch("{% url 'admin_ajax_calculate_rtp' %}", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': CSRF_TOKEN
+            },
+            body: JSON.stringify(payload)
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.status === 'success') {
+                const res = data.result;
+                const chanceMap = {};
+                res.items.forEach(it => { chanceMap[it.name] = it; });
+
+                currentItems.forEach(it => {
+                    const cInfo = chanceMap[it.name];
+                    if (cInfo) {
+                        it.chance_pct = cInfo.chance_pct;
+                        it.tier = cInfo.tier;
+                        it.tier_class = cInfo.tier_class;
+                        it.expected_contribution = cInfo.expected_contribution;
+                    }
+                });
+
+                renderTable();
+                updateHud(res);
+            } else {
+                showAlert(`Ошибка расчёта: ${data.message}`, 'error');
+            }
+        })
+        .catch(err => {
+            showAlert(`Сетевая ошибка: ${err}`, 'error');
+        });
+    }
+
+    function updateHud(summary) {
+        document.getElementById('hudTotalProb').textContent = `${(summary.total_prob || 100.0).toFixed(3)}%`;
+        document.getElementById('hudExpectedReturn').textContent = `${(summary.expected_return || 13.5).toFixed(2)} UC`;
+        document.getElementById('hudActualRtp').textContent = `${(summary.actual_rtp || 90.0).toFixed(2)}%`;
+        document.getElementById('hudHouseEdge').textContent = `${(summary.house_edge || 10.0).toFixed(2)}%`;
+
+        const totalDiff = Math.abs((summary.total_prob || 100.0) - 100.0);
+        const statusEl = document.getElementById('hudProbStatus');
+        if (totalDiff < 0.005) {
+            statusEl.innerHTML = '✅ Строго 100.000% (Нормировано)';
+            statusEl.style.color = '#34d399';
+        } else {
+            statusEl.innerHTML = `⚠️ Отклонение: ${totalDiff.toFixed(3)}%`;
+            statusEl.style.color = '#ef4444';
+        }
+
+        // Render Tier breakdown
+        const tierCont = document.getElementById('tierPillsContainer');
+        tierCont.innerHTML = '';
+        const tiers = summary.tier_summary || {};
+        
+        const tierOrder = ['Jackpot', 'Legendary', 'Epic', 'Rare', 'Uncommon', 'Common'];
+        tierOrder.forEach(tName => {
+            const tData = tiers[tName];
+            if (tData && tData.count > 0) {
+                const pill = document.createElement('div');
+                pill.className = `tier-pill ${(tData.tier_class || 'common').toLowerCase()}`;
+                pill.innerHTML = `
+                    <div style="font-weight: 800; font-size: 13px;">${tName}</div>
+                    <div style="font-size: 11px;">Скинов: <strong>${tData.count}</strong> • Шанс: <strong>${tData.total_chance_pct.toFixed(2)}%</strong></div>
+                    <div style="font-size: 10px; opacity: 0.85;">Цены: ${tData.min_value.toFixed(1)} - ${tData.max_value.toFixed(1)} UC</div>
+                `;
+                tierCont.appendChild(pill);
+            }
+        });
+    }
+
+    function saveAndCreateCase() {
+        const caseName = document.getElementById('caseNameInput').value.trim();
+        const caseSlug = document.getElementById('caseSlugInput').value.trim();
+        const casePrice = parseFloat(document.getElementById('casePriceInput').value) || 15.0;
+        const colorTheme = document.getElementById('caseThemeSelect').value;
+        const categorySlug = document.getElementById('caseCategorySelect').value;
+
+        if (!caseName) {
+            showAlert('Укажите название кейса!', 'error');
+            return;
+        }
+
+        const payload = {
+            case_name: caseName,
+            case_slug: caseSlug,
+            case_price: casePrice,
+            color_theme: colorTheme,
+            category_slug: categorySlug,
+            items: currentItems.map(it => ({
+                name: it.name,
+                weapon_type: it.weapon_type,
+                skin_name: it.skin_name || it.name,
+                rarity: it.rarity,
+                price: it.price,
+                image_filename: it.image_filename,
+                chance_pct: it.chance_pct
+            }))
+        };
+
+        showAlert('⏳ Сохранение предметов и кейса в базу данных...', 'info');
+
+        fetch("{% url 'admin_ajax_create_case' %}", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': CSRF_TOKEN
+            },
+            body: JSON.stringify(payload)
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.status === 'success') {
+                showAlert(`🎉 ${data.message} <br><a href="${data.case_url}" target="_blank" style="color: #38bdf8; font-weight: 700; text-decoration: underline;">👉 Открыть кейс на сайте</a> | <a href="${data.admin_url}" target="_blank" style="color: #a855f7; font-weight: 700; text-decoration: underline;">⚙️ Посмотреть в админке Django</a>`, 'success');
+            } else {
+                showAlert(`Ошибка создания: ${data.message}`, 'error');
+            }
+        })
+        .catch(err => {
+            showAlert(`Сетевая ошибка при сохранении: ${err}`, 'error');
+        });
+    }
+
+    function handleGridUpload(input) {
+        if (!input.files || !input.files[0]) return;
+        const file = input.files[0];
+
+        const formData = new FormData();
+        formData.append('grid_image', file);
+
+        showAlert('⏳ Загрузка изображения и автоматическая нарезка сетки 6×4...', 'info');
+
+        fetch("{% url 'admin_ajax_upload_grid' %}", {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': CSRF_TOKEN
+            },
+            body: formData
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.status === 'success') {
+                currentItems = data.items;
+                renderTable();
+                recalculateChances();
+                showAlert(`✅ ${data.message}`, 'success');
+            } else {
+                showAlert(`Ошибка: ${data.message}`, 'error');
+            }
+        })
+        .catch(err => {
+            showAlert(`Ошибка загрузки: ${err}`, 'error');
+        });
+    }
+
+    function runRngSimulation(iterations = 1000) {
+        const casePrice = parseFloat(document.getElementById('casePriceInput').value) || 15.0;
+        const totalInvested = iterations * casePrice;
+        let totalReturned = 0;
+        const drops = {};
+
+        currentItems.forEach(it => { drops[it.name] = 0; });
+
+        // Monte Carlo sample using exact probabilities
+        for (let i = 0; i < iterations; i++) {
+            const roll = Math.random() * 100.0;
+            let cumulative = 0.0;
+            let wonItem = currentItems[currentItems.length - 1];
+
+            for (const it of currentItems) {
+                cumulative += it.chance_pct;
+                if (roll <= cumulative) {
+                    wonItem = it;
+                    break;
+                }
+            }
+
+            drops[wonItem.name]++;
+            totalReturned += wonItem.price;
+        }
+
+        const simRtp = (totalReturned / totalInvested) * 100.0;
+        const simBox = document.getElementById('simResultsBox');
+        simBox.style.display = 'block';
+
+        let topDropsHtml = '';
+        const sortedDrops = Object.entries(drops).sort((a, b) => b[1] - a[1]).slice(0, 5);
+        sortedDrops.forEach(([name, count]) => {
+            topDropsHtml += `<li><strong>${name}</strong>: ${count} раз (${((count/iterations)*100).toFixed(1)}%)</li>`;
+        });
+
+        simBox.innerHTML = `
+            <div style="font-weight: 800; font-size: 13px; color: #34d399; margin-bottom: 6px;">
+                РЕЗУЛЬТАТЫ СИМУЛЯЦИИ ${iterations.toLocaleString()} ОТКРЫТИЙ:
+            </div>
+            <div>Потрачено: <strong>${totalInvested.toLocaleString()} UC</strong> | Выдано скинов: <strong>${totalReturned.toFixed(1)} UC</strong></div>
+            <div style="margin-top: 4px; font-size: 14px;">
+                Фактический RTP симуляции: <strong style="color: ${Math.abs(simRtp - 90) < 5 ? '#34d399' : '#f59e0b'};">${simRtp.toFixed(2)}%</strong> (Ожидаемый: 90.00%)
+            </div>
+            <div style="margin-top: 8px;">Топ частых предметов:</div>
+            <ul style="margin: 4px 0 0 16px; padding: 0;">${topDropsHtml}</ul>
+        `;
+    }
+
+    function loadParadisePreset() {
+        currentItems = JSON.parse(JSON.stringify(INITIAL_ITEMS));
+        document.getElementById('caseNameInput').value = 'Райское извержение';
+        document.getElementById('caseSlugInput').value = 'paradise_eruption';
+        document.getElementById('casePriceInput').value = '15.00';
+        document.getElementById('targetRtpInput').value = '90.0';
+        setVolatilityMode('balanced');
+        renderTable();
+        recalculateChances();
+        showAlert('✨ Пресет «Райское извержение» успешно загружен!', 'info');
+    }
+
+    function showAlert(msg, type) {
+        const el = document.getElementById('statusAlert');
+        el.style.display = 'flex';
+        el.className = `alert-box alert-${type}`;
+        el.innerHTML = msg;
+        el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+</script>
+{% endblock %}

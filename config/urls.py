@@ -31,6 +31,12 @@ urlpatterns = [
     path('admin/bloggers/payout/', blogger_views.mark_blogger_payout_view, name='admin_mark_blogger_payout'),
     path('admin/bloggers/export/', blogger_views.export_blogger_stats_csv_view, name='admin_export_blogger_stats_csv'),
 
+    # Dedicated Admin Image-Based Item Import & RTP Calculator
+    path('admin/cases/image-import/', admin_views.admin_image_import_view, name='admin_image_import'),
+    path('admin/cases/image-import/calculate-rtp/', admin_views.ajax_calculate_rtp_view, name='admin_ajax_calculate_rtp'),
+    path('admin/cases/image-import/create-case/', admin_views.ajax_create_case_from_import_view, name='admin_ajax_create_case'),
+    path('admin/cases/image-import/upload-grid/', admin_views.ajax_upload_grid_image_view, name='admin_ajax_upload_grid'),
+
     path('admin/', admin.site.urls),
     path('', include('cases.urls', namespace='cases')),
     path('users/', include('users.urls', namespace='users')),
