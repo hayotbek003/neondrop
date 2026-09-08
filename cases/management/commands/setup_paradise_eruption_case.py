@@ -41,16 +41,22 @@ class Command(BaseCommand):
         if not existing_case:
             existing_case = Case.objects.filter(name="Райское извержение").first()
 
-        if existing_case and existing_case.case_items.exists() and not options.get('force'):
-            self.stdout.write(
-                self.style.SUCCESS(
-                    f"[IDEMPOTENT CHECK] Case «{existing_case.name}» already exists (ID: {existing_case.id}, "
-                    f"Price: {existing_case.price} UC, Items: {existing_case.case_items.count()}).\n"
-                    f"Zero modification policy: existing case, prices, chances, items, and data are left completely intact.\n"
-                    f"Pass --force to explicitly re-calculate and overwrite."
-                )
-            )
-            return
+        if existing_case and not options.get('force'):
+            items_count = existing_case.case_items.count()
+            if items_count == 24:
+                cis = list(existing_case.case_items.select_related('item').all())
+                tot_w = sum(ci.weight for ci in cis)
+                if tot_w > 0:
+                    ev = sum((ci.weight / tot_w) * float(ci.item.value) for ci in cis)
+                    rtp = (ev / float(existing_case.price)) * 100.0 if existing_case.price > 0 else 0
+                    if abs(rtp - 70.0) < 0.5:
+                        self.stdout.write(
+                            self.style.SUCCESS(
+                                f"[OK] Case «{existing_case.name}» already has all 24 items and verified {rtp:.2f}% RTP (Price: {existing_case.price} UC).\n"
+                                f"Zero modification policy: skipping. Pass --force to overwrite."
+                            )
+                        )
+                        return
 
         # Find images in cases/resources or local brain dir
         resources_dir = Path(settings.BASE_DIR) / 'cases' / 'resources'

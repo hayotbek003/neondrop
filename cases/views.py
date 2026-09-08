@@ -183,11 +183,18 @@ def open_case_api(request, slug=None, case_id=None):
     
     # 1. Resolve Case
     if slug:
-        case = get_object_or_404(Case, slug=slug, active=True)
+        case = get_object_or_404(Case, slug=slug)
     elif case_id:
-        case = get_object_or_404(Case, id=case_id, active=True)
+        case = get_object_or_404(Case, id=case_id)
     else:
         return JsonResponse({'success': False, 'error': 'Кейс не указан.'}, status=400)
+
+    # Case maintenance / active check: if inactive, only staff can open
+    if not case.active and not (request.user.is_authenticated and request.user.is_staff):
+        return JsonResponse({
+            'success': False,
+            'error': f'Кейс «{case.name}» временно находится на техническом обслуживании. Открытия временно приостановлены администратором.'
+        }, status=403)
 
     # 2. Validate Quantity (1 to 5)
     quantity_raw = request.POST.get('quantity', 1)
