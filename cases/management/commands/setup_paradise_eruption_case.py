@@ -22,8 +22,8 @@ class Command(BaseCommand):
         parser.add_argument(
             '--target-rtp',
             type=float,
-            default=0.70,
-            help='Target RTP as decimal (e.g. 0.70 for 70%) or percentage (e.g. 70)'
+            default=0.80,
+            help='Target RTP as decimal (e.g. 0.80 for 80%) or percentage (e.g. 80)'
         )
         parser.add_argument(
             '--force',
@@ -49,7 +49,7 @@ class Command(BaseCommand):
                 if tot_w > 0:
                     ev = sum((ci.weight / tot_w) * float(ci.item.value) for ci in cis)
                     rtp = (ev / float(existing_case.price)) * 100.0 if existing_case.price > 0 else 0
-                    if abs(rtp - 70.0) < 0.5:
+                    if abs(rtp - 80.0) < 0.5:
                         self.stdout.write(
                             self.style.SUCCESS(
                                 f"[OK] Case «{existing_case.name}» already has all 24 items and verified {rtp:.2f}% RTP (Price: {existing_case.price} UC).\n"
