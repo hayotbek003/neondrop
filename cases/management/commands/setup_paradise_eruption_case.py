@@ -20,6 +20,12 @@ class Command(BaseCommand):
             help='Calculation mode: balanced or high_volatility'
         )
         parser.add_argument(
+            '--target-rtp',
+            type=float,
+            default=0.70,
+            help='Target RTP as decimal (e.g. 0.70 for 70%) or percentage (e.g. 70)'
+        )
+        parser.add_argument(
             '--force',
             action='store_true',
             help='Explicitly force recreation or updating of existing case and chances'
@@ -87,7 +93,8 @@ class Command(BaseCommand):
 
         # 4. Calculate RTP chances for 15 UC case
         case_price = Decimal("15.00")
-        target_rtp = 0.90 # 90% RTP
+        raw_target_rtp = options.get('target_rtp', 0.70)
+        target_rtp = raw_target_rtp / 100.0 if raw_target_rtp > 1.0 else raw_target_rtp
         calc_mode = options['mode']
 
         items_for_calc = []
@@ -102,7 +109,7 @@ class Command(BaseCommand):
                 'item_obj': it
             })
 
-        self.stdout.write(f" -> Calculating mathematical RTP chances (Target RTP: 90%, Price: {case_price} UC, Mode: {calc_mode})...")
+        self.stdout.write(f" -> Calculating mathematical RTP chances (Target RTP: {round(target_rtp*100, 1)}%, Price: {case_price} UC, Mode: {calc_mode})...")
         rtp_result = calculate_rtp_chances(items_for_calc, case_price, target_rtp=target_rtp, mode=calc_mode)
 
         valid, msg = validate_case_chances(rtp_result['items'])

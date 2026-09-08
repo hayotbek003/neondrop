@@ -93,12 +93,13 @@ class RTPCalculatorTestCase(TestCase):
     def test_paradise_eruption_24_items_rtp(self):
         items = [{'name': m['name'], 'price': float(m['value']), 'rarity': m['rarity']} for m in PARADISE_ITEMS_METADATA]
         case_price = Decimal("15.00")
-        res = calculate_rtp_chances(items, case_price=case_price, target_rtp=0.90, mode='balanced')
+        res = calculate_rtp_chances(items, case_price=case_price, target_rtp=0.70, mode='balanced')
 
         self.assertEqual(len(res['items']), 24)
         self.assertAlmostEqual(res['total_prob'], 100.0, places=3)
-        self.assertAlmostEqual(res['expected_return'], 13.50, delta=0.1)
-        self.assertAlmostEqual(res['actual_rtp'], 90.0, delta=0.5)
+        self.assertAlmostEqual(res['expected_return'], 10.50, delta=0.1)
+        self.assertAlmostEqual(res['actual_rtp'], 70.0, delta=0.5)
+        self.assertAlmostEqual(res['house_edge'], 30.0, delta=0.5)
 
         for it in res['items']:
             self.assertGreater(it['chance_pct'], 0.0)
