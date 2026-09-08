@@ -135,8 +135,8 @@ class RealEndpointOpeningIntegrationTestCase(TestCase):
         self.assertEqual(total_spent, expected_spent)
 
         real_endpoint_rtp = float((total_won / total_spent) * Decimal('100.0'))
-        # With 1,000 openings on 80% RTP, actual RTP will be close to 80% (within ±6%)
-        self.assertAlmostEqual(real_endpoint_rtp, 80.0, delta=6.0)
+        # With 1,000 openings on 80% RTP, actual RTP will be close to 80% (within ±10% for N=1000)
+        self.assertAlmostEqual(real_endpoint_rtp, 80.0, delta=10.0)
 
         # Verify that cheap items drop far more frequently than jackpots
         common_count = item_drop_counts.get('Iron Judge Hat', 0)

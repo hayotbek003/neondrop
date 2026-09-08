@@ -115,6 +115,21 @@ def calculate_rtp_chances(items, case_price, target_rtp=0.90, mode='balanced'):
             low_lam = mid_lam
         else:
             high_lam = mid_lam
+
+    if mode in ('monotonic', 'power_law'):
+        low_alpha, high_alpha = 0.0, 10.0
+        for _ in range(60):
+            mid_alpha = (low_alpha + high_alpha) / 2.0
+            raw_w = [v ** (-mid_alpha) for v in values]
+            t_w = sum(raw_w)
+            if t_w > 0:
+                p_list = [w / t_w for w in raw_w]
+                ev = sum(p * v for p, v in zip(p_list, values))
+                if ev > target_ev:
+                    low_alpha = mid_alpha
+                else:
+                    high_alpha = mid_alpha
+                best_probs = p_list
             
     # Convert probabilities to percentage with 3 decimal places (e.g. 15.250%)
     # Ensure minimum chance of 0.010% for excitement
