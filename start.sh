@@ -8,6 +8,13 @@ echo "====================================================="
 
 # Guard: Strictly enforce PostgreSQL connection on Render production
 if [ -n "$RENDER" ] || [ -n "$RENDER_SERVICE_ID" ]; then
+    # Clear placeholder values if accidentally pasted
+    case "$DATABASE_URL" in
+        *dpg-xxx*|*:PASSWORD@*|*xxx*)
+            DATABASE_URL=""
+            ;;
+    esac
+
     if [ -z "$DATABASE_URL" ] && [ -z "$INTERNAL_DATABASE_URL" ] && [ -z "$POSTGRES_URL" ] && [ -z "$DATABASE_PRIVATE_URL" ] && [ -z "$DB_URL" ]; then
         echo ""
         echo "======================================================================"
@@ -18,13 +25,12 @@ if [ -n "$RENDER" ] || [ -n "$RENDER_SERVICE_ID" ]; then
         echo ""
         echo "  ACTION REQUIRED IN RENDER DASHBOARD:"
         echo "  1. Open https://dashboard.render.com/"
-        echo "  2. Click on PostgreSQL database: 'neondrop-db'"
-        echo "  3. In Info / Connections, copy 'Internal Database URL'"
-        echo "     (e.g. postgres://neondrop_user:PASSWORD@dpg-xxxx-a:5432/neondrop)"
+        echo "  2. Click on your PostgreSQL database: 'neondrop-db'"
+        echo "  3. Under 'Connections', copy the real 'Internal Database URL'"
         echo "  4. Click on Web Service: 'neondrop-ujly' -> 'Environment'"
-        echo "  5. Add Environment Variable:"
+        echo "  5. Add/Update Environment Variable:"
         echo "     Key:   DATABASE_URL"
-        echo "     Value: <paste your copied Internal Database URL>"
+        echo "     Value: <paste your actual copied Internal Database URL>"
         echo "  6. Click 'Save Changes' to deploy with persistent PostgreSQL."
         echo "======================================================================"
         echo ""

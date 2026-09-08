@@ -19,8 +19,8 @@ SECRET_KEY = os.environ.get(
     'django-insecure-neondrop-cyberpunk-case-opening-secret-key-prod-change-me-2026'
 )
 
-# DEBUG configuration
-DEBUG = os.environ.get('DJANGO_DEBUG', 'True').lower() in ('true', '1', 'yes')
+# DEBUG configuration (strictly False by default in production)
+DEBUG = os.environ.get('DJANGO_DEBUG', 'False').lower() in ('true', '1', 'yes')
 
 # Proxy SSL Header Configuration (CRITICAL for Render, Heroku, AWS, Cloudflare, etc.)
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
@@ -121,6 +121,11 @@ raw_database_url = (
     ''
 ).strip().strip('"\'')
 
+# Filter out dummy placeholder / example values if accidentally pasted
+is_render = bool(os.environ.get('RENDER') or os.environ.get('RENDER_SERVICE_ID'))
+if is_render and any(placeholder in raw_database_url for placeholder in ['dpg-xxx', ':PASSWORD@', 'xxx']):
+    raw_database_url = ''
+
 if raw_database_url:
     import urllib.parse
     database_url = raw_database_url
@@ -161,7 +166,6 @@ if raw_database_url:
     DATABASE_HOST_DISPLAY = parsed_db.hostname or 'localhost'
 else:
     # Check if running at runtime in production (Render)
-    is_render = bool(os.environ.get('RENDER') or os.environ.get('RENDER_SERVICE_ID'))
     is_build_or_test = any(cmd in sys.argv for cmd in ['collectstatic', 'test'])
 
     if is_render and not is_build_or_test:
@@ -174,13 +178,12 @@ else:
             "\n"
             "  ACTION REQUIRED IN RENDER DASHBOARD:\n"
             "  1. Go to https://dashboard.render.com/\n"
-            "  2. Click on PostgreSQL database 'neondrop-db'\n"
-            "  3. Copy the 'Internal Database URL'\n"
-            "     (Format: postgres://neondrop_user:PASSWORD@dpg-xxx:5432/neondrop)\n"
+            "  2. Click on your PostgreSQL database 'neondrop-db'\n"
+            "  3. Under 'Connections', copy the real 'Internal Database URL'\n"
             "  4. Go to Web Service 'neondrop-ujly' -> Environment\n"
             "  5. Add/Update Environment Variable:\n"
             "     Key:   DATABASE_URL\n"
-            "     Value: <paste your Internal Database URL>\n"
+            "     Value: <paste your actual copied Internal Database URL>\n"
             "  6. Save Changes.\n"
             "=" * 70 + "\n"
         )
