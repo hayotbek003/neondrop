@@ -11,6 +11,41 @@ class CaseItemInline(admin.TabularInline):
     model = CaseItem
     extra = 1
     autocomplete_fields = ('item',)
+    fields = ('item', 'item_preview', 'item_price', 'item_rarity', 'weight', 'calculated_chance')
+    readonly_fields = ('item_preview', 'item_price', 'item_rarity', 'calculated_chance')
+    ordering = ('-weight',)
+
+    def item_preview(self, obj):
+        if obj.item_id and obj.item.display_image:
+            return format_html('<img src="{}" style="width: 42px; height: 32px; object-fit: contain; border-radius: 4px; background: #0f172a; border: 1px solid #334155;" />', obj.item.display_image)
+        return "—"
+    item_preview.short_description = "Превью"
+
+    def item_price(self, obj):
+        if obj.item_id:
+            return format_html('<strong style="color: #fbbf24; font-size: 13px;">{} UC</strong>', obj.item.value)
+        return "—"
+    item_price.short_description = "Цена (UC)"
+
+    def item_rarity(self, obj):
+        if obj.item_id:
+            color = obj.item.rarity_color or '#4B69FF'
+            return format_html(
+                '<span style="border: 1px solid {}; color: {}; padding: 2px 6px; border-radius: 4px; font-weight: bold; font-size: 11px;">{}</span>',
+                color, color, obj.item.get_rarity_display()
+            )
+        return "—"
+    item_rarity.short_description = "Редкость"
+
+    def calculated_chance(self, obj):
+        if obj.case_id and obj.weight:
+            total_w = sum(ci.weight for ci in obj.case.case_items.all())
+            if total_w > 0:
+                pct = (obj.weight / total_w) * 100.0
+                return format_html('<strong style="color: #38bdf8; font-size: 13px;">{:.3f}%</strong>', pct)
+        return "—"
+    calculated_chance.short_description = "Шанс (%)"
+
 
 @admin.register(Category)
 class CategoryAdmin(admin.ModelAdmin):
@@ -18,42 +53,116 @@ class CategoryAdmin(admin.ModelAdmin):
     prepopulated_fields = {'slug': ('name',)}
     ordering = ('order', 'name')
 
+
 @admin.register(Item)
 class ItemAdmin(admin.ModelAdmin):
-    list_display = ('image_preview', 'name', 'weapon_type', 'skin_name', 'value', 'rarity', 'created_at')
+    list_display = ('image_preview', 'name', 'weapon_type', 'skin_name', 'value_display', 'rarity_badge', 'related_cases_display', 'created_at')
+    list_editable = ('value_display_edit',) if False else ()
     list_filter = ('rarity', 'weapon_type', 'created_at')
     search_fields = ('name', 'weapon_type', 'skin_name')
     ordering = ('-value',)
-    readonly_fields = ('image_preview', 'created_at')
+    readonly_fields = ('image_preview', 'created_at', 'containing_cases_display')
 
     def image_preview(self, obj):
         if obj.display_image:
-            return format_html('<img src="{}" style="width: 46px; height: 34px; object-fit: contain; border-radius: 4px; background: #0f172a; border: 1px solid #334155;" />', obj.display_image)
+            return format_html('<img src="{}" style="width: 48px; height: 36px; object-fit: contain; border-radius: 4px; background: #0f172a; border: 1px solid #334155;" />', obj.display_image)
         return format_html('<span style="color: #64748b; font-size: 11px;">SVG ID</span>')
     image_preview.short_description = "Превью"
 
+    def value_display(self, obj):
+        return format_html('<strong style="color: #fbbf24; font-size: 14px;">{} UC</strong>', obj.value)
+    value_display.short_description = "Цена"
+    value_display.admin_order_field = 'value'
+
+    def rarity_badge(self, obj):
+        color = obj.rarity_color or '#4B69FF'
+        return format_html(
+            '<span style="border: 1px solid {}; color: {}; padding: 3px 8px; border-radius: 4px; font-weight: 700; font-size: 11px;">{}</span>',
+            color, color, obj.get_rarity_display()
+        )
+    rarity_badge.short_description = "Редкость"
+    rarity_badge.admin_order_field = 'rarity'
+
+    def related_cases_display(self, obj):
+        case_items = list(obj.case_containments.select_related('case').all()[:4])
+        total = obj.case_containments.count()
+        if not case_items:
+            return format_html('<span style="color: #64748b; font-size: 12px;">Не в кейсах</span>')
+        badges = [f'<span class="badge-neon-purple">{ci.case.name}</span>' for ci in case_items]
+        if total > 4:
+            badges.append(f'<span style="color: #94a3b8; font-size: 11px;">+{total - 4}</span>')
+        return format_html(' '.join(badges))
+    related_cases_display.short_description = "В кейсах"
+
+    def containing_cases_display(self, obj):
+        cases = [ci.case.name for ci in obj.case_containments.select_related('case').all()]
+        return ", ".join(cases) if cases else "Не входит ни в один кейс"
+    containing_cases_display.short_description = "Список всех связанных кейсов"
+
+
 @admin.register(Case)
 class CaseAdmin(admin.ModelAdmin):
-    list_display = ('image_preview', 'name', 'price', 'category', 'color_theme', 'is_popular', 'is_new', 'active', 'order')
+    list_display = ('image_preview', 'name', 'price_display', 'category', 'color_theme_badge', 'items_count_badge', 'active', 'is_popular', 'is_new', 'order')
+    list_editable = ('active', 'is_popular', 'is_new', 'order')
     list_filter = ('active', 'is_popular', 'is_new', 'color_theme', 'category')
     search_fields = ('name', 'slug')
     prepopulated_fields = {'slug': ('name',)}
     inlines = [CaseItemInline]
     ordering = ('order', 'price')
-    readonly_fields = ('image_preview', 'created_at')
+    readonly_fields = ('image_preview', 'created_at', 'total_items_in_case', 'total_openings_count')
 
     def image_preview(self, obj):
         if obj.display_image:
-            return format_html('<img src="{}" style="width: 50px; height: 38px; object-fit: contain; border-radius: 6px; background: #0f172a; border: 1px solid #334155;" />', obj.display_image)
+            return format_html('<img src="{}" style="width: 52px; height: 38px; object-fit: contain; border-radius: 6px; background: #0f172a; border: 1px solid #334155;" />', obj.display_image)
         return format_html('<span style="color: #64748b; font-size: 11px;">(Тема: {})</span>', obj.color_theme)
     image_preview.short_description = "Фото кейса"
 
+    def price_display(self, obj):
+        return format_html('<strong style="color: #fbbf24; font-size: 14px;">{} UC</strong>', obj.price)
+    price_display.short_description = "Цена"
+    price_display.admin_order_field = 'price'
+
+    def color_theme_badge(self, obj):
+        accent = obj.accent_color
+        return format_html(
+            '<span style="border-left: 3px solid {}; padding-left: 6px; font-weight: 700;">{}</span>',
+            accent, obj.get_color_theme_display()
+        )
+    color_theme_badge.short_description = "Тема"
+
+    def items_count_badge(self, obj):
+        count = obj.case_items.count()
+        return format_html('<span class="badge-neon-cyan">{} скинов</span>', count)
+    items_count_badge.short_description = "Содержимое"
+
+    def total_items_in_case(self, obj):
+        return f"{obj.case_items.count()} предметов"
+    total_items_in_case.short_description = "Всего предметов внутри"
+
+    def total_openings_count(self, obj):
+        return f"{obj.openings.count()} раз открыт"
+    total_openings_count.short_description = "Всего открытий кейса"
+
+
 @admin.register(CaseItem)
 class CaseItemAdmin(admin.ModelAdmin):
-    list_display = ('case', 'item', 'weight')
+    list_display = ('case', 'item', 'item_price_display', 'weight', 'chance_percent_display')
     list_filter = ('case', 'item__rarity')
     search_fields = ('case__name', 'item__name')
     autocomplete_fields = ('case', 'item')
+    ordering = ('case', '-weight')
+
+    def item_price_display(self, obj):
+        return format_html('<strong style="color: #fbbf24;">{} UC</strong>', obj.item.value)
+    item_price_display.short_description = "Цена скина"
+
+    def chance_percent_display(self, obj):
+        total_w = sum(ci.weight for ci in obj.case.case_items.all())
+        if total_w > 0:
+            pct = (obj.weight / total_w) * 100.0
+            return format_html('<strong style="color: #38bdf8;">{:.3f}%</strong>', pct)
+        return "0.000%"
+    chance_percent_display.short_description = "Шанс (%)"
 
 @admin.register(Opening)
 class OpeningAdmin(admin.ModelAdmin):
@@ -494,3 +603,23 @@ class UserFreeOpeningAdmin(admin.ModelAdmin):
     search_fields = ('user__username', 'case__name', 'promo_code__code')
     autocomplete_fields = ('user', 'case', 'promo_code')
     ordering = ('-updated_at',)
+
+
+# =========================================================================
+# LIVE CYBER DASHBOARD INJECTION FOR ADMIN INDEX
+# =========================================================================
+from .admin_dashboard import get_dashboard_context
+
+_original_admin_index = admin.site.index
+
+def custom_admin_index(request, extra_context=None):
+    try:
+        ctx = get_dashboard_context(request)
+    except Exception:
+        ctx = {}
+    if extra_context:
+        ctx.update(extra_context)
+    return _original_admin_index(request, extra_context=ctx)
+
+admin.site.index = custom_admin_index
+

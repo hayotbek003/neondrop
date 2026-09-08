@@ -1,21 +1,425 @@
 ﻿{% extends "admin/index.html" %}
-{% load i18n static %}
+{% load i18n static humanize %}
 
 {% block content %}
-<div style="background: linear-gradient(135deg, #0f172a, #1e293b); border: 1px solid #0284c7; border-radius: 10px; padding: 20px 24px; margin-bottom: 24px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; box-shadow: 0 4px 20px rgba(2, 132, 199, 0.2);">
-    <div>
-        <h2 style="margin: 0 0 6px 0; color: #38bdf8; font-size: 20px; font-weight: 800; display: flex; align-items: center; gap: 10px;">
-            <span>💾</span> NEONDROP BACKUP / RESTORE
-        </h2>
-        <p style="margin: 0; color: #cbd5e1; font-size: 13.5px;">
-            Полное резервное копирование в единый ZIP (база данных + медиа) и безопасное транзакционное восстановление в 1 клик.
-        </p>
+<div class="cyber-admin-dashboard" style="max-width: 1400px; margin: 0 auto; padding-bottom: 40px;">
+
+    <!-- TOP BAR: WELCOME & QUICK LINKS -->
+    <div style="background: linear-gradient(135deg, #090d16 0%, #131b2e 100%); border: 1px solid #7e22ce; border-radius: 12px; padding: 20px 24px; margin-bottom: 24px; box-shadow: 0 4px 24px rgba(126, 34, 206, 0.25); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
+        <div>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <h1 style="margin: 0; color: #f8fafc; font-size: 22px; font-weight: 900; letter-spacing: 0.8px;">
+                    ⚡ NEONDROP CYBER DASHBOARD
+                </h1>
+                <span style="background: rgba(16, 185, 129, 0.15); border: 1px solid #10b981; color: #34d399; font-size: 11px; font-weight: 800; padding: 3px 8px; border-radius: 4px; text-transform: uppercase;">
+                    ONLINE
+                </span>
+            </div>
+            <p style="margin: 4px 0 0 0; color: #94a3b8; font-size: 13px;">
+                Панель оперативного управления проектом: кейсы, экономика, пользователи и транзакции.
+            </p>
+        </div>
+
+        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+            <a href="{% url 'admin_backup_restore' %}" style="background: linear-gradient(135deg, #0284c7, #06b6d4); color: #ffffff !important; font-weight: 700; text-decoration: none; padding: 10px 18px; border-radius: 6px; font-size: 13px; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 2px 10px rgba(6, 182, 212, 0.35);">
+                <span>💾</span> BACKUP / RESTORE
+            </a>
+            <a href="{% url 'cases:home' %}" target="_blank" style="background: #1e293b; border: 1px solid #334155; color: #cbd5e1 !important; font-weight: 700; text-decoration: none; padding: 10px 18px; border-radius: 6px; font-size: 13px; display: inline-flex; align-items: center; gap: 6px;">
+                <span>🌐</span> ПЕРЕЙТИ НА САЙТ
+            </a>
+        </div>
     </div>
-    <div>
-        <a href="{% url 'admin_backup_restore' %}" style="background: linear-gradient(135deg, #0284c7, #0ea5e9); color: #ffffff !important; font-weight: 700; text-decoration: none; padding: 12px 24px; border-radius: 8px; display: inline-flex; align-items: center; gap: 8px; font-size: 14px; box-shadow: 0 4px 14px rgba(14, 165, 233, 0.4);">
-            <span>⚡</span> УПРАВЛЕНИЕ BACKUP / RESTORE
+
+    <!-- QUICK ACTION NAVIGATION BUTTONS -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; margin-bottom: 24px;">
+        <a href="{% url 'admin:cases_case_changelist' %}" class="quick-nav-btn" style="--btn-color: #ec4899;">
+            <span>📦</span> CASES
+        </a>
+        <a href="{% url 'admin:cases_item_changelist' %}" class="quick-nav-btn" style="--btn-color: #38bdf8;">
+            <span>🔫</span> ITEMS
+        </a>
+        <a href="{% url 'admin:auth_user_changelist' %}" class="quick-nav-btn" style="--btn-color: #a855f7;">
+            <span>👥</span> USERS
+        </a>
+        <a href="{% url 'admin:cases_opening_changelist' %}" class="quick-nav-btn" style="--btn-color: #f59e0b;">
+            <span>🎰</span> OPENINGS
+        </a>
+        <a href="{% url 'admin:payments_transaction_changelist' %}?transaction_type__exact=deposit" class="quick-nav-btn" style="--btn-color: #10b981;">
+            <span>📥</span> DEPOSITS
+        </a>
+        <a href="{% url 'admin:payments_transaction_changelist' %}?transaction_type__icontains=withdraw" class="quick-nav-btn" style="--btn-color: #ef4444;">
+            <span>📤</span> WITHDRAWALS
+        </a>
+        <a href="{% url 'admin:cases_promocode_changelist' %}" class="quick-nav-btn" style="--btn-color: #eab308;">
+            <span>🎟️</span> PROMO CODES
+        </a>
+        <a href="{% url 'admin_backup_restore' %}" class="quick-nav-btn" style="--btn-color: #06b6d4;">
+            <span>💾</span> BACKUP
         </a>
     </div>
+
+    <style>
+        .quick-nav-btn {
+            background: #0f172a;
+            border: 1px solid var(--btn-color);
+            color: #f8fafc !important;
+            font-weight: 800;
+            font-size: 13px;
+            letter-spacing: 0.5px;
+            text-decoration: none;
+            padding: 12px 14px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        }
+        .quick-nav-btn:hover {
+            background: var(--btn-color);
+            color: #090d16 !important;
+            box-shadow: 0 0 16px var(--btn-color);
+            transform: translateY(-2px);
+        }
+        .kpi-card {
+            background: #111827;
+            border: 1px solid #1e293b;
+            border-radius: 10px;
+            padding: 18px 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+        }
+        .kpi-card:hover {
+            border-color: #a855f7;
+            box-shadow: 0 0 20px rgba(168, 85, 247, 0.2);
+            transform: translateY(-2px);
+        }
+        .kpi-header {
+            font-size: 11.5px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            color: #94a3b8;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        .kpi-value {
+            font-size: 24px;
+            font-weight: 900;
+            color: #f8fafc;
+            line-height: 1.2;
+        }
+        .kpi-subtext {
+            font-size: 12px;
+            color: #64748b;
+            margin-top: 6px;
+        }
+    </style>
+
+    <!-- KPI METRICS GRID -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px; margin-bottom: 28px;">
+        
+        <!-- 1. Users -->
+        <div class="kpi-card">
+            <div class="kpi-header">
+                <span>👥 ПОЛЬЗОВАТЕЛИ</span>
+                <span style="color: #a855f7; font-size: 16px;">●</span>
+            </div>
+            <div class="kpi-value" style="color: #c084fc;">
+                {{ kpi_total_users|default:"0" }}
+            </div>
+            <div class="kpi-subtext">
+                Активных (за 30 дн.): <strong style="color: #38bdf8;">{{ kpi_active_users|default:"0" }}</strong>
+            </div>
+        </div>
+
+        <!-- 2. Cases -->
+        <div class="kpi-card">
+            <div class="kpi-header">
+                <span>📦 КЕЙСЫ</span>
+                <span style="color: #ec4899; font-size: 16px;">●</span>
+            </div>
+            <div class="kpi-value" style="color: #f472b6;">
+                {{ kpi_cases_count|default:"0" }}
+            </div>
+            <div class="kpi-subtext">
+                Активных на сайте: <strong style="color: #34d399;">{{ kpi_active_cases|default:"0" }}</strong>
+            </div>
+        </div>
+
+        <!-- 3. Items -->
+        <div class="kpi-card">
+            <div class="kpi-header">
+                <span>🔫 ПРЕДМЕТЫ / СКИНЫ</span>
+                <span style="color: #06b6d4; font-size: 16px;">●</span>
+            </div>
+            <div class="kpi-value" style="color: #38bdf8;">
+                {{ kpi_items_count|default:"0" }}
+            </div>
+            <div class="kpi-subtext">
+                Доступных в дропах
+            </div>
+        </div>
+
+        <!-- 4. Openings -->
+        <div class="kpi-card">
+            <div class="kpi-header">
+                <span>🎰 ВСЕГО ОТКРЫТИЙ</span>
+                <span style="color: #f59e0b; font-size: 16px;">●</span>
+            </div>
+            <div class="kpi-value" style="color: #fbbf24;">
+                {{ kpi_openings_count|default:"0" }}
+            </div>
+            <div class="kpi-subtext">
+                Прокруток рулетки
+            </div>
+        </div>
+
+        <!-- 5. Total Turnover -->
+        <div class="kpi-card" style="border-color: rgba(168, 85, 247, 0.4);">
+            <div class="kpi-header">
+                <span>💎 ОБЩИЙ ОБОРОТ (UC)</span>
+                <span style="color: #a855f7; font-size: 16px;">●</span>
+            </div>
+            <div class="kpi-value" style="color: #a855f7;">
+                {{ kpi_total_turnover|default:"0.00" }} <span style="font-size: 14px; font-weight: 700;">UC</span>
+            </div>
+            <div class="kpi-subtext">
+                Потрачено игроками на кейсы
+            </div>
+        </div>
+
+        <!-- 6. Deposits -->
+        <div class="kpi-card">
+            <div class="kpi-header">
+                <span>📥 ПОПОЛНЕНИЯ</span>
+                <span style="color: #10b981; font-size: 16px;">●</span>
+            </div>
+            <div class="kpi-value" style="color: #34d399;">
+                {{ kpi_deposits_sum|default:"0.00" }} <span style="font-size: 14px; font-weight: 700;">UC</span>
+            </div>
+            <div class="kpi-subtext">
+                Успешно: <strong>{{ kpi_deposits_count|default:"0" }}</strong> платежей
+            </div>
+        </div>
+
+        <!-- 7. Withdrawals -->
+        <div class="kpi-card">
+            <div class="kpi-header">
+                <span>📤 ВЫВОДЫ</span>
+                <span style="color: #ef4444; font-size: 16px;">●</span>
+            </div>
+            <div class="kpi-value" style="color: #f87171;">
+                {{ kpi_withdrawals_sum|default:"0.00" }} <span style="font-size: 14px; font-weight: 700;">UC</span>
+            </div>
+            <div class="kpi-subtext">
+                Успешно: <strong>{{ kpi_withdrawals_count|default:"0" }}</strong> заявок
+            </div>
+        </div>
+
+        <!-- 8. Pending Queue -->
+        <div class="kpi-card" style="{% if kpi_pending_count > 0 %}border-color: #f59e0b; background: rgba(245, 158, 11, 0.05);{% endif %}">
+            <div class="kpi-header">
+                <span>⏳ ОЖИДАЮЩИЕ ЗАЯВКИ</span>
+                <span style="color: #f59e0b; font-size: 16px;">●</span>
+            </div>
+            <div class="kpi-value" style="color: {% if kpi_pending_count > 0 %}#f59e0b{% else %}#94a3b8{% endif %};">
+                {{ kpi_pending_count|default:"0" }}
+            </div>
+            <div class="kpi-subtext">
+                {% if kpi_pending_count > 0 %}
+                <strong style="color: #f59e0b;">Требуют проверки админом!</strong>
+                {% else %}
+                Все заявки обработаны
+                {% endif %}
+            </div>
+        </div>
+
+    </div>
+
+    <!-- TWO COLUMNS: RECENT OPENINGS & PENDING QUEUE -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(450px, 1fr)); gap: 20px; margin-bottom: 28px;">
+        
+        <!-- LEFT: RECENT OPENINGS -->
+        <div class="module" style="margin-bottom: 0;">
+            <div style="padding: 14px 18px; background: #111827; border-bottom: 1px solid #1e293b; display: flex; justify-content: space-between; align-items: center;">
+                <h2 style="margin: 0; font-size: 14px; font-weight: 800; color: #f8fafc; display: flex; align-items: center; gap: 8px;">
+                    <span>🎰</span> ПОСЛЕДНИЕ ОТКРЫТИЯ КЕЙСОВ
+                </h2>
+                <a href="{% url 'admin:cases_opening_changelist' %}" style="color: #38bdf8; font-size: 12px; font-weight: 700; text-decoration: none;">
+                    Все открытия &rarr;
+                </a>
+            </div>
+
+            <div style="overflow-x: auto;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Пользователь</th>
+                            <th>Кейс</th>
+                            <th>Выпавший скин</th>
+                            <th style="text-align: right;">Цена скина</th>
+                            <th style="text-align: right;">Время</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for op in recent_openings %}
+                        <tr>
+                            <td>
+                                <a href="{% url 'admin:auth_user_change' op.user.id %}" style="font-weight: 700;">
+                                    {{ op.user.username }}
+                                </a>
+                            </td>
+                            <td>{{ op.case.name }}</td>
+                            <td>
+                                <span style="color: {{ op.item.rarity_color|default:'#fff' }}; font-weight: 700;">
+                                    {{ op.item.name }}
+                                </span>
+                            </td>
+                            <td style="text-align: right; color: #fbbf24; font-weight: 800;">
+                                {{ op.item.value }} UC
+                            </td>
+                            <td style="text-align: right; color: #64748b; font-size: 11.5px;">
+                                {{ op.created_at|date:"d.m.Y H:i" }}
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="5" style="text-align: center; color: #64748b; padding: 20px;">
+                                Открытий кейсов пока нет.
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- RIGHT: PENDING TRANSACTIONS -->
+        <div class="module" style="margin-bottom: 0;">
+            <div style="padding: 14px 18px; background: #111827; border-bottom: 1px solid #1e293b; display: flex; justify-content: space-between; align-items: center;">
+                <h2 style="margin: 0; font-size: 14px; font-weight: 800; color: #f8fafc; display: flex; align-items: center; gap: 8px;">
+                    <span>⏳</span> ОЖИДАЮЩИЕ ЗАЯВКИ
+                </h2>
+                <a href="{% url 'admin:payments_transaction_changelist' %}?status__exact=pending" style="color: #f59e0b; font-size: 12px; font-weight: 700; text-decoration: none;">
+                    Вся очередь &rarr;
+                </a>
+            </div>
+
+            <div style="overflow-x: auto;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Пользователь</th>
+                            <th>Тип</th>
+                            <th style="text-align: right;">Сумма</th>
+                            <th>Метод</th>
+                            <th style="text-align: center;">Действие</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for tx in pending_transactions %}
+                        <tr>
+                            <td>
+                                <a href="{% url 'admin:auth_user_change' tx.user.id %}" style="font-weight: 700;">
+                                    {{ tx.user.username }}
+                                </a>
+                            </td>
+                            <td>
+                                <span class="badge-neon-yellow">{{ tx.get_transaction_type_display }}</span>
+                            </td>
+                            <td style="text-align: right; font-weight: 800; color: #34d399;">
+                                {{ tx.amount }} UC
+                            </td>
+                            <td style="color: #94a3b8; font-size: 12px;">{{ tx.get_payment_method_display }}</td>
+                            <td style="text-align: center;">
+                                <div style="display: flex; gap: 6px; justify-content: center;">
+                                    <a href="{% url 'admin:payments_transaction_change' tx.id %}" class="button" style="padding: 4px 8px; font-size: 11px;">
+                                        Открыть
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="5" style="text-align: center; color: #34d399; padding: 20px; font-weight: 700;">
+                                ✓ Все входящие заявки обработаны!
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- BLOGGER STATISTICS SECTION -->
+    {% if blogger_stats_list %}
+    <div class="module" style="margin-bottom: 28px;">
+        <div style="padding: 14px 18px; background: #111827; border-bottom: 1px solid #1e293b; display: flex; justify-content: space-between; align-items: center;">
+            <h2 style="margin: 0; font-size: 14px; font-weight: 800; color: #f8fafc; display: flex; align-items: center; gap: 8px;">
+                <span>📢</span> СТАТИСТИКА БЛОГЕРОВ И РЕФЕРАЛЬНЫХ ПРОМОКОДОВ
+            </h2>
+            <a href="{% url 'admin:cases_promocode_changelist' %}" style="color: #eab308; font-size: 12px; font-weight: 700; text-decoration: none;">
+                Все промокоды &rarr;
+            </a>
+        </div>
+
+        <div style="overflow-x: auto;">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Промокод</th>
+                        <th>Блогер / Канал</th>
+                        <th style="text-align: center;">% блогера</th>
+                        <th style="text-align: center;">Активаций</th>
+                        <th style="text-align: right; color: #f87171;">Чистый проигрыш</th>
+                        <th style="text-align: right; color: #ffd700;">Выплата блогеру</th>
+                        <th style="text-align: right; color: #34d399;">Доход сайта</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for bp in blogger_stats_list %}
+                    <tr>
+                        <td>
+                            <a href="{% url 'admin:cases_promocode_changelist' %}?q={{ bp.code }}" style="font-weight: 800; color: #fbbf24;">
+                                {{ bp.code }}
+                            </a>
+                        </td>
+                        <td>{{ bp.blogger_name }}</td>
+                        <td style="text-align: center;">
+                            <span class="badge-neon-purple">{{ bp.percentage }}%</span>
+                        </td>
+                        <td style="text-align: center; font-weight: 700;">{{ bp.uses_count }}</td>
+                        <td style="text-align: right; color: #f87171; font-weight: 700;">{{ bp.net_loss }} UC</td>
+                        <td style="text-align: right; color: #ffd700; font-weight: 800;">{{ bp.payout }} UC</td>
+                        <td style="text-align: right; color: #34d399; font-weight: 800;">{{ bp.site_revenue }} UC</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- STANDARD DJANGO APP DIRECTORY -->
+    <div class="module">
+        <div style="padding: 14px 18px; background: #111827; border-bottom: 1px solid #1e293b;">
+            <h2 style="margin: 0; font-size: 14px; font-weight: 800; color: #94a3b8; letter-spacing: 0.5px;">
+                📁 ВСЕ РАЗДЕЛЫ БАЗЫ ДАННЫХ
+            </h2>
+        </div>
+        <div style="padding: 16px;">
+            {{ block.super }}
+        </div>
+    </div>
+
 </div>
-{{ block.super }}
 {% endblock %}
