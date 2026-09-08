@@ -263,9 +263,13 @@ PARADISE_ITEMS_METADATA = [
 
 def extract_items_from_grid_image(image_path, output_dir=None):
     """
-    Parses a 6-column x 4-row grid image, crops individual item artworks,
-    and returns a list of recognized items with local cropped image paths.
+    Parses a 6-column x 4-row grid image, crops individual item artworks with precise
+    centering, contrast enhancement, Lanczos scaling, and smooth rounded corners.
+    Returns a list of recognized items with local cropped image paths.
     """
+    import numpy as np
+    from PIL import ImageEnhance, ImageFilter, ImageDraw
+
     img_path = Path(image_path)
     if not img_path.exists():
         raise FileNotFoundError(f"Image not found: {img_path}")
@@ -276,24 +280,22 @@ def extract_items_from_grid_image(image_path, output_dir=None):
         target_dir = Path(output_dir)
 
     target_dir.mkdir(parents=True, exist_ok=True)
+    static_items_dir = Path(settings.BASE_DIR) / 'static' / 'items'
+    static_items_dir.mkdir(parents=True, exist_ok=True)
 
     with Image.open(img_path) as img:
-        img_w, img_h = img.size
+        img_rgba = img.convert('RGBA')
+        arr = np.array(img_rgba)
 
-        # Standard bounding box offsets for header and grid
-        # Header "Содержимое кейса..." occupies top ~7-10%
-        top_offset = int(img_h * 0.08)
-        bottom_offset = int(img_h * 0.03)
-        left_offset = int(img_w * 0.01)
-        right_offset = int(img_w * 0.01)
-
-        grid_w = img_w - (left_offset + right_offset)
-        grid_h = img_h - (top_offset + bottom_offset)
-
-        cols = 6
-        rows = 4
-        cell_w = grid_w / cols
-        cell_h = grid_h / rows
+        row_bounds = [(35, 119), (124, 208), (213, 297), (301, 385)]
+        col_bounds = [
+            (13, 168),
+            (173, 329),
+            (334, 489),
+            (495, 650),
+            (655, 811),
+            (816, 972)
+        ]
 
         processed_items = []
         seen_names = set()
@@ -306,24 +308,89 @@ def extract_items_from_grid_image(image_path, output_dir=None):
 
             r = meta["row"]
             c = meta["col"]
+            slug = meta["slug"]
 
-            # Compute cell coordinates
-            x1 = int(left_offset + c * cell_w)
-            y1 = int(top_offset + r * cell_h)
-            x2 = int(left_offset + (c + 1) * cell_w)
-            y2 = int(top_offset + (r + 1) * cell_h)
+            y1, y2 = row_bounds[r]
+            x1, x2 = col_bounds[c]
+            card = arr[y1:y2, x1:x2].copy()
 
-            # Inside the card, the icon is in the upper 65% of the card
-            card_crop_h = y2 - y1
-            icon_y2 = int(y1 + card_crop_h * 0.65)
+            if r == 3 and c in (4, 5):
+                card[0:18, 0:76] = [27, 28, 29, 255]
+                sub = card[16:54, 45:110]
+                bg = np.array([27, 28, 29], dtype=float)
+                diff = np.linalg.norm(sub[:, :, :3].astype(float) - bg, axis=2)
+                mask = diff > 6
+                sub_y0, sub_x0 = 16, 45
+            else:
+                sub = card[10:52, 20:135]
+                bg_l = sub[:, 0:3, :3].mean(axis=1).astype(float)
+                bg_r = sub[:, -3:, :3].mean(axis=1).astype(float)
+                bg = (bg_l + bg_r) / 2.0
+                diff = np.linalg.norm(sub[:, :, :3].astype(float) - bg[:, None, :3], axis=2)
+                mask = diff > 10
+                sub_y0, sub_x0 = 10, 20
 
-            # Crop item preview
-            icon_img = img.crop((x1 + 4, y1 + 4, x2 - 4, icon_y2))
+            rows, cols = np.where(mask)
+            if not len(rows):
+                card_ymin, card_ymax = 10, 52
+                card_xmin, card_xmax = 20, 135
+            else:
+                card_ymin = rows.min() + sub_y0
+                card_ymax = rows.max() + sub_y0
+                card_xmin = cols.min() + sub_x0
+                card_xmax = cols.max() + sub_x0
 
-            # Save individual item image
-            filename = f"{meta['slug']}.png"
+            center_x = (card_xmin + card_xmax) / 2.0
+            center_y = (card_ymin + card_ymax) / 2.0
+            box_w = card_xmax - card_xmin
+            box_h = card_ymax - card_ymin
+
+            side = max(box_w, box_h) + 6
+            side = min(side, card.shape[0] - 8, card.shape[1] - 8)
+
+            half = side / 2.0
+            sq_x1 = int(round(center_x - half))
+            sq_y1 = int(round(center_y - half))
+            sq_x2 = int(round(center_x + half))
+            sq_y2 = int(round(center_y + half))
+
+            if sq_x1 < 4:
+                sq_x2 += (4 - sq_x1)
+                sq_x1 = 4
+            if sq_x2 > card.shape[1] - 4:
+                sq_x1 -= (sq_x2 - (card.shape[1] - 4))
+                sq_x2 = card.shape[1] - 4
+            if sq_y1 < 6:
+                sq_y2 += (6 - sq_y1)
+                sq_y1 = 6
+            if sq_y2 > card.shape[0] - 6:
+                sq_y1 -= (sq_y2 - (card.shape[0] - 6))
+                sq_y2 = card.shape[0] - 6
+
+            crop_sq = Image.fromarray(card[sq_y1:sq_y2, sq_x1:sq_x2])
+
+            if slug in ('shadowfire-captain-kar98k', 'blood-raven-parachute', 'iron-judge-hat', 'illusion-judge-pan'):
+                crop_sq = ImageEnhance.Brightness(crop_sq).enhance(1.25)
+                crop_sq = ImageEnhance.Contrast(crop_sq).enhance(1.35)
+
+            scaled = crop_sq.resize((240, 240), Image.Resampling.LANCZOS)
+            scaled = ImageEnhance.Sharpness(scaled).enhance(1.3)
+
+            mask_shape = Image.new('L', (240, 240), 0)
+            draw = ImageDraw.Draw(mask_shape)
+            draw.rounded_rectangle([(0, 0), (240, 240)], radius=24, fill=255)
+            mask_shape = mask_shape.filter(ImageFilter.GaussianBlur(radius=0.75))
+
+            canvas = Image.new('RGBA', (256, 256), (0, 0, 0, 0))
+            canvas.paste(scaled, (8, 8), mask_shape)
+
+            filename = f"{slug}.png"
             file_dest = target_dir / filename
-            icon_img.save(file_dest, "PNG")
+            canvas.save(file_dest, "PNG")
+
+            # Also save to static/items so it is tracked in Git and survives restarts
+            static_dest = static_items_dir / filename
+            canvas.save(static_dest, "PNG")
 
             item_info = dict(meta)
             item_info["image_relative_path"] = f"items/{filename}"
