@@ -1,4 +1,4 @@
-﻿import os
+import os
 import io
 import json
 import zipfile
@@ -19,7 +19,8 @@ from users.models import Profile, GoogleAccount
 from payments.models import Transaction, CurrencySetting
 from cases.models import (
     Category, Item, Case, CaseItem, Opening,
-    PersonalCaseChance, PromoCode, PromoCodeUse, UserFreeOpening
+    PersonalCaseChance, PromoCode, PromoCodeUse, UserFreeOpening,
+    BloggerPayout
 )
 from inventory.models import InventoryItem
 from upgrades.models import UpgradeAttempt
@@ -43,6 +44,7 @@ MODELS_EXPORT_ORDER = [
     ('cases.Opening', Opening),
     ('cases.PersonalCaseChance', PersonalCaseChance),
     ('cases.PromoCode', PromoCode),
+    ('cases.BloggerPayout', BloggerPayout),
     ('payments.Transaction', Transaction),
     ('cases.PromoCodeUse', PromoCodeUse),
     ('cases.UserFreeOpening', UserFreeOpening),

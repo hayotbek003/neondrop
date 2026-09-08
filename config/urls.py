@@ -5,6 +5,7 @@ from django.conf.urls.static import static
 from django.views.static import serve
 
 import cases.admin_views as admin_views
+import cases.blogger_views as blogger_views
 
 urlpatterns = [
     # Dedicated Admin Backup / Restore GUI & Export Endpoints
@@ -16,6 +17,11 @@ urlpatterns = [
     path('admin/backup-restore/export/case-contents/', admin_views.export_case_contents_csv_view, name='admin_export_case_contents_csv'),
     path('admin/backup-restore/export/openings/', admin_views.export_openings_csv_view, name='admin_export_openings_csv'),
     path('admin/backup-restore/export/transactions/', admin_views.export_transactions_csv_view, name='admin_export_transactions_csv'),
+
+    # Dedicated Admin Blogger Statistics & Payout Management
+    path('admin/bloggers/', blogger_views.blogger_dashboard_view, name='admin_blogger_dashboard'),
+    path('admin/bloggers/payout/', blogger_views.mark_blogger_payout_view, name='admin_mark_blogger_payout'),
+    path('admin/bloggers/export/', blogger_views.export_blogger_stats_csv_view, name='admin_export_blogger_stats_csv'),
 
     path('admin/', admin.site.urls),
     path('', include('cases.urls', namespace='cases')),

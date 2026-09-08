@@ -4,7 +4,8 @@ from django.utils.html import format_html
 from django.utils import timezone
 from .models import (
     Category, Item, Case, CaseItem, Opening,
-    PersonalCaseChance, PromoCode, PromoCodeUse, UserFreeOpening
+    PersonalCaseChance, PromoCode, PromoCodeUse, UserFreeOpening,
+    BloggerPayout
 )
 
 class CaseItemInline(admin.TabularInline):
@@ -253,6 +254,13 @@ class PromoCodeAdmin(admin.ModelAdmin):
             'classes': ('collapse',),
         }),
     )
+
+    def get_readonly_fields(self, request, obj=None):
+        ro = list(super().get_readonly_fields(request, obj))
+        if not request.user.is_superuser:
+            # Regular staff can view promo codes and stats, but CANNOT edit blogger percentages or blogger name
+            ro.extend(['blogger_percentage', 'blogger_name', 'code'])
+        return ro
 
     def changeform_view(self, request, object_id=None, form_url='', extra_context=None):
         self.current_request = request
@@ -603,6 +611,33 @@ class UserFreeOpeningAdmin(admin.ModelAdmin):
     search_fields = ('user__username', 'case__name', 'promo_code__code')
     autocomplete_fields = ('user', 'case', 'promo_code')
     ordering = ('-updated_at',)
+
+
+@admin.register(BloggerPayout)
+class BloggerPayoutAdmin(admin.ModelAdmin):
+    list_display = ('promo_code', 'blogger_name_display', 'amount_display', 'period', 'admin_user', 'created_at')
+    list_filter = ('period', 'created_at', 'promo_code')
+    search_fields = ('promo_code__code', 'promo_code__blogger_name', 'period', 'admin_user__username', 'comment')
+    autocomplete_fields = ('promo_code',)
+    ordering = ('-created_at',)
+
+    def blogger_name_display(self, obj):
+        return obj.promo_code.blogger_name or "—"
+    blogger_name_display.short_description = "Блогер"
+
+    def amount_display(self, obj):
+        return format_html('<strong style="color: #38bdf8; font-size: 14px;">{} UC</strong>', f"{obj.amount:,.2f}".replace(',', ' '))
+    amount_display.short_description = "Выплачено"
+
+    def has_add_permission(self, request):
+        return request.user.is_superuser
+
+    def has_change_permission(self, request, obj=None):
+        return request.user.is_superuser
+
+    def has_delete_permission(self, request, obj=None):
+        return request.user.is_superuser
+
 
 
 # =========================================================================

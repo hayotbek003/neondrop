@@ -1,4 +1,4 @@
-﻿{% extends "admin/base.html" %}
+{% extends "admin/base.html" %}
 {% load i18n static %}
 
 {% block title %}{% if subtitle %}{{ subtitle }} | {% endif %}{{ title }} | NEONDROP CYBER ADMIN{% endblock %}
@@ -24,6 +24,9 @@
 {% block userlinks %}
 <a href="{% url 'admin:index' %}" style="color: #c084fc; font-weight: 700; margin-right: 14px; text-decoration: none; display: inline-flex; align-items: center; gap: 4px;">
     <span>⚡</span> Dashboard
+</a>
+<a href="{% url 'admin_blogger_dashboard' %}" style="color: #e879f9; font-weight: 700; margin-right: 14px; text-decoration: none; display: inline-flex; align-items: center; gap: 4px;">
+    <span>📊</span> Блогеры
 </a>
 <a href="{% url 'admin_backup_restore' %}" style="color: #38bdf8; font-weight: 700; margin-right: 14px; text-decoration: none; display: inline-flex; align-items: center; gap: 4px;">
     <span>💾</span> Backup / Restore

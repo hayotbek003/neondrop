@@ -1,0 +1,407 @@
+{% extends "admin/base_site.html" %}
+{% load i18n static humanize %}
+
+{% block title %}📊 Статистика и выплаты блогерам | NEONDROP CYBER ADMIN{% endblock %}
+
+{% block content %}
+<div class="cyber-admin-dashboard" style="max-width: 1440px; margin: 0 auto; padding-bottom: 50px;">
+
+    <!-- TOP HEADER -->
+    <div style="background: linear-gradient(135deg, #090d16 0%, #131b2e 100%); border: 1px solid #7e22ce; border-radius: 12px; padding: 22px 26px; margin-bottom: 24px; box-shadow: 0 4px 24px rgba(126, 34, 206, 0.25); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
+        <div>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <h1 style="margin: 0; color: #f8fafc; font-size: 22px; font-weight: 900; letter-spacing: 0.8px;">
+                    📊 СТАТИСТИКА И ВЫПЛАТЫ БЛОГЕРАМ
+                </h1>
+                <span style="background: rgba(168, 85, 247, 0.2); border: 1px solid #a855f7; color: #c084fc; font-size: 11px; font-weight: 800; padding: 3px 8px; border-radius: 4px; text-transform: uppercase;">
+                    NET LOSS ACCOUNTING
+                </span>
+            </div>
+            <p style="margin: 6px 0 0 0; color: #94a3b8; font-size: 13px;">
+                Строгий расчет комиссии блогеров исключительно от <strong style="color: #f87171;">чистого проигрыша (Net Loss)</strong> рефералов. С депозитов блогерам начисляется <strong style="color: #34d399;">0 UC</strong>.
+            </p>
+        </div>
+
+        <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
+            <a href="{% url 'admin_export_blogger_stats_csv' %}?period={{ period }}&date_from={{ date_from_str }}&date_to={{ date_to_str }}" 
+               class="button" 
+               style="background: linear-gradient(135deg, #0284c7, #06b6d4) !important; color: #fff !important; font-weight: 700; text-decoration: none; padding: 10px 18px; border-radius: 6px; font-size: 13px; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 2px 10px rgba(6, 182, 212, 0.35);">
+                <span>📥</span> Скачать статистику (CSV)
+            </a>
+            <a href="{% url 'admin:cases_promocode_changelist' %}" 
+               class="button" 
+               style="background: #1e293b !important; border: 1px solid #334155 !important; color: #cbd5e1 !important; font-weight: 700; text-decoration: none; padding: 10px 18px; border-radius: 6px; font-size: 13px; display: inline-flex; align-items: center; gap: 6px;">
+                <span>🎟️</span> Управление промокодами
+            </a>
+        </div>
+    </div>
+
+    <!-- DATE FILTERS BAR -->
+    <div style="background: #0d1322; border: 1px solid #1e293b; border-radius: 10px; padding: 14px 20px; margin-bottom: 24px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 14px;">
+        <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+            <span style="font-size: 12px; font-weight: 800; color: #94a3b8; text-transform: uppercase; margin-right: 4px;">Фильтр периода:</span>
+            
+            <a href="?period=today" style="padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: 700; text-decoration: none; {% if period == 'today' %}background: linear-gradient(135deg, #7e22ce, #ec4899); color: #fff; box-shadow: 0 0 10px rgba(236, 72, 153, 0.4);{% else %}background: #1e293b; color: #94a3b8; border: 1px solid #334155;{% endif %}">
+                Сегодня
+            </a>
+            <a href="?period=yesterday" style="padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: 700; text-decoration: none; {% if period == 'yesterday' %}background: linear-gradient(135deg, #7e22ce, #ec4899); color: #fff; box-shadow: 0 0 10px rgba(236, 72, 153, 0.4);{% else %}background: #1e293b; color: #94a3b8; border: 1px solid #334155;{% endif %}">
+                Вчера
+            </a>
+            <a href="?period=7d" style="padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: 700; text-decoration: none; {% if period == '7d' %}background: linear-gradient(135deg, #7e22ce, #ec4899); color: #fff; box-shadow: 0 0 10px rgba(236, 72, 153, 0.4);{% else %}background: #1e293b; color: #94a3b8; border: 1px solid #334155;{% endif %}">
+                7 дней
+            </a>
+            <a href="?period=30d" style="padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: 700; text-decoration: none; {% if period == '30d' %}background: linear-gradient(135deg, #7e22ce, #ec4899); color: #fff; box-shadow: 0 0 10px rgba(236, 72, 153, 0.4);{% else %}background: #1e293b; color: #94a3b8; border: 1px solid #334155;{% endif %}">
+                30 дней
+            </a>
+            <a href="?period=this_month" style="padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: 700; text-decoration: none; {% if period == 'this_month' %}background: linear-gradient(135deg, #7e22ce, #ec4899); color: #fff; box-shadow: 0 0 10px rgba(236, 72, 153, 0.4);{% else %}background: #1e293b; color: #94a3b8; border: 1px solid #334155;{% endif %}">
+                Этот месяц
+            </a>
+            <a href="?period=prev_month" style="padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: 700; text-decoration: none; {% if period == 'prev_month' %}background: linear-gradient(135deg, #7e22ce, #ec4899); color: #fff; box-shadow: 0 0 10px rgba(236, 72, 153, 0.4);{% else %}background: #1e293b; color: #94a3b8; border: 1px solid #334155;{% endif %}">
+                Прошлый месяц
+            </a>
+            <a href="?period=all" style="padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: 700; text-decoration: none; {% if period == 'all' %}background: linear-gradient(135deg, #7e22ce, #ec4899); color: #fff; box-shadow: 0 0 10px rgba(236, 72, 153, 0.4);{% else %}background: #1e293b; color: #94a3b8; border: 1px solid #334155;{% endif %}">
+                Всё время
+            </a>
+        </div>
+
+        <!-- Custom Date Range Form -->
+        <form method="get" action="" style="display: flex; align-items: center; gap: 8px; margin: 0;">
+            <input type="hidden" name="period" value="custom">
+            <input type="date" name="date_from" value="{{ date_from_str }}" style="background: #0f172a; border: 1px solid #334155; color: #f8fafc; padding: 6px 10px; border-radius: 6px; font-size: 12px;">
+            <span style="color: #64748b;">—</span>
+            <input type="date" name="date_to" value="{{ date_to_str }}" style="background: #0f172a; border: 1px solid #334155; color: #f8fafc; padding: 6px 10px; border-radius: 6px; font-size: 12px;">
+            <button type="submit" style="background: #3b82f6; color: #fff; border: none; padding: 6px 14px; border-radius: 6px; font-size: 12px; font-weight: 700; cursor: pointer;">
+                Применить
+            </button>
+        </form>
+    </div>
+
+    <!-- KPI STATS SUMMARY CARDS -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px; margin-bottom: 26px;">
+        <div style="background: #0f172a; border: 1px solid #1e293b; border-radius: 10px; padding: 16px; text-align: center;">
+            <div style="font-size: 11px; font-weight: 800; color: #94a3b8; text-transform: uppercase;">👥 Пользователи</div>
+            <div style="font-size: 24px; font-weight: 900; color: #38bdf8; margin: 4px 0;">{{ total_users_count }}</div>
+            <div style="font-size: 11px; color: #64748b;">по {{ total_bloggers }} блогерам</div>
+        </div>
+
+        <div style="background: #0f172a; border: 1px solid #1e293b; border-radius: 10px; padding: 16px; text-align: center;">
+            <div style="font-size: 11px; font-weight: 800; color: #94a3b8; text-transform: uppercase;">📥 Пополнено (Всего)</div>
+            <div style="font-size: 24px; font-weight: 900; color: #34d399; margin: 4px 0;">{{ total_deposits_all|floatformat:0 }} UC</div>
+            <div style="font-size: 11px; color: #10b981; font-weight: 700;">Блогерам: 0 UC (0%)</div>
+        </div>
+
+        <div style="background: #0f172a; border: 1px solid #1e293b; border-radius: 10px; padding: 16px; text-align: center;">
+            <div style="font-size: 11px; font-weight: 800; color: #94a3b8; text-transform: uppercase;">🎰 Потрачено на кейсы</div>
+            <div style="font-size: 24px; font-weight: 900; color: #f59e0b; margin: 4px 0;">{{ total_spent_all|floatformat:0 }} UC</div>
+            <div style="font-size: 11px; color: #64748b;">открытия рефералов</div>
+        </div>
+
+        <div style="background: #0f172a; border: 1px solid #1e293b; border-radius: 10px; padding: 16px; text-align: center;">
+            <div style="font-size: 11px; font-weight: 800; color: #94a3b8; text-transform: uppercase;">📉 Чистый проигрыш (Loss)</div>
+            <div style="font-size: 24px; font-weight: 900; color: #f87171; margin: 4px 0;">{{ total_net_loss_all|floatformat:0 }} UC</div>
+            <div style="font-size: 11px; color: #64748b;">база расчета блогеров</div>
+        </div>
+
+        <div style="background: #0f172a; border: 1px solid #1e293b; border-radius: 10px; padding: 16px; text-align: center;">
+            <div style="font-size: 11px; font-weight: 800; color: #94a3b8; text-transform: uppercase;">💰 Начислено блогерам</div>
+            <div style="font-size: 24px; font-weight: 900; color: #ffd700; margin: 4px 0;">{{ total_payout_calculated_all|floatformat:0 }} UC</div>
+            <div style="font-size: 11px; color: #64748b;">строго от Net Loss</div>
+        </div>
+
+        <div style="background: #0f172a; border: 1px solid #1e293b; border-radius: 10px; padding: 16px; text-align: center;">
+            <div style="font-size: 11px; font-weight: 800; color: #94a3b8; text-transform: uppercase;">⏳ Осталось выплатить</div>
+            <div style="font-size: 24px; font-weight: 900; color: #ec4899; margin: 4px 0;">{{ total_remaining_all|floatformat:0 }} UC</div>
+            <div style="font-size: 11px; color: #64748b;">выплачено: {{ total_payout_recorded_all|floatformat:0 }} UC</div>
+        </div>
+    </div>
+
+    <!-- MAIN BLOGGER SUMMARY TABLE -->
+    <div style="background: #0f172a; border: 1px solid #1e293b; border-radius: 12px; padding: 22px; margin-bottom: 30px; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 10px;">
+            <h2 style="margin: 0; font-size: 17px; font-weight: 800; color: #f8fafc; display: flex; align-items: center; gap: 8px;">
+                <span>📋 Сводная таблица по блогерам</span>
+                <span style="font-size: 12px; background: #1e293b; color: #94a3b8; padding: 2px 8px; border-radius: 10px;">Период: {{ period_title }}</span>
+            </h2>
+        </div>
+
+        <div style="overflow-x: auto;">
+            <table style="width: 100%; border-collapse: collapse; font-size: 13px; text-align: left;">
+                <thead>
+                    <tr style="background: #1e293b; color: #94a3b8; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px;">
+                        <th style="padding: 12px 14px;">Блогер</th>
+                        <th style="padding: 12px 14px;">Промокод</th>
+                        <th style="padding: 12px 14px; text-align: center;">% блогера</th>
+                        <th style="padding: 12px 14px; text-align: center;">Пользователи</th>
+                        <th style="padding: 12px 14px; text-align: right; color: #34d399;">Пополнено (UC)</th>
+                        <th style="padding: 12px 14px; text-align: right; color: #f87171;">Net Loss (UC)</th>
+                        <th style="padding: 12px 14px; text-align: right; color: #ffd700;">К выплате (UC)</th>
+                        <th style="padding: 12px 14px; text-align: right; color: #38bdf8;">Выплачено (UC)</th>
+                        <th style="padding: 12px 14px; text-align: right; color: #ec4899;">Осталось (UC)</th>
+                        <th style="padding: 12px 14px; text-align: center;">Действия</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in blogger_rows %}
+                    <tr style="border-bottom: 1px solid #1e293b; transition: background 0.2s;" onmouseover="this.style.background='#131e33'" onmouseout="this.style.background='transparent'">
+                        <td style="padding: 12px 14px; font-weight: 700; color: #f8fafc;">
+                            {{ row.blogger_name }}
+                        </td>
+                        <td style="padding: 12px 14px;">
+                            <a href="{% url 'admin:cases_promocode_change' row.promo_code.id %}" style="color: #c084fc; font-weight: 800; text-decoration: none;">
+                                🎟️ {{ row.code }}
+                            </a>
+                        </td>
+                        <td style="padding: 12px 14px; text-align: center;">
+                            <span style="background: rgba(56, 189, 248, 0.15); border: 1px solid #38bdf8; color: #38bdf8; padding: 2px 8px; border-radius: 4px; font-weight: 800; font-size: 12px;">
+                                {{ row.percentage }}%
+                            </span>
+                        </td>
+                        <td style="padding: 12px 14px; text-align: center; font-weight: 700; color: #94a3b8;">
+                            {{ row.users_count }}
+                        </td>
+                        <td style="padding: 12px 14px; text-align: right; font-weight: 700; color: #34d399;">
+                            {{ row.total_deposits|floatformat:2 }}
+                            <div style="font-size: 10px; color: #64748b;">(0% блогеру)</div>
+                        </td>
+                        <td style="padding: 12px 14px; text-align: right; font-weight: 700; color: #f87171;">
+                            {{ row.net_loss|floatformat:2 }}
+                        </td>
+                        <td style="padding: 12px 14px; text-align: right; font-weight: 900; color: #ffd700; font-size: 14px;">
+                            {{ row.blogger_payout|floatformat:2 }}
+                        </td>
+                        <td style="padding: 12px 14px; text-align: right; font-weight: 700; color: #38bdf8;">
+                            {{ row.paid_amount|floatformat:2 }}
+                        </td>
+                        <td style="padding: 12px 14px; text-align: right; font-weight: 900; color: {% if row.remaining_balance > 0 %}#ec4899{% else %}#10b981{% endif %}; font-size: 14px;">
+                            {{ row.remaining_balance|floatformat:2 }}
+                        </td>
+                        <td style="padding: 12px 14px; text-align: center;">
+                            <button onclick="openPayoutModal('{{ row.promo_code.id }}', '{{ row.blogger_name|escapejs }}', '{{ row.code|escapejs }}', '{{ row.remaining_balance|floatformat:2 }}', '{{ current_month_key }}')" 
+                                    class="button" 
+                                    style="background: linear-gradient(135deg, #7e22ce, #a855f7) !important; color: #fff !important; font-size: 11px !important; padding: 4px 10px !important; border-radius: 4px; font-weight: 700; cursor: pointer;">
+                                💸 Отметить выплату
+                            </button>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="10" style="padding: 30px; text-align: center; color: #64748b;">
+                            Промокоды пока не созданы. Создайте промокод в разделе управления промокодами.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- MONTHLY BREAKDOWN & TRACKING ACCORDION -->
+    <div style="background: #0f172a; border: 1px solid #1e293b; border-radius: 12px; padding: 22px; margin-bottom: 30px;">
+        <h2 style="margin: 0 0 16px 0; font-size: 17px; font-weight: 800; color: #f8fafc; display: flex; align-items: center; gap: 8px;">
+            <span>📅 Ежемесячная детализация выплат по блогерам</span>
+        </h2>
+        <p style="color: #94a3b8; font-size: 13px; margin-top: -8px; margin-bottom: 20px;">
+            Автоматическое разделение активности по календарным месяцам (Сентябрь, Август и т.д.) с раздельным учетом начислений, выплат и остатка.
+        </p>
+
+        {% for row in blogger_rows %}
+        <div style="background: #090d16; border: 1px solid #1e293b; border-radius: 8px; margin-bottom: 14px; overflow: hidden;">
+            <div style="padding: 12px 18px; background: #131b2e; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+                <div>
+                    <strong style="color: #f8fafc; font-size: 15px;">{{ row.blogger_name }}</strong>
+                    <span style="color: #c084fc; font-size: 13px; font-weight: 700; margin-left: 8px;">(Промокод: {{ row.code }}, {{ row.percentage }}%)</span>
+                </div>
+                <div>
+                    <span style="font-size: 12px; color: #94a3b8;">Всего начислено за всё время: </span>
+                    <strong style="color: #ffd700;">{{ row.blogger_payout|floatformat:2 }} UC</strong>
+                </div>
+            </div>
+
+            <div style="padding: 14px 18px;">
+                {% if row.monthly_breakdown %}
+                <table style="width: 100%; border-collapse: collapse; font-size: 12px; text-align: left;">
+                    <thead>
+                        <tr style="color: #64748b; font-size: 11px; text-transform: uppercase; border-bottom: 1px solid #1e293b;">
+                            <th style="padding: 8px 10px;">Месяц</th>
+                            <th style="padding: 8px 10px; text-align: center;">Открытий</th>
+                            <th style="padding: 8px 10px; text-align: right; color: #34d399;">Пополнения</th>
+                            <th style="padding: 8px 10px; text-align: right; color: #f59e0b;">Потрачено</th>
+                            <th style="padding: 8px 10px; text-align: right; color: #38bdf8;">Выиграно</th>
+                            <th style="padding: 8px 10px; text-align: right; color: #f87171;">Net Loss</th>
+                            <th style="padding: 8px 10px; text-align: right; color: #ffd700;">К выплате</th>
+                            <th style="padding: 8px 10px; text-align: right; color: #38bdf8;">Выплачено</th>
+                            <th style="padding: 8px 10px; text-align: right; color: #ec4899;">Остаток</th>
+                            <th style="padding: 8px 10px; text-align: center;">Действие</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for m in row.monthly_breakdown %}
+                        <tr style="border-bottom: 1px solid #131b2e;">
+                            <td style="padding: 10px; font-weight: 800; color: #f1f5f9;">
+                                {{ m.month_label }}
+                            </td>
+                            <td style="padding: 10px; text-align: center; color: #94a3b8;">
+                                {{ m.openings_count }}
+                            </td>
+                            <td style="padding: 10px; text-align: right; color: #34d399; font-weight: 600;">
+                                {{ m.deposits|floatformat:2 }}
+                            </td>
+                            <td style="padding: 10px; text-align: right; color: #f59e0b; font-weight: 600;">
+                                {{ m.spent|floatformat:2 }}
+                            </td>
+                            <td style="padding: 10px; text-align: right; color: #38bdf8; font-weight: 600;">
+                                {{ m.won|floatformat:2 }}
+                            </td>
+                            <td style="padding: 10px; text-align: right; color: #f87171; font-weight: 700;">
+                                {{ m.net_loss|floatformat:2 }}
+                            </td>
+                            <td style="padding: 10px; text-align: right; color: #ffd700; font-weight: 800;">
+                                {{ m.blogger_payout|floatformat:2 }}
+                            </td>
+                            <td style="padding: 10px; text-align: right; color: #38bdf8; font-weight: 700;">
+                                {{ m.paid_amount|floatformat:2 }}
+                            </td>
+                            <td style="padding: 10px; text-align: right; color: {% if m.remaining_balance > 0 %}#ec4899{% else %}#10b981{% endif %}; font-weight: 900;">
+                                {{ m.remaining_balance|floatformat:2 }}
+                            </td>
+                            <td style="padding: 10px; text-align: center;">
+                                <button onclick="openPayoutModal('{{ row.promo_code.id }}', '{{ row.blogger_name|escapejs }}', '{{ row.code|escapejs }}', '{{ m.remaining_balance|floatformat:2 }}', '{{ m.month_key }}')" 
+                                        class="button" 
+                                        style="background: #1e293b !important; border: 1px solid #334155 !important; color: #cbd5e1 !important; font-size: 10px !important; padding: 3px 8px !important; border-radius: 4px; cursor: pointer;">
+                                    Выплатить
+                                </button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% else %}
+                <p style="color: #64748b; margin: 6px 0; font-size: 12px;">По данному промокоду пока не было игровых открытий.</p>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- PAYOUT HISTORY TABLE -->
+    <div style="background: #0f172a; border: 1px solid #1e293b; border-radius: 12px; padding: 22px;">
+        <h2 style="margin: 0 0 16px 0; font-size: 17px; font-weight: 800; color: #f8fafc; display: flex; align-items: center; gap: 8px;">
+            <span>📜 История произведенных выплат</span>
+        </h2>
+
+        <div style="overflow-x: auto;">
+            <table style="width: 100%; border-collapse: collapse; font-size: 13px; text-align: left;">
+                <thead>
+                    <tr style="background: #1e293b; color: #94a3b8; font-size: 11px; text-transform: uppercase;">
+                        <th style="padding: 10px 12px;">Дата выплаты</th>
+                        <th style="padding: 10px 12px;">Блогер</th>
+                        <th style="padding: 10px 12px;">Промокод</th>
+                        <th style="padding: 10px 12px; text-align: right; color: #38bdf8;">Сумма (UC)</th>
+                        <th style="padding: 10px 12px; text-align: center;">Период</th>
+                        <th style="padding: 10px 12px;">Администратор</th>
+                        <th style="padding: 10px 12px;">Комментарий</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for p in recent_payouts %}
+                    <tr style="border-bottom: 1px solid #1e293b;">
+                        <td style="padding: 10px 12px; color: #94a3b8;">
+                            {{ p.created_at|date:"d.m.Y H:i" }}
+                        </td>
+                        <td style="padding: 10px 12px; font-weight: 700; color: #f8fafc;">
+                            {{ p.promo_code.blogger_name|default:p.promo_code.code }}
+                        </td>
+                        <td style="padding: 10px 12px; color: #c084fc; font-weight: 700;">
+                            {{ p.promo_code.code }}
+                        </td>
+                        <td style="padding: 10px 12px; text-align: right; color: #38bdf8; font-weight: 900; font-size: 14px;">
+                            {{ p.amount|floatformat:2 }} UC
+                        </td>
+                        <td style="padding: 10px 12px; text-align: center;">
+                            <span style="background: #1e293b; color: #f1f5f9; padding: 2px 8px; border-radius: 4px; font-weight: 700; font-size: 11px;">
+                                {{ p.period }}
+                            </span>
+                        </td>
+                        <td style="padding: 10px 12px; color: #94a3b8;">
+                            {{ p.admin_user.username|default:"System" }}
+                        </td>
+                        <td style="padding: 10px 12px; color: #cbd5e1; font-size: 12px;">
+                            {{ p.comment|default:"—" }}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" style="padding: 20px; text-align: center; color: #64748b;">
+                            История выплат пуста.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+
+<!-- MODAL: MARK PAYOUT -->
+<div id="payoutModal" style="display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(4px); z-index: 99999; justify-content: center; align-items: center; padding: 20px;">
+    <div style="background: #0f172a; border: 1px solid #7e22ce; border-radius: 12px; width: 100%; max-width: 480px; padding: 24px; box-shadow: 0 10px 40px rgba(126, 34, 206, 0.4);">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px;">
+            <h3 style="margin: 0; color: #f8fafc; font-size: 18px; font-weight: 800; display: flex; align-items: center; gap: 8px;">
+                <span>💸 Отметить выплату блогеру</span>
+            </h3>
+            <button onclick="closePayoutModal()" style="background: none; border: none; color: #94a3b8; font-size: 20px; cursor: pointer;">&times;</button>
+        </div>
+
+        <form method="post" action="{% url 'admin_mark_blogger_payout' %}">
+            {% csrf_token %}
+            <input type="hidden" name="promo_code_id" id="modal_promo_code_id">
+
+            <div style="margin-bottom: 14px;">
+                <label style="display: block; font-size: 12px; font-weight: 700; color: #94a3b8; margin-bottom: 4px;">Блогер / Промокод:</label>
+                <div id="modal_blogger_label" style="font-size: 15px; font-weight: 800; color: #38bdf8;"></div>
+            </div>
+
+            <div style="margin-bottom: 14px;">
+                <label style="display: block; font-size: 12px; font-weight: 700; color: #94a3b8; margin-bottom: 4px;">Период выплаты (например: 2026-09):</label>
+                <input type="text" name="period" id="modal_period" required style="width: 100%; background: #090d16; border: 1px solid #334155; color: #f8fafc; padding: 10px 12px; border-radius: 6px; font-size: 14px; font-weight: 700;">
+            </div>
+
+            <div style="margin-bottom: 14px;">
+                <label style="display: block; font-size: 12px; font-weight: 700; color: #94a3b8; margin-bottom: 4px;">Сумма выплаты (UC):</label>
+                <input type="number" step="0.01" min="0.01" name="amount" id="modal_amount" required style="width: 100%; background: #090d16; border: 1px solid #334155; color: #ffd700; padding: 10px 12px; border-radius: 6px; font-size: 16px; font-weight: 800;">
+            </div>
+
+            <div style="margin-bottom: 20px;">
+                <label style="display: block; font-size: 12px; font-weight: 700; color: #94a3b8; margin-bottom: 4px;">Комментарий / Реквизиты (необязательно):</label>
+                <textarea name="comment" rows="2" placeholder="Номер карты, криптокошелек, реквизиты перевода..." style="width: 100%; background: #090d16; border: 1px solid #334155; color: #cbd5e1; padding: 8px 12px; border-radius: 6px; font-size: 13px;"></textarea>
+            </div>
+
+            <div style="display: flex; justify-content: flex-end; gap: 10px;">
+                <button type="button" onclick="closePayoutModal()" style="background: #1e293b; border: 1px solid #334155; color: #94a3b8; padding: 8px 16px; border-radius: 6px; font-weight: 700; cursor: pointer;">
+                    Отмена
+                </button>
+                <button type="submit" style="background: linear-gradient(135deg, #059669, #10b981); border: none; color: #fff; padding: 8px 18px; border-radius: 6px; font-weight: 800; cursor: pointer; box-shadow: 0 0 12px rgba(16, 185, 129, 0.4);">
+                    ✓ Зафиксировать выплату
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+function openPayoutModal(promoCodeId, bloggerName, code, remaining, defaultPeriod) {
+    document.getElementById('modal_promo_code_id').value = promoCodeId;
+    document.getElementById('modal_blogger_label').textContent = bloggerName + ' (Промокод: ' + code + ')';
+    document.getElementById('modal_amount').value = remaining > 0 ? remaining : '0.00';
+    document.getElementById('modal_period').value = defaultPeriod || '{{ current_month_key }}';
+    
+    var modal = document.getElementById('payoutModal');
+    modal.style.display = 'flex';
+}
+
+function closePayoutModal() {
+    document.getElementById('payoutModal').style.display = 'none';
+}
+</script>
+{% endblock %}

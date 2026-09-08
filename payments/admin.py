@@ -13,25 +13,32 @@ from .services import modify_user_balance
 
 @admin.action(description='✅ Подтвердить выбранные заявки и начислить баланс')
 def approve_deposits(modeladmin, request, queryset):
+    from cases.models import PromoCodeUse
     approved_count = 0
     for tx in queryset.filter(status='pending'):
         try:
             with transaction.atomic():
                 if tx.transaction_type == 'deposit':
-                    ledger_tx = modify_user_balance(
-                        user=tx.user,
-                        amount_delta=tx.amount,
-                        transaction_type='deposit',
-                        reference_id=f"deposit_approved:{tx.id}",
-                        description=f"Подтверждение пополнения через админку (Заявка #{tx.id})",
-                        payment_method=tx.payment_method,
-                        ip_address='admin_panel',
-                        admin_user=request.user
-                    )
-                    tx.balance_before = ledger_tx.balance_before
-                    tx.balance_after = ledger_tx.balance_after
+                    # Directly mutate balance and complete this transaction without duplicate ledger entry
+                    profile = tx.user.profile
+                    tx.balance_before = profile.balance
+                    profile.balance += tx.amount
+                    profile.save(update_fields=['balance'])
+                    tx.balance_after = profile.balance
+                    tx.description = f"{tx.description or ''} (Подтверждено админом: {request.user.username})".strip()
+
+                    # Associate user with promo code / blogger if specified
+                    if tx.promo_code:
+                        PromoCodeUse.objects.get_or_create(
+                            user=tx.user,
+                            promo_code=tx.promo_code,
+                            defaults={
+                                'bonus_amount': Decimal('0.00'),
+                                'related_transaction': tx,
+                            }
+                        )
                 tx.status = 'completed'
-                tx.save(update_fields=['status', 'balance_before', 'balance_after', 'updated_at'])
+                tx.save(update_fields=['status', 'balance_before', 'balance_after', 'description', 'updated_at'])
                 approved_count += 1
         except Exception as e:
             if modeladmin:
@@ -72,14 +79,23 @@ def reject_deposits(modeladmin, request, queryset):
 @admin.register(Transaction)
 class TransactionAdmin(admin.ModelAdmin):
     list_display = (
-        'id', 'user_link', 'amount_badge', 'created_at',
+        'id', 'user_link', 'amount_badge', 'promo_code_badge', 'created_at',
         'status_badge', 'transaction_type_badge', 'payment_method', 'quick_actions'
     )
-    list_filter = ('status', 'transaction_type', 'payment_method', 'created_at')
-    search_fields = ('user__username', 'user__email', 'idempotency_key', 'reference_id', 'description')
+    list_filter = ('status', 'transaction_type', 'promo_code', 'payment_method', 'created_at')
+    search_fields = ('user__username', 'user__email', 'promo_code__code', 'promo_code__blogger_name', 'idempotency_key', 'reference_id', 'description')
+    autocomplete_fields = ('user', 'promo_code')
     readonly_fields = ('created_at', 'updated_at', 'balance_before', 'balance_after', 'ip_address')
     actions = [approve_deposits, reject_deposits]
     ordering = ('-created_at',)
+
+    def promo_code_badge(self, obj):
+        if obj.promo_code:
+            blogger_part = f" ({obj.promo_code.blogger_name})" if obj.promo_code.blogger_name else ""
+            return format_html('<span class="badge-neon-purple" style="font-size: 11px;">🎟️ {}{}</span>', obj.promo_code.code, blogger_part)
+        return format_html('<span style="color: #64748b; font-size: 12px;">—</span>')
+    promo_code_badge.short_description = 'Промокод / Блогер'
+    promo_code_badge.admin_order_field = 'promo_code__code'
 
     def user_link(self, obj):
         url = reverse('admin:auth_user_change', args=[obj.user.id])
@@ -139,24 +155,31 @@ class TransactionAdmin(admin.ModelAdmin):
         return custom_urls + urls
 
     def approve_single_tx(self, request, tx_id):
+        from cases.models import PromoCodeUse
         tx = get_object_or_404(Transaction, id=tx_id)
         if tx.status == 'pending':
             try:
                 with transaction.atomic():
                     if tx.transaction_type == 'deposit':
-                        ledger_tx = modify_user_balance(
-                            user=tx.user,
-                            amount_delta=tx.amount,
-                            transaction_type='deposit',
-                            reference_id=f"deposit_approved:{tx.id}",
-                            description=f"Подтверждение пополнения через админку (Заявка #{tx.id})",
-                            payment_method=tx.payment_method,
-                            admin_user=request.user
-                        )
-                        tx.balance_before = ledger_tx.balance_before
-                        tx.balance_after = ledger_tx.balance_after
+                        profile = tx.user.profile
+                        tx.balance_before = profile.balance
+                        profile.balance += tx.amount
+                        profile.save(update_fields=['balance'])
+                        tx.balance_after = profile.balance
+                        tx.description = f"{tx.description or ''} (Подтверждено админом: {request.user.username})".strip()
+
+                        # Associate user with promo code / blogger if specified
+                        if tx.promo_code:
+                            PromoCodeUse.objects.get_or_create(
+                                user=tx.user,
+                                promo_code=tx.promo_code,
+                                defaults={
+                                    'bonus_amount': Decimal('0.00'),
+                                    'related_transaction': tx,
+                                }
+                            )
                     tx.status = 'completed'
-                    tx.save(update_fields=['status', 'balance_before', 'balance_after', 'updated_at'])
+                    tx.save(update_fields=['status', 'balance_before', 'balance_after', 'description', 'updated_at'])
                     messages.success(request, f"Заявка #{tx.id} успешно одобрена! Баланс пользователя пополнен.")
             except Exception as e:
                 messages.error(request, f"Ошибка при одобрении заявки #{tx.id}: {e}")

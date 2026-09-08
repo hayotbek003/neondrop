@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
 from django.utils.text import slugify
+from datetime import timedelta
 from decimal import Decimal
 
 class Category(models.Model):
@@ -313,6 +314,7 @@ class PromoCode(models.Model):
             return {
                 'users_count': 0,
                 'openings_count': 0,
+                'total_deposits': Decimal('0.00'),
                 'total_spent': Decimal('0.00'),
                 'total_won': Decimal('0.00'),
                 'net_loss': Decimal('0.00'),
@@ -342,9 +344,28 @@ class PromoCode(models.Model):
         blogger_payout = (net_loss * (blogger_pct / Decimal('100.00'))).quantize(Decimal('0.01'))
         site_revenue = net_loss - blogger_payout
 
+        # Total deposits made by referred users (strictly tracking, 0% commission from deposits!)
+        from payments.models import Transaction
+        dep_qs = Transaction.objects.filter(
+            user_id__in=user_ids,
+            transaction_type='deposit',
+            status='completed'
+        )
+        if date_from:
+            dep_qs = dep_qs.filter(created_at__gte=date_from)
+        if date_to:
+            dep_qs = dep_qs.filter(created_at__lte=date_to)
+        
+        valid_deposits = [
+            d for d in dep_qs
+            if (d.promo_code_id == self.id) or (d.created_at >= user_use_map.get(d.user_id, d.created_at) - timedelta(minutes=5))
+        ]
+        total_deposits = sum((d.amount for d in valid_deposits), Decimal('0.00'))
+
         return {
             'users_count': len(user_ids),
             'openings_count': len(valid_openings),
+            'total_deposits': total_deposits,
             'total_spent': total_spent,
             'total_won': total_won,
             'net_loss': net_loss,
@@ -381,8 +402,111 @@ class PromoCode(models.Model):
         start_30_days = now - timedelta(days=30)
         return self.get_stats_for_period(date_from=start_30_days, date_to=now)
 
+    def get_stats_this_month(self):
+        from django.utils import timezone
+        now = timezone.now()
+        start_of_month = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+        return self.get_stats_for_period(date_from=start_of_month, date_to=now)
+
+    def get_stats_prev_month(self):
+        from django.utils import timezone
+        from datetime import timedelta
+        now = timezone.now()
+        start_of_this_month = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+        end_of_prev_month = start_of_this_month - timedelta(microseconds=1)
+        start_of_prev_month = end_of_prev_month.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+        return self.get_stats_for_period(date_from=start_of_prev_month, date_to=end_of_prev_month)
+
     def get_stats_all_time(self):
         return self.get_stats_for_period()
+
+    def get_monthly_breakdown(self):
+        """
+        Groups all activity of referred users by calendar month (e.g. '2026-09', '2026-08').
+        Returns list of monthly summary dictionaries with:
+          month_key ('YYYY-MM'), month_name, total_deposits, spent, won, net_loss,
+          blogger_percentage, blogger_payout, paid_amount, remaining_balance
+        """
+        from collections import defaultdict
+        import calendar
+        uses = list(self.uses.all())
+        user_ids = [u.user_id for u in uses]
+        if not user_ids:
+            return []
+
+        user_use_map = {u.user_id: u.used_at for u in uses}
+        openings_qs = Opening.objects.filter(user_id__in=user_ids).select_related('item')
+
+        monthly_map = defaultdict(lambda: {
+            'openings_count': 0,
+            'spent': Decimal('0.00'),
+            'won': Decimal('0.00'),
+            'deposits': Decimal('0.00')
+        })
+
+        for op in openings_qs:
+            if op.created_at >= user_use_map.get(op.user_id, op.created_at):
+                m_key = op.created_at.strftime('%Y-%m')
+                monthly_map[m_key]['openings_count'] += 1
+                monthly_map[m_key]['spent'] += op.price
+                monthly_map[m_key]['won'] += op.item.value
+
+        from payments.models import Transaction
+        dep_qs = Transaction.objects.filter(
+            user_id__in=user_ids,
+            transaction_type='deposit',
+            status='completed'
+        )
+        for dep in dep_qs:
+            if dep.created_at >= user_use_map.get(dep.user_id, dep.created_at):
+                m_key = dep.created_at.strftime('%Y-%m')
+                monthly_map[m_key]['deposits'] += dep.amount
+
+        # Also include any months that have recorded payouts even if no openings
+        payouts_by_month = defaultdict(Decimal)
+        for p in self.payouts.all():
+            payouts_by_month[p.period] += p.amount
+            if p.period not in monthly_map and len(p.period) == 7 and p.period[4] == '-':
+                monthly_map[p.period]
+
+        blogger_pct = self.blogger_percentage or Decimal('0.00')
+        months_list = sorted(monthly_map.keys(), reverse=True)
+        results = []
+
+        for m_key in months_list:
+            data = monthly_map[m_key]
+            spent = data['spent']
+            won = data['won']
+            net_loss = max(Decimal('0.00'), spent - won)
+            blogger_payout = (net_loss * (blogger_pct / Decimal('100.00'))).quantize(Decimal('0.01'))
+            paid_amount = payouts_by_month.get(m_key, Decimal('0.00'))
+            remaining = max(Decimal('0.00'), blogger_payout - paid_amount)
+
+            try:
+                y, m = map(int, m_key.split('-'))
+                month_names_ru = [
+                    "", "Январь", "Февраль", "Март", "Апрель", "Май", "Июнь",
+                    "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь"
+                ]
+                m_label = f"{month_names_ru[m]} {y}"
+            except Exception:
+                m_label = m_key
+
+            results.append({
+                'month_key': m_key,
+                'month_label': m_label,
+                'openings_count': data['openings_count'],
+                'deposits': data['deposits'],
+                'spent': spent,
+                'won': won,
+                'net_loss': net_loss,
+                'blogger_percentage': blogger_pct,
+                'blogger_payout': blogger_payout,
+                'paid_amount': paid_amount,
+                'remaining_balance': remaining,
+            })
+
+        return results
 
     def get_daily_breakdown(self, date_from=None, date_to=None):
         from collections import defaultdict
@@ -504,3 +628,21 @@ class UserFreeOpening(models.Model):
 
     def __str__(self):
         return f"{self.user.username} -> {self.case.name}: {self.openings_left} бесплатных открытий"
+
+
+class BloggerPayout(models.Model):
+    promo_code = models.ForeignKey(PromoCode, on_delete=models.CASCADE, related_name='payouts', verbose_name="Промокод / Блогер")
+    amount = models.DecimalField(max_digits=12, decimal_places=2, verbose_name="Сумма выплаты (UC)")
+    period = models.CharField(max_length=30, verbose_name="Период выплаты", help_text="Например: 2026-09 или all_time")
+    admin_user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='blogger_payouts_made', verbose_name="Администратор")
+    comment = models.TextField(blank=True, verbose_name="Комментарий / Реквизиты")
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Дата выплаты")
+
+    class Meta:
+        verbose_name = "Выплата блогеру"
+        verbose_name_plural = "Выплаты блогерам"
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"Выплата {self.amount} UC блогеру {self.promo_code.blogger_name or self.promo_code.code} за {self.period}"
+

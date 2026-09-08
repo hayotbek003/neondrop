@@ -43,6 +43,15 @@ class Transaction(models.Model):
     description = models.CharField(max_length=255, blank=True, null=True, verbose_name="Описание операции")
     idempotency_key = models.CharField(max_length=64, blank=True, null=True, db_index=True, verbose_name="Ключ идемпотентности")
     ip_address = models.GenericIPAddressField(blank=True, null=True, verbose_name="IP-адрес инициатора")
+    promo_code = models.ForeignKey(
+        'cases.PromoCode',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='deposit_transactions',
+        verbose_name="Промокод / Блогер",
+        help_text="Промокод или блогер, через которого пришёл депозит"
+    )
     comment = models.TextField(blank=True, null=True, verbose_name="Комментарий администратора")
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Дата создания")
     updated_at = models.DateTimeField(auto_now=True, verbose_name="Дата обновления")
