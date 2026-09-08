@@ -278,6 +278,11 @@ if not DEBUG:
 # Telegram Administrator Integration
 TELEGRAM_BOT_USERNAME = os.environ.get('neondrop_admin', 'neondrop_admin').lstrip('@')
 
+# Google OAuth 2.0 Integration
+GOOGLE_CLIENT_ID = os.environ.get('GOOGLE_CLIENT_ID', '').strip().strip('"\'')
+GOOGLE_CLIENT_SECRET = os.environ.get('GOOGLE_CLIENT_SECRET', '').strip().strip('"\'')
+GOOGLE_OAUTH_REDIRECT_URI = os.environ.get('GOOGLE_OAUTH_REDIRECT_URI', '').strip()
+
 # Logging & Audit Configuration
 LOGS_DIR = BASE_DIR / 'logs'
 LOGS_DIR.mkdir(exist_ok=True)

@@ -25,18 +25,48 @@ class GoogleOAuthError(Exception):
 
 
 def get_google_client_id():
-    """Returns Google Client ID from environment."""
-    return os.environ.get('GOOGLE_CLIENT_ID', '').strip()
+    """Returns Google Client ID from environment or settings."""
+    val = (
+        os.environ.get('GOOGLE_CLIENT_ID')
+        or os.environ.get('GOOGLE_OAUTH_CLIENT_ID')
+        or os.environ.get('GOOGLE_CLIENTID')
+        or getattr(settings, 'GOOGLE_CLIENT_ID', '')
+    )
+    if not val:
+        for k, v in os.environ.items():
+            if k.strip().upper() in ('GOOGLE_CLIENT_ID', 'GOOGLE_OAUTH_CLIENT_ID', 'GOOGLE_CLIENTID'):
+                val = v
+                break
+    return str(val or '').strip().strip('"\'')
 
 
 def get_google_client_secret():
-    """Returns Google Client Secret from environment."""
-    return os.environ.get('GOOGLE_CLIENT_SECRET', '').strip()
+    """Returns Google Client Secret from environment or settings."""
+    val = (
+        os.environ.get('GOOGLE_CLIENT_SECRET')
+        or os.environ.get('GOOGLE_OAUTH_CLIENT_SECRET')
+        or os.environ.get('GOOGLE_CLIENTSECRET')
+        or getattr(settings, 'GOOGLE_CLIENT_SECRET', '')
+    )
+    if not val:
+        for k, v in os.environ.items():
+            if k.strip().upper() in ('GOOGLE_CLIENT_SECRET', 'GOOGLE_OAUTH_CLIENT_SECRET', 'GOOGLE_CLIENTSECRET'):
+                val = v
+                break
+    return str(val or '').strip().strip('"\'')
 
 
 def is_google_oauth_configured():
     """Checks whether both GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET are provided."""
-    return bool(get_google_client_id() and get_google_client_secret())
+    client_id = get_google_client_id()
+    client_secret = get_google_client_secret()
+    has_both = bool(client_id and client_secret)
+    if not has_both:
+        logger.info(
+            f"Google OAuth configuration status: client_id_present={bool(client_id)}, "
+            f"client_secret_present={bool(client_secret)}"
+        )
+    return has_both
 
 
 def get_google_redirect_uri(request):
