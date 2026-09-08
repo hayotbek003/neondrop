@@ -6,10 +6,17 @@ echo "====================================================="
 echo "  NEONDROP PRODUCTION STARTUP"
 echo "====================================================="
 
+# Step 0: Inspect active database engine & persistence status
+echo "==> Verifying database engine and persistence configuration..."
+python manage.py check_database_config
+
 # Run database migrations before launching web server
 echo "==> Running Django database migrations..."
 python manage.py migrate --noinput
 
+# Ensure persistent catalog and zero data loss on fresh PostgreSQL connections
+echo "==> Verifying case catalog persistence..."
+python manage.py ensure_persistent_data
 
 # Verify system integrity
 echo "==> Verifying system integrity..."

@@ -22,6 +22,15 @@
 {% endblock %}
 
 {% block userlinks %}
+{% if db_is_persistent %}
+<span style="background: rgba(16, 185, 129, 0.15); border: 1px solid #10b981; color: #34d399; padding: 3px 8px; border-radius: 6px; font-size: 11px; font-weight: 700; margin-right: 12px; display: inline-flex; align-items: center; gap: 4px;" title="PostgreSQL Database Connected: Data persists across all Render spin-downs">
+    <span>🗄️</span> PostgreSQL (Persistent)
+</span>
+{% else %}
+<span style="background: rgba(239, 68, 68, 0.2); border: 1px solid #ef4444; color: #f87171; padding: 3px 8px; border-radius: 6px; font-size: 11px; font-weight: 700; margin-right: 12px; display: inline-flex; align-items: center; gap: 4px;" title="SQLite on ephemeral disk: Set DATABASE_URL in Render Dashboard!">
+    <span>⚠️</span> SQLite (Ephemeral)
+</span>
+{% endif %}
 <a href="{% url 'admin:index' %}" style="color: #c084fc; font-weight: 700; margin-right: 14px; text-decoration: none; display: inline-flex; align-items: center; gap: 4px;">
     <span>⚡</span> Dashboard
 </a>

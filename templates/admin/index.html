@@ -38,6 +38,35 @@
         </div>
     </div>
 
+    <!-- DATABASE PERSISTENCE STATUS -->
+    <div style="background: {% if db_is_persistent %}rgba(16, 185, 129, 0.08){% else %}rgba(239, 68, 68, 0.1){% endif %}; border: 1px solid {% if db_is_persistent %}#10b981{% else %}#ef4444{% endif %}; border-radius: 10px; padding: 14px 20px; margin-bottom: 24px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+        <div style="display: flex; align-items: center; gap: 14px;">
+            <div style="font-size: 24px;">{% if db_is_persistent %}🗄️{% else %}⚠️{% endif %}</div>
+            <div>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <strong style="color: #f8fafc; font-size: 14px;">
+                        БАЗА ДАННЫХ: {{ db_engine_name }}
+                    </strong>
+                    <span style="background: {% if db_is_persistent %}#059669{% else %}#dc2626{% endif %}; color: #ffffff; font-size: 10px; font-weight: 800; padding: 2px 7px; border-radius: 4px; text-transform: uppercase;">
+                        {% if db_is_persistent %}PERSISTENT (НЕ УДАЛЯЕТСЯ ПРИ RESTART){% else %}EPHEMERAL (ОЧИЩАЕТСЯ ПРИ RESTART){% endif %}
+                    </span>
+                </div>
+                <div style="color: #94a3b8; font-size: 12px; margin-top: 3px;">
+                    {% if db_is_persistent %}
+                        Хост: <code style="color: #34d399;">{{ db_host_display }}</code> • Данные надежно сохраняются при любых перезапусках и снах сервиса на Render.
+                    {% else %}
+                        Внимание: локальный файл <code style="color: #f87171;">db.sqlite3</code> стирается Render Free при сне сервиса (15 минут неактивности). Подключите PostgreSQL через <code style="color: #38bdf8;">DATABASE_URL</code> в Render Dashboard!
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <div>
+            <a href="{% url 'admin_backup_restore' %}" style="background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.15); color: #f8fafc !important; font-size: 12px; font-weight: 700; text-decoration: none; padding: 6px 14px; border-radius: 6px; display: inline-flex; align-items: center; gap: 6px;">
+                <span>💾</span> Управление Backup
+            </a>
+        </div>
+    </div>
+
     <!-- QUICK ACTION NAVIGATION BUTTONS -->
     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; margin-bottom: 24px;">
         {% if request.user.is_superuser %}

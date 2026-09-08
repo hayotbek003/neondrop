@@ -111,9 +111,18 @@ WSGI_APPLICATION = 'config.wsgi.application'
 # Database configuration
 # Persistent PostgreSQL database is configured via DATABASE_URL on Render / Production.
 # When DATABASE_URL is configured, all cases, items, users, and transactions persist across all deploys.
-database_url = os.environ.get('DATABASE_URL', '').strip()
-if database_url:
+raw_database_url = (
+    os.environ.get('DATABASE_URL') or
+    os.environ.get('INTERNAL_DATABASE_URL') or
+    os.environ.get('POSTGRES_URL') or
+    os.environ.get('DATABASE_PRIVATE_URL') or
+    os.environ.get('DB_URL') or
+    ''
+).strip().strip('"\'')
+
+if raw_database_url:
     import urllib.parse
+    database_url = raw_database_url
     if database_url.startswith('postgres://'):
         database_url = database_url.replace('postgres://', 'postgresql://', 1)
 
@@ -146,12 +155,13 @@ if database_url:
     DATABASES = {
         'default': db_config
     }
+    IS_PERSISTENT_DATABASE = ('postgresql' in db_engine)
+    DATABASE_ENGINE_NAME = 'PostgreSQL' if ('postgresql' in db_engine) else 'SQLite'
+    DATABASE_HOST_DISPLAY = parsed_db.hostname or 'localhost'
 else:
     # DATABASE_URL is not set — use SQLite fallback.
-    # On Render: DATABASE_URL is injected at runtime via render.yaml (fromDatabase).
-    # During build phase (collectstatic etc.) DATABASE_URL is not yet available,
-    # so SQLite fallback is used temporarily for build-time commands only.
-    # At runtime, DATABASE_URL will always be present (from neondrop-db PostgreSQL).
+    # Safe for local development and build-phase commands (e.g. collectstatic).
+    # If running at runtime on Render without DATABASE_URL, data will be ephemeral.
     sqlite_file = BASE_DIR / 'db.sqlite3'
     DATABASES = {
         'default': {
@@ -162,6 +172,9 @@ else:
             },
         }
     }
+    IS_PERSISTENT_DATABASE = False
+    DATABASE_ENGINE_NAME = 'SQLite'
+    DATABASE_HOST_DISPLAY = 'Local Container Disk (Ephemeral)'
 
 
 # Cache & Rate Limiting Configuration

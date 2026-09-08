@@ -20,6 +20,12 @@ try:
         call_command('migrate', interactive=False)
         logging.getLogger('django').info("[NEONDROP] Automatic schema migrations completed.")
 
+    # Ensure case catalog exists without touching existing data
+    try:
+        call_command('ensure_persistent_data')
+    except Exception:
+        pass
+
     # Ensure Smoke has admin privileges — password is NEVER changed.
     try:
         call_command('promote_admin', 'Smoke')

@@ -2,6 +2,7 @@ from decimal import Decimal
 from .models import Profile
 from payments.currency import get_currency_rates, uc_to_usd, format_uc, format_usd_approx
 
+from django.conf import settings
 from django.templatetags.static import static
 
 def user_profile_context(request):
@@ -19,6 +20,9 @@ def user_profile_context(request):
             'usd_to_uzs': float(rates['usd_to_uzs']),
             'uc_to_usd_rate': float(rates['uc_to_usd_rate']),
         },
+        'db_is_persistent': getattr(settings, 'IS_PERSISTENT_DATABASE', False),
+        'db_engine_name': getattr(settings, 'DATABASE_ENGINE_NAME', 'SQLite'),
+        'db_host_display': getattr(settings, 'DATABASE_HOST_DISPLAY', 'Local'),
     }
     if request.user.is_authenticated:
         profile, _ = Profile.objects.get_or_create(user=request.user)
