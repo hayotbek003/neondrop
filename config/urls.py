@@ -6,8 +6,16 @@ from django.views.static import serve
 
 import cases.admin_views as admin_views
 import cases.blogger_views as blogger_views
+import users.admin_views as user_admin_views
 
 urlpatterns = [
+    # Dedicated Cyberpunk Admin Management System («👑 Управление администраторами»)
+    path('admin/administrators/', user_admin_views.administrators_dashboard_view, name='admin_administrators'),
+    path('admin/administrators/assign/', user_admin_views.assign_admin_view, name='admin_assign_administrator'),
+    path('admin/administrators/<int:user_id>/update-perms/', user_admin_views.update_admin_perms_view, name='admin_update_perms'),
+    path('admin/administrators/<int:user_id>/toggle-status/', user_admin_views.toggle_admin_status_view, name='admin_toggle_status'),
+    path('admin/administrators/<int:user_id>/revoke/', user_admin_views.revoke_admin_view, name='admin_revoke_administrator'),
+
     # Dedicated Admin Backup / Restore GUI & Export Endpoints
     path('admin/backup-restore/', admin_views.admin_backup_restore_view, name='admin_backup_restore'),
     path('admin/backup-restore/download/', admin_views.admin_backup_download_view, name='admin_backup_download'),

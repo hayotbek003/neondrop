@@ -1,0 +1,508 @@
+{% extends "admin/base_site.html" %}
+{% load i18n static %}
+
+{% block extrastyle %}
+{{ block.super }}
+<link rel="stylesheet" type="text/css" href="{% static 'css/admin_cyberpunk.css' %}">
+<style>
+.admin-mgmt-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding-bottom: 50px;
+}
+.cyber-card {
+    background: #0f172a;
+    border: 1px solid #1e293b;
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 24px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+}
+.perm-group-box {
+    background: #090d16;
+    border: 1px solid #1e293b;
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 14px;
+}
+.perm-group-title {
+    font-size: 13px;
+    font-weight: 800;
+    color: #38bdf8;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.perm-checkbox-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    margin-bottom: 10px;
+    padding: 8px 10px;
+    border-radius: 6px;
+    transition: background 0.15s ease;
+}
+.perm-checkbox-item:hover {
+    background: rgba(148, 163, 184, 0.05);
+}
+.perm-checkbox-item input[type="checkbox"] {
+    margin-top: 3px;
+    width: 16px;
+    height: 16px;
+    accent-color: #a855f7;
+    cursor: pointer;
+}
+.perm-checkbox-label {
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+}
+.perm-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: #f1f5f9;
+}
+.perm-desc {
+    font-size: 11px;
+    color: #94a3b8;
+    margin-top: 2px;
+}
+.modal-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(3, 7, 18, 0.85);
+    backdrop-filter: blur(4px);
+    z-index: 10000;
+    justify-content: center;
+    align-items: center;
+}
+.modal-content {
+    background: #0f172a;
+    border: 1px solid #a855f7;
+    box-shadow: 0 0 35px rgba(168, 85, 247, 0.35);
+    border-radius: 12px;
+    width: 90%;
+    max-width: 800px;
+    max-height: 90vh;
+    overflow-y: auto;
+    padding: 26px;
+    position: relative;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="admin-mgmt-container">
+
+    <!-- TOP BAR: HEADER & KPI CARDS -->
+    <div style="background: linear-gradient(135deg, #090d16 0%, #131b2e 100%); border: 1px solid #f59e0b; border-radius: 12px; padding: 22px 26px; margin-bottom: 24px; box-shadow: 0 4px 24px rgba(245, 158, 11, 0.2); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
+        <div>
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <span style="font-size: 26px;">👑</span>
+                <h1 style="margin: 0; color: #f8fafc; font-size: 22px; font-weight: 900; letter-spacing: 0.8px;">
+                    УПРАВЛЕНИЕ АДМИНИСТРАТОРАМИ
+                </h1>
+                <span style="background: rgba(245, 158, 11, 0.15); border: 1px solid #f59e0b; color: #fbbf24; font-size: 11px; font-weight: 800; padding: 3px 8px; border-radius: 4px; text-transform: uppercase;">
+                    ROOT SECURITY
+                </span>
+            </div>
+            <p style="margin: 6px 0 0 0; color: #94a3b8; font-size: 13px;">
+                Только Главный Администратор имеет доступ к назначению персонала и гранулярному распределению прав доступа.
+            </p>
+        </div>
+
+        <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+            <a href="{% url 'admin:index' %}" style="background: #1e293b; border: 1px solid #334155; color: #cbd5e1 !important; font-weight: 700; text-decoration: none; padding: 9px 16px; border-radius: 6px; font-size: 12px; display: inline-flex; align-items: center; gap: 6px;">
+                <span>⚡</span> В DASHBOARD
+            </a>
+            <a href="#new-admin-section" style="background: linear-gradient(135deg, #f59e0b, #d97706); color: #000000 !important; font-weight: 800; text-decoration: none; padding: 9px 18px; border-radius: 6px; font-size: 12px; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 2px 12px rgba(245, 158, 11, 0.4);">
+                <span>➕</span> НАЗНАЧИТЬ АДМИНИСТРАТОРА
+            </a>
+        </div>
+    </div>
+
+    <!-- STATS COUNTERS -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-bottom: 24px;">
+        <div class="cyber-card" style="margin-bottom: 0; padding: 18px; text-align: center; border-left: 4px solid #f59e0b;">
+            <div style="font-size: 11px; color: #94a3b8; text-transform: uppercase; font-weight: 700;">Всего администраторов</div>
+            <div style="font-size: 28px; font-weight: 900; color: #fbbf24; margin-top: 4px;">{{ total_admins_count }}</div>
+        </div>
+        <div class="cyber-card" style="margin-bottom: 0; padding: 18px; text-align: center; border-left: 4px solid #a855f7;">
+            <div style="font-size: 11px; color: #94a3b8; text-transform: uppercase; font-weight: 700;">Главные Администраторы (Superuser)</div>
+            <div style="font-size: 28px; font-weight: 900; color: #c084fc; margin-top: 4px;">{{ superusers_count }}</div>
+        </div>
+        <div class="cyber-card" style="margin-bottom: 0; padding: 18px; text-align: center; border-left: 4px solid #38bdf8;">
+            <div style="font-size: 11px; color: #94a3b8; text-transform: uppercase; font-weight: 700;">Назначенный персонал (Staff)</div>
+            <div style="font-size: 28px; font-weight: 900; color: #38bdf8; margin-top: 4px;">{{ staff_count }}</div>
+        </div>
+    </div>
+
+    <!-- CARD 1: APPOINT NEW ADMINISTRATOR -->
+    <div id="new-admin-section" class="cyber-card" style="border-top: 3px solid #f59e0b;">
+        <h3 style="margin: 0 0 16px 0; font-size: 16px; font-weight: 800; color: #f8fafc; display: flex; align-items: center; gap: 8px;">
+            <span>➕</span> Назначение нового администратора
+        </h3>
+
+        <!-- Search user candidates -->
+        <form method="get" action="{% url 'admin_administrators' %}" style="display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap;">
+            <div style="flex: 1; min-width: 250px;">
+                <input type="text" name="user_search" value="{{ candidate_q }}" placeholder="Поиск пользователя по логину, email или ID..." style="width: 100%; padding: 10px 14px; background: #090d16; border: 1px solid #334155; border-radius: 6px; color: #f8fafc; font-size: 13px;">
+            </div>
+            <button type="submit" class="button" style="background: #334155 !important; padding: 10px 20px !important;">
+                🔍 Найти пользователя
+            </button>
+            {% if candidate_q %}
+            <a href="{% url 'admin_administrators' %}" class="button" style="background: transparent !important; border: 1px solid #475569 !important; padding: 10px 14px !important;">
+                Сброс
+            </a>
+            {% endif %}
+        </form>
+
+        {% if candidate_q and not candidate_users %}
+        <div style="background: rgba(239, 68, 68, 0.1); border: 1px solid #ef4444; border-radius: 8px; padding: 14px; color: #fca5a5; font-size: 13px; margin-bottom: 20px;">
+            Пользователи не найдены или уже являются администраторами.
+        </div>
+        {% endif %}
+
+        {% if candidate_users %}
+        <div style="margin-bottom: 24px;">
+            <div style="font-size: 12px; color: #94a3b8; font-weight: 700; margin-bottom: 10px; text-transform: uppercase;">
+                Найденные кандидаты:
+            </div>
+            <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                {% for cand in candidate_users %}
+                <button type="button" onclick="selectCandidate('{{ cand.id }}', '{{ cand.username }}', '{{ cand.email }}', '{{ cand.profile.balance }}')" style="background: #090d16; border: 1px solid #334155; border-radius: 8px; padding: 10px 14px; text-align: left; cursor: pointer; display: flex; align-items: center; gap: 10px; transition: border-color 0.2s ease;">
+                    <span style="background: #1e293b; color: #38bdf8; font-weight: 800; font-size: 11px; padding: 3px 6px; border-radius: 4px;">ID {{ cand.id }}</span>
+                    <div>
+                        <strong style="color: #f8fafc; font-size: 13px;">{{ cand.username }}</strong>
+                        <div style="font-size: 11px; color: #94a3b8;">{{ cand.email|default:"нет email" }} &bull; {{ cand.profile.balance }} UC</div>
+                    </div>
+                </button>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Assign Form -->
+        <form method="post" action="{% url 'admin_assign_administrator' %}" id="assign-admin-form">
+            {% csrf_token %}
+            <input type="hidden" name="user_id" id="assign-user-id" required>
+
+            <div id="selected-user-box" style="display: none; background: rgba(245, 158, 11, 0.08); border: 1px solid rgba(245, 158, 11, 0.4); border-radius: 8px; padding: 14px; margin-bottom: 20px;">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <span style="font-size: 11px; color: #fbbf24; text-transform: uppercase; font-weight: 800;">Выбранный кандидат:</span>
+                        <div style="font-size: 16px; font-weight: 900; color: #f8fafc; margin-top: 2px;" id="selected-user-name"></div>
+                        <div style="font-size: 12px; color: #cbd5e1;" id="selected-user-meta"></div>
+                    </div>
+                    <button type="button" onclick="clearCandidate()" style="background: transparent; border: 1px solid #64748b; color: #94a3b8; font-size: 11px; padding: 4px 10px; border-radius: 4px; cursor: pointer;">
+                        ✕ Отменить
+                    </button>
+                </div>
+            </div>
+
+            <div id="assign-perms-container" style="display: none;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+                    <div style="font-size: 14px; font-weight: 800; color: #f8fafc;">
+                        Настройка прав доступа (20 полномочий):
+                    </div>
+                    <div style="display: flex; gap: 8px;">
+                        <button type="button" onclick="toggleAllCheckboxes('#assign-perms-container', true)" style="background: #1e293b; border: 1px solid #334155; color: #38bdf8; font-size: 11px; padding: 4px 10px; border-radius: 4px; cursor: pointer; font-weight: 700;">
+                            ✓ Выбрать все
+                        </button>
+                        <button type="button" onclick="toggleAllCheckboxes('#assign-perms-container', false)" style="background: #1e293b; border: 1px solid #334155; color: #94a3b8; font-size: 11px; padding: 4px 10px; border-radius: 4px; cursor: pointer; font-weight: 700;">
+                            ✕ Снять все
+                        </button>
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 14px;">
+                    {% for group_title, perms in permission_groups %}
+                    <div class="perm-group-box">
+                        <div class="perm-group-title">{{ group_title }}</div>
+                        {% for perm_code, perm_name, perm_desc in perms %}
+                        <label class="perm-checkbox-item">
+                            <input type="checkbox" name="perm_{{ perm_code }}" value="1">
+                            <div class="perm-checkbox-label">
+                                <span class="perm-title">{{ perm_name }}</span>
+                                <span class="perm-desc">{{ perm_desc }}</span>
+                            </div>
+                        </label>
+                        {% endfor %}
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <div style="margin-top: 20px;">
+                    <button type="submit" class="button" style="background: linear-gradient(135deg, #f59e0b, #d97706) !important; color: #000000 !important; font-weight: 900; font-size: 13px; padding: 12px 28px !important; box-shadow: 0 4px 16px rgba(245, 158, 11, 0.4);">
+                        👑 НАЗНАЧИТЬ АДМИНИСТРАТОРОМ
+                    </button>
+                </div>
+            </div>
+
+        </form>
+    </div>
+
+    <!-- CARD 2: LIST OF ACTIVE ADMINISTRATORS -->
+    <div class="cyber-card">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; flex-wrap: wrap; gap: 12px;">
+            <h3 style="margin: 0; font-size: 16px; font-weight: 800; color: #f8fafc; display: flex; align-items: center; gap: 8px;">
+                <span>🛡️</span> Список действующих администраторов ({{ admins_data|length }})
+            </h3>
+
+            <!-- Search administrators -->
+            <form method="get" action="{% url 'admin_administrators' %}" style="display: flex; gap: 8px;">
+                <input type="text" name="q" value="{{ q }}" placeholder="Поиск администратора..." style="padding: 6px 12px; background: #090d16; border: 1px solid #334155; border-radius: 6px; color: #f8fafc; font-size: 12px; width: 200px;">
+                <button type="submit" class="button" style="background: #334155 !important; padding: 6px 12px !important; font-size: 12px !important;">
+                    Найти
+                </button>
+                {% if q %}
+                <a href="{% url 'admin_administrators' %}" class="button" style="background: transparent !important; border: 1px solid #475569 !important; padding: 6px 10px !important; font-size: 12px !important;">
+                    ✕
+                </a>
+                {% endif %}
+            </form>
+        </div>
+
+        <div style="overflow-x: auto; border: 1px solid #1e293b; border-radius: 8px;">
+            <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 13px;">
+                <thead>
+                    <tr style="background: #1e293b; color: #94a3b8; font-size: 11px; text-transform: uppercase;">
+                        <th style="padding: 12px 16px;">Пользователь</th>
+                        <th style="padding: 12px 16px;">Роль</th>
+                        <th style="padding: 12px 16px;">Права доступа</th>
+                        <th style="padding: 12px 16px; text-align: center;">Статус</th>
+                        <th style="padding: 12px 16px; text-align: right;">Действия</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in admins_data %}
+                    <tr style="border-bottom: 1px solid #1e293b; background: {% if forloop.counter|divisibleby:2 %}#090d16{% else %}#0f172a{% endif %};">
+                        
+                        <!-- User column -->
+                        <td style="padding: 12px 16px;">
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <img src="{{ row.user.profile.display_avatar }}" style="width: 36px; height: 36px; border-radius: 50%; object-fit: cover; border: 1px solid #334155; background: #000;">
+                                <div>
+                                    <div style="font-weight: 800; color: #f8fafc; font-size: 14px;">
+                                        {{ row.user.username }}
+                                        {% if row.is_self %}
+                                        <span style="font-size: 10px; background: rgba(56, 189, 248, 0.15); color: #38bdf8; border: 1px solid #38bdf8; padding: 1px 5px; border-radius: 4px; font-weight: 700; margin-left: 4px;">ВЫ</span>
+                                        {% endif %}
+                                    </div>
+                                    <div style="font-size: 11px; color: #94a3b8;">
+                                        ID: {{ row.user.id }} &bull; {{ row.user.email|default:"нет email" }}
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+
+                        <!-- Role column -->
+                        <td style="padding: 12px 16px;">
+                            <span class="{{ row.role_badge }}">
+                                {{ row.role_label }}
+                            </span>
+                        </td>
+
+                        <!-- Perms column -->
+                        <td style="padding: 12px 16px;">
+                            {% if row.user.is_superuser %}
+                            <div style="display: flex; align-items: center; gap: 6px;">
+                                <span style="color: #ffd700; font-weight: 800; font-size: 13px;">⭐ Полный доступ (Root)</span>
+                                <span style="font-size: 11px; color: #94a3b8;">(все 20 прав)</span>
+                            </div>
+                            {% else %}
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <strong style="color: #38bdf8; font-size: 14px;">{{ row.active_perms_count }} / {{ row.total_perms_count }}</strong>
+                                <span style="font-size: 11px; color: #94a3b8;">полномочий</span>
+                                {% if row.active_perms %}
+                                <button type="button" onclick="openEditPermsModal('{{ row.user.id }}')" style="background: transparent; border: none; color: #c084fc; cursor: pointer; text-decoration: underline; font-size: 11px; padding: 0;">
+                                    показать
+                                </button>
+                                {% endif %}
+                            </div>
+                            {% endif %}
+                        </td>
+
+                        <!-- Status column -->
+                        <td style="padding: 12px 16px; text-align: center;">
+                            {% if row.user.is_active %}
+                            <span class="badge-neon-green">АКТИВЕН</span>
+                            {% else %}
+                            <span class="badge-neon-red">ЗАБЛОКИРОВАН</span>
+                            {% endif %}
+                        </td>
+
+                        <!-- Actions column -->
+                        <td style="padding: 12px 16px; text-align: right;">
+                            <div style="display: inline-flex; gap: 6px; align-items: center;">
+                                
+                                <!-- Edit Permissions Button -->
+                                {% if not row.user.is_superuser %}
+                                <button type="button" onclick="openEditPermsModal('{{ row.user.id }}')" class="button" style="background: #1e293b !important; border: 1px solid #334155 !important; padding: 5px 10px !important; font-size: 11px !important; color: #f1f5f9 !important;">
+                                    ✏️ Права
+                                </button>
+                                {% endif %}
+
+                                <!-- Block / Unblock Button -->
+                                {% if not row.is_self and not row.user.is_superuser %}
+                                <form method="post" action="{% url 'admin_toggle_status' row.user.id %}" style="display: inline;" onsubmit="return confirm('Вы уверены, что хотите изменить статус активности этого администратора?');">
+                                    {% csrf_token %}
+                                    {% if row.user.is_active %}
+                                    <button type="submit" class="button" style="background: rgba(239, 68, 68, 0.15) !important; border: 1px solid #ef4444 !important; color: #f87171 !important; padding: 5px 9px !important; font-size: 11px !important;">
+                                        🔒 Блок
+                                    </button>
+                                    {% else %}
+                                    <button type="submit" class="button" style="background: rgba(34, 197, 94, 0.15) !important; border: 1px solid #22c55e !important; color: #4ade80 !important; padding: 5px 9px !important; font-size: 11px !important;">
+                                        🔓 Разблок
+                                    </button>
+                                    {% endif %}
+                                </form>
+                                {% endif %}
+
+                                <!-- Revoke Admin Button -->
+                                {% if not row.is_self and not row.user.is_superuser %}
+                                <form method="post" action="{% url 'admin_revoke_administrator' row.user.id %}" style="display: inline;" onsubmit="return confirm('ВНИМАНИЕ! Вы уверены, что хотите полностью отозвать права администратора у {{ row.user.username }}?');">
+                                    {% csrf_token %}
+                                    <button type="submit" class="button" style="background: linear-gradient(135deg, #b91c1c, #dc2626) !important; color: #ffffff !important; padding: 5px 9px !important; font-size: 11px !important;">
+                                        🗑️ Снять
+                                    </button>
+                                </form>
+                                {% endif %}
+
+                                {% if row.is_self %}
+                                <span style="color: #64748b; font-size: 11px; font-style: italic;">(Текущий профиль)</span>
+                                {% elif row.user.is_superuser %}
+                                <span style="color: #ffd700; font-size: 11px; font-weight: 700;">Root</span>
+                                {% endif %}
+
+                            </div>
+                        </td>
+
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+
+<!-- MODAL: EDIT ADMINISTRATOR PERMISSIONS -->
+{% for row in admins_data %}
+{% if not row.user.is_superuser %}
+<div id="modal-perms-{{ row.user.id }}" class="modal-overlay">
+    <div class="modal-content">
+        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #1e293b; padding-bottom: 16px; margin-bottom: 20px;">
+            <div>
+                <h2 style="margin: 0; font-size: 18px; font-weight: 900; color: #f8fafc; display: flex; align-items: center; gap: 8px;">
+                    <span>✏️</span> Права администратора: <span style="color: #a855f7;">{{ row.user.username }}</span>
+                </h2>
+                <div style="font-size: 12px; color: #94a3b8; margin-top: 3px;">
+                    ID: {{ row.user.id }} &bull; {{ row.user.email|default:"нет email" }}
+                </div>
+            </div>
+            <button type="button" onclick="closeEditPermsModal('{{ row.user.id }}')" style="background: transparent; border: none; font-size: 22px; color: #94a3b8; cursor: pointer;">
+                ✕
+            </button>
+        </div>
+
+        <form method="post" action="{% url 'admin_update_perms' row.user.id %}">
+            {% csrf_token %}
+
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                <span style="font-size: 12px; color: #cbd5e1;">Выберите активные полномочия для данного сотрудника:</span>
+                <div style="display: flex; gap: 8px;">
+                    <button type="button" onclick="toggleAllCheckboxes('#modal-perms-{{ row.user.id }}', true)" style="background: #1e293b; border: 1px solid #334155; color: #38bdf8; font-size: 11px; padding: 4px 10px; border-radius: 4px; cursor: pointer; font-weight: 700;">
+                        ✓ Выбрать все
+                    </button>
+                    <button type="button" onclick="toggleAllCheckboxes('#modal-perms-{{ row.user.id }}', false)" style="background: #1e293b; border: 1px solid #334155; color: #94a3b8; font-size: 11px; padding: 4px 10px; border-radius: 4px; cursor: pointer; font-weight: 700;">
+                        ✕ Снять все
+                    </button>
+                </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 14px; max-height: 60vh; overflow-y: auto; padding-right: 6px;">
+                {% for group_title, perms in permission_groups %}
+                <div class="perm-group-box">
+                    <div class="perm-group-title">{{ group_title }}</div>
+                    {% for perm_code, perm_name, perm_desc in perms %}
+                    <label class="perm-checkbox-item">
+                        <input type="checkbox" name="perm_{{ perm_code }}" value="1" {% for p_code, p_flag in row.flags.items %}{% if p_code == perm_code and p_flag %}checked{% endif %}{% endfor %}>
+                        <div class="perm-checkbox-label">
+                            <span class="perm-title">{{ perm_name }}</span>
+                            <span class="perm-desc">{{ perm_desc }}</span>
+                        </div>
+                    </label>
+                    {% endfor %}
+                </div>
+                {% endfor %}
+            </div>
+
+            <div style="display: flex; justify-content: flex-end; gap: 10px; border-top: 1px solid #1e293b; padding-top: 18px; margin-top: 20px;">
+                <button type="button" onclick="closeEditPermsModal('{{ row.user.id }}')" class="button" style="background: #1e293b !important; border: 1px solid #334155 !important;">
+                    Отмена
+                </button>
+                <button type="submit" class="button" style="background: linear-gradient(135deg, #7e22ce, #a855f7) !important; color: #ffffff !important; font-weight: 800;">
+                    💾 Сохранить права
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endif %}
+{% endfor %}
+
+<script>
+function selectCandidate(id, username, email, balance) {
+    document.getElementById('assign-user-id').value = id;
+    document.getElementById('selected-user-name').innerText = username;
+    document.getElementById('selected-user-meta').innerText = 'ID: ' + id + ' • Email: ' + (email || 'нет') + ' • Баланс: ' + balance + ' UC';
+    document.getElementById('selected-user-box').style.display = 'block';
+    document.getElementById('assign-perms-container').style.display = 'block';
+}
+
+function clearCandidate() {
+    document.getElementById('assign-user-id').value = '';
+    document.getElementById('selected-user-box').style.display = 'none';
+    document.getElementById('assign-perms-container').style.display = 'none';
+}
+
+function toggleAllCheckboxes(containerSelector, checked) {
+    const container = document.querySelector(containerSelector);
+    if (!container) return;
+    const checkboxes = container.querySelectorAll('input[type="checkbox"]');
+    checkboxes.forEach(cb => {
+        cb.checked = checked;
+    });
+}
+
+function openEditPermsModal(userId) {
+    const modal = document.getElementById('modal-perms-' + userId);
+    if (modal) {
+        modal.style.display = 'flex';
+    }
+}
+
+function closeEditPermsModal(userId) {
+    const modal = document.getElementById('modal-perms-' + userId);
+    if (modal) {
+        modal.style.display = 'none';
+    }
+}
+
+// Close modals when clicking outside
+window.addEventListener('click', function(event) {
+    if (event.target.classList.contains('modal-overlay')) {
+        event.target.style.display = 'none';
+    }
+});
+</script>
+{% endblock %}

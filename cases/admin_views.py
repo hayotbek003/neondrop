@@ -1,4 +1,4 @@
-﻿import os
+import os
 import csv
 import tempfile
 from pathlib import Path
@@ -8,7 +8,7 @@ from decimal import Decimal
 from django.shortcuts import render, redirect
 from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib import messages
-from django.http import HttpResponse, FileResponse, Http404
+from django.http import HttpResponse, FileResponse, Http404, HttpResponseForbidden
 from django.views.decorators.http import require_http_methods
 from django.conf import settings
 from django.contrib.auth.models import User
@@ -23,6 +23,7 @@ from .backup_restore_service import (
     BackupRestoreError,
     MODELS_EXPORT_ORDER,
 )
+from users.models import has_admin_perm
 
 
 @staff_member_required
@@ -35,6 +36,9 @@ def admin_backup_restore_view(request):
     - Safe upload and non-destructive preview inspection
     - Transactional confirmation of restoration with pre-restore auto-backup
     """
+    if not has_admin_perm(request.user, 'can_view_backup'):
+        return HttpResponseForbidden("⛔ Ошибка доступа: у вас нет прав на просмотр резервных копий (can_view_backup).")
+
     context = {
         'title': 'Backup / Restore данных NEONDROP',
         'app_label': 'cases',
@@ -54,6 +58,10 @@ def admin_backup_restore_view(request):
 
     # Action 1: Upload and Preview
     if request.method == 'POST' and request.POST.get('action') == 'inspect':
+        if not has_admin_perm(request.user, 'can_restore_backup'):
+            messages.error(request, "⛔ Ошибка доступа: у вас нет прав на восстановление базы данных (can_restore_backup).")
+            return render(request, 'admin/backup_restore.html', context)
+
         uploaded_file = request.FILES.get('backup_file')
         if not uploaded_file:
             messages.error(request, "Пожалуйста, выберите .zip файл резервной копии.")
@@ -88,6 +96,10 @@ def admin_backup_restore_view(request):
 
     # Action 2: Confirm Restore
     elif request.method == 'POST' and request.POST.get('action') == 'confirm':
+        if not has_admin_perm(request.user, 'can_restore_backup'):
+            messages.error(request, "⛔ Ошибка доступа: у вас нет прав на восстановление базы данных (can_restore_backup).")
+            return render(request, 'admin/backup_restore.html', context)
+
         temp_file_str = request.session.get('pending_restore_path')
         if not temp_file_str or not Path(temp_file_str).exists():
             # Check if file was uploaded directly in the confirm form
@@ -159,6 +171,9 @@ def admin_backup_download_view(request):
     neondrop_backup_YYYY-MM-DD_HH-MM-SS.zip
     Contains database.json, metadata.json, and all media/ files.
     """
+    if not has_admin_perm(request.user, 'can_create_backup'):
+        return HttpResponseForbidden("⛔ Ошибка доступа: у вас нет прав на скачивание/создание резервной копии (can_create_backup).")
+
     try:
         archive_path, metadata = create_full_backup_zip(include_media=True)
         response = FileResponse(

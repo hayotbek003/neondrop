@@ -71,6 +71,9 @@ def parse_date_filters(request):
     return date_from, date_to, period, period_title, date_from_str, date_to_str
 
 
+from users.models import has_admin_perm
+
+
 @staff_member_required
 def blogger_dashboard_view(request):
     """
@@ -80,6 +83,9 @@ def blogger_dashboard_view(request):
     - Monthly breakdown with payout modal
     - Payout history
     """
+    if not has_admin_perm(request.user, 'can_view_blogger_stats'):
+        return HttpResponseForbidden("⛔ Ошибка доступа: у вас нет прав на просмотр аналитики блогеров (can_view_blogger_stats).")
+
     date_from, date_to, period, period_title, date_from_str, date_to_str = parse_date_filters(request)
 
     promo_codes = PromoCode.objects.all().order_by('code')
@@ -223,6 +229,8 @@ def export_blogger_stats_csv_view(request):
     Блогер, Промокод, Период, Пользователи, Пополнения, Расходы на кейсы,
     Стоимость выпавших предметов, Net Loss, Процент, Начисление, Выплачено, Остаток.
     """
+    if not has_admin_perm(request.user, 'can_view_blogger_stats'):
+        return HttpResponseForbidden("⛔ Ошибка доступа: у вас нет прав на экспорт статистики блогеров (can_view_blogger_stats).")
     date_from, date_to, period, period_title, _, _ = parse_date_filters(request)
     promo_codes = PromoCode.objects.all().order_by('code')
 

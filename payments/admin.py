@@ -9,11 +9,64 @@ from django.contrib.admin.views.decorators import staff_member_required
 
 from .models import Transaction, CurrencySetting
 from .services import modify_user_balance
+from users.models import has_admin_perm
+
+
+def _link_user_promo_code(user, promo_code, admin_user, tx=None):
+    """
+    Links user to promo_code / blogger on manual deposit.
+    - Commission from deposit itself is strictly 0 UC (only Net Loss generates payout).
+    - If user already has a linked promo code:
+      - Superuser can re-bind with explicit audit log.
+      - Regular staff cannot re-bind (original code is preserved).
+    """
+    from cases.models import PromoCodeUse
+    import logging
+    audit_logger = logging.getLogger('neondrop.audit')
+    sec_logger = logging.getLogger('neondrop.security')
+
+    if not promo_code:
+        return
+
+    existing_use = PromoCodeUse.objects.filter(user=user).select_related('promo_code').order_by('-used_at').first()
+
+    if not existing_use:
+        # First time linking user to promo code on deposit
+        PromoCodeUse.objects.create(
+            user=user,
+            promo_code=promo_code,
+            bonus_amount=Decimal('0.00'),
+            related_transaction=tx
+        )
+        audit_logger.info(f"PROMO_CODE_LINKED_ON_DEPOSIT: user={user.username} promo_code={promo_code.code} admin={admin_user.username}")
+    elif existing_use.promo_code_id == promo_code.id:
+        # Already linked to this exact promo code
+        audit_logger.info(f"PROMO_CODE_ALREADY_LINKED: user={user.username} promo_code={promo_code.code}")
+    else:
+        # Re-binding attempt: user already has a different linked promo code
+        if admin_user.is_superuser:
+            old_code = existing_use.promo_code.code
+            PromoCodeUse.objects.create(
+                user=user,
+                promo_code=promo_code,
+                bonus_amount=Decimal('0.00'),
+                related_transaction=tx
+            )
+            audit_logger.info(f"PROMO_CODE_REBIND: user={user.username} old={old_code} new={promo_code.code} admin={admin_user.username}")
+        else:
+            sec_logger.warning(
+                f"PROMO_CODE_REBIND_DENIED: Staff user {admin_user.username} attempted to rebind user {user.username} "
+                f"from {existing_use.promo_code.code} to {promo_code.code}. Kept original code."
+            )
 
 
 @admin.action(description='✅ Подтвердить выбранные заявки и начислить баланс')
 def approve_deposits(modeladmin, request, queryset):
-    from cases.models import PromoCodeUse
+    if not has_admin_perm(request.user, 'can_approve_deposits'):
+        if modeladmin:
+            modeladmin.message_user(request, "⛔ Ошибка доступа: у вас нет прав на подтверждение пополнений (can_approve_deposits).", level=messages.ERROR)
+        return
+
     approved_count = 0
     for tx in queryset.filter(status='pending'):
         try:
@@ -29,14 +82,7 @@ def approve_deposits(modeladmin, request, queryset):
 
                     # Associate user with promo code / blogger if specified
                     if tx.promo_code:
-                        PromoCodeUse.objects.get_or_create(
-                            user=tx.user,
-                            promo_code=tx.promo_code,
-                            defaults={
-                                'bonus_amount': Decimal('0.00'),
-                                'related_transaction': tx,
-                            }
-                        )
+                        _link_user_promo_code(user=tx.user, promo_code=tx.promo_code, admin_user=request.user, tx=tx)
                 tx.status = 'completed'
                 tx.save(update_fields=['status', 'balance_before', 'balance_after', 'description', 'updated_at'])
                 approved_count += 1
@@ -50,6 +96,11 @@ def approve_deposits(modeladmin, request, queryset):
 
 @admin.action(description='❌ Отклонить выбранные заявки (с возвратом средств)')
 def reject_deposits(modeladmin, request, queryset):
+    if not (has_admin_perm(request.user, 'can_approve_withdrawals') or has_admin_perm(request.user, 'can_approve_deposits')):
+        if modeladmin:
+            modeladmin.message_user(request, "⛔ Ошибка доступа: у вас нет прав на отклонение/обработку заявок.", level=messages.ERROR)
+        return
+
     rejected_count = 0
     for tx in queryset.filter(status='pending'):
         try:
@@ -86,6 +137,54 @@ class TransactionAdmin(admin.ModelAdmin):
     search_fields = ('user__username', 'user__email', 'promo_code__code', 'promo_code__blogger_name', 'idempotency_key', 'reference_id', 'description')
     autocomplete_fields = ('user', 'promo_code')
     readonly_fields = ('created_at', 'updated_at', 'balance_before', 'balance_after', 'ip_address')
+    actions = [approve_deposits, reject_deposits]
+    ordering = ('-created_at',)
+
+    def has_view_permission(self, request, obj=None):
+        if request.user.is_superuser:
+            return True
+        return has_admin_perm(request.user, 'can_view_deposits') or has_admin_perm(request.user, 'can_view_withdrawals')
+
+    def has_change_permission(self, request, obj=None):
+        if request.user.is_superuser:
+            return True
+        return has_admin_perm(request.user, 'can_approve_deposits') or has_admin_perm(request.user, 'can_approve_withdrawals')
+
+    def has_add_permission(self, request):
+        if request.user.is_superuser:
+            return True
+        return has_admin_perm(request.user, 'can_approve_deposits')
+
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        if request.user.is_superuser:
+            return qs
+        can_dep = has_admin_perm(request.user, 'can_view_deposits')
+        can_wdr = has_admin_perm(request.user, 'can_view_withdrawals')
+        if can_dep and can_wdr:
+            return qs
+        if can_dep:
+            return qs.exclude(transaction_type__icontains='withdraw')
+        if can_wdr:
+            return qs.filter(transaction_type__icontains='withdraw')
+        return qs.none()
+
+    def save_model(self, request, obj, form, change):
+        is_new = obj.pk is None
+        old_obj = Transaction.objects.filter(pk=obj.pk).first() if not is_new else None
+
+        if obj.transaction_type == 'deposit' and obj.status == 'completed':
+            was_already_completed = old_obj and old_obj.status == 'completed'
+            if not was_already_completed:
+                profile = obj.user.profile
+                obj.balance_before = profile.balance
+                profile.balance += obj.amount
+                profile.save(update_fields=['balance'])
+                obj.balance_after = profile.balance
+                obj.description = f"{obj.description or ''} (Вручную админом: {request.user.username})".strip()
+                if obj.promo_code:
+                    _link_user_promo_code(user=obj.user, promo_code=obj.promo_code, admin_user=request.user, tx=obj)
+        super().save_model(request, obj, form, change)
     actions = [approve_deposits, reject_deposits]
     ordering = ('-created_at',)
 
@@ -155,7 +254,10 @@ class TransactionAdmin(admin.ModelAdmin):
         return custom_urls + urls
 
     def approve_single_tx(self, request, tx_id):
-        from cases.models import PromoCodeUse
+        if not has_admin_perm(request.user, 'can_approve_deposits'):
+            messages.error(request, "⛔ Ошибка доступа: у вас нет прав на подтверждение пополнений (can_approve_deposits).")
+            return redirect('admin:payments_transaction_changelist')
+
         tx = get_object_or_404(Transaction, id=tx_id)
         if tx.status == 'pending':
             try:
@@ -170,14 +272,7 @@ class TransactionAdmin(admin.ModelAdmin):
 
                         # Associate user with promo code / blogger if specified
                         if tx.promo_code:
-                            PromoCodeUse.objects.get_or_create(
-                                user=tx.user,
-                                promo_code=tx.promo_code,
-                                defaults={
-                                    'bonus_amount': Decimal('0.00'),
-                                    'related_transaction': tx,
-                                }
-                            )
+                            _link_user_promo_code(user=tx.user, promo_code=tx.promo_code, admin_user=request.user, tx=tx)
                     tx.status = 'completed'
                     tx.save(update_fields=['status', 'balance_before', 'balance_after', 'description', 'updated_at'])
                     messages.success(request, f"Заявка #{tx.id} успешно одобрена! Баланс пользователя пополнен.")
@@ -186,6 +281,10 @@ class TransactionAdmin(admin.ModelAdmin):
         return redirect('admin:payments_transaction_changelist')
 
     def reject_single_tx(self, request, tx_id):
+        if not (has_admin_perm(request.user, 'can_approve_withdrawals') or has_admin_perm(request.user, 'can_approve_deposits')):
+            messages.error(request, "⛔ Ошибка доступа: у вас нет прав на отклонение заявок.")
+            return redirect('admin:payments_transaction_changelist')
+
         tx = get_object_or_404(Transaction, id=tx_id)
         if tx.status == 'pending':
             try:

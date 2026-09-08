@@ -65,7 +65,7 @@ def register_view(request):
             login(request, login_target, backend='users.backends.CaseInsensitiveModelBackend')
             request.session.set_expiry(getattr(settings, 'SESSION_COOKIE_AGE', 2592000))
             
-            messages.success(request, f"Добро пожаловать в NEONDROP, {user.username}! Вам начислен приветственный баланс $100.00.")
+            messages.success(request, f"Добро пожаловать в NEONDROP, {user.username}! Вам начислен приветственный баланс 5.00 UC.")
             return redirect('cases:home')
         else:
             ip = get_client_ip(request)

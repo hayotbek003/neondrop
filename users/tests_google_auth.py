@@ -39,7 +39,7 @@ class GoogleAuthAndRegistrationTests(TestCase):
         self.assertEqual(int(self.client.session.get('_auth_user_id')), user.id)
 
         # Welcome balance must be credited
-        self.assertEqual(user.profile.balance, Decimal('100.00'))
+        self.assertEqual(user.profile.balance, Decimal('5.00'))
         self.assertEqual(user.profile.telegram_username, '@prowler')
 
     def test_standard_username_and_email_login(self):
@@ -172,7 +172,7 @@ class GoogleAuthAndRegistrationTests(TestCase):
 
         # Check profile balance
         user.profile.refresh_from_db()
-        self.assertEqual(user.profile.balance, Decimal('100.00'))
+        self.assertEqual(user.profile.balance, Decimal('5.00'))
         self.assertEqual(user.profile.avatar_url, 'https://lh3.googleusercontent.com/avatar.jpg')
 
         # Check session

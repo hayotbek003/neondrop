@@ -1,13 +1,30 @@
-﻿from decimal import Decimal
+from decimal import Decimal
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.contrib.auth.models import User
 from django.utils.html import format_html
 
-from .models import Profile, GoogleAccount
+from .models import Profile, GoogleAccount, AdminPermissionProfile, has_admin_perm
 from inventory.models import InventoryItem
 from cases.models import Opening, PromoCodeUse
 from payments.models import Transaction
+
+
+class AdminPermissionProfileInline(admin.StackedInline):
+    model = AdminPermissionProfile
+    can_delete = False
+    extra = 0
+    verbose_name_plural = '👑 Права администратора (Cyberpunk Access)'
+    classes = ('collapse',)
+
+    def has_change_permission(self, request, obj=None):
+        return request.user.is_superuser
+
+    def has_add_permission(self, request, obj=None):
+        return request.user.is_superuser
+
+    def has_delete_permission(self, request, obj=None):
+        return request.user.is_superuser
 
 
 class ProfileInline(admin.StackedInline):
@@ -100,6 +117,7 @@ class UserPromoCodeUseInline(admin.TabularInline):
 
 class UserAdmin(BaseUserAdmin):
     inlines = (
+        AdminPermissionProfileInline,
         ProfileInline,
         GoogleAccountInline,
         UserInventoryInline,
@@ -114,6 +132,22 @@ class UserAdmin(BaseUserAdmin):
     list_filter = ('is_staff', 'is_superuser', 'is_active', 'date_joined')
     search_fields = ('username', 'email', 'profile__telegram_username')
     ordering = ('-date_joined',)
+
+    def has_view_permission(self, request, obj=None):
+        if request.user.is_superuser:
+            return True
+        return has_admin_perm(request.user, 'can_view_users')
+
+    def has_change_permission(self, request, obj=None):
+        if request.user.is_superuser:
+            return True
+        # Staff users cannot edit superuser accounts!
+        if obj and obj.is_superuser:
+            return False
+        return has_admin_perm(request.user, 'can_edit_users')
+
+    def has_delete_permission(self, request, obj=None):
+        return request.user.is_superuser
 
     def get_balance(self, instance):
         if hasattr(instance, 'profile') and instance.profile:
@@ -154,6 +188,21 @@ class ProfileAdmin(admin.ModelAdmin):
     search_fields = ('user__username', 'user__email', 'telegram_username')
     list_filter = ('created_at',)
     ordering = ('-created_at',)
+
+    def has_view_permission(self, request, obj=None):
+        if request.user.is_superuser:
+            return True
+        return has_admin_perm(request.user, 'can_view_users')
+
+    def has_change_permission(self, request, obj=None):
+        if request.user.is_superuser:
+            return True
+        if obj and obj.user and obj.user.is_superuser:
+            return False
+        return has_admin_perm(request.user, 'can_edit_users')
+
+    def has_delete_permission(self, request, obj=None):
+        return request.user.is_superuser
 
     def balance_display(self, obj):
         return format_html('<strong style="color: #34d399; font-size: 14px;">{} UC</strong>', obj.balance)

@@ -2,6 +2,7 @@ from decimal import Decimal
 from django.contrib import admin
 from django.utils.html import format_html
 from django.utils import timezone
+from users.models import has_admin_perm
 from .models import (
     Category, Item, Case, CaseItem, Opening,
     PersonalCaseChance, PromoCode, PromoCodeUse, UserFreeOpening,
@@ -15,6 +16,15 @@ class CaseItemInline(admin.TabularInline):
     fields = ('item', 'item_preview', 'item_price', 'item_rarity', 'weight', 'calculated_chance')
     readonly_fields = ('item_preview', 'item_price', 'item_rarity', 'calculated_chance')
     ordering = ('-weight',)
+
+    def has_change_permission(self, request, obj=None):
+        return has_admin_perm(request.user, 'can_edit_case_chances')
+
+    def has_add_permission(self, request, obj=None):
+        return has_admin_perm(request.user, 'can_edit_case_chances')
+
+    def has_delete_permission(self, request, obj=None):
+        return has_admin_perm(request.user, 'can_edit_case_chances')
 
     def item_preview(self, obj):
         if obj.item_id and obj.item.display_image:
@@ -54,6 +64,18 @@ class CategoryAdmin(admin.ModelAdmin):
     prepopulated_fields = {'slug': ('name',)}
     ordering = ('order', 'name')
 
+    def has_view_permission(self, request, obj=None):
+        return has_admin_perm(request.user, 'can_view_cases')
+
+    def has_add_permission(self, request):
+        return has_admin_perm(request.user, 'can_add_cases')
+
+    def has_change_permission(self, request, obj=None):
+        return has_admin_perm(request.user, 'can_edit_cases')
+
+    def has_delete_permission(self, request, obj=None):
+        return has_admin_perm(request.user, 'can_delete_cases')
+
 
 @admin.register(Item)
 class ItemAdmin(admin.ModelAdmin):
@@ -63,6 +85,27 @@ class ItemAdmin(admin.ModelAdmin):
     search_fields = ('name', 'weapon_type', 'skin_name')
     ordering = ('-value',)
     readonly_fields = ('image_preview', 'created_at', 'containing_cases_display')
+
+    def has_view_permission(self, request, obj=None):
+        return has_admin_perm(request.user, 'can_view_cases') or request.user.is_staff
+
+    def has_add_permission(self, request):
+        return has_admin_perm(request.user, 'can_add_items')
+
+    def has_change_permission(self, request, obj=None):
+        return has_admin_perm(request.user, 'can_edit_prices') or has_admin_perm(request.user, 'can_edit_images')
+
+    def has_delete_permission(self, request, obj=None):
+        return request.user.is_superuser
+
+    def get_readonly_fields(self, request, obj=None):
+        ro = list(super().get_readonly_fields(request, obj))
+        if not request.user.is_superuser:
+            if not has_admin_perm(request.user, 'can_edit_prices'):
+                ro.append('value')
+            if not has_admin_perm(request.user, 'can_edit_images'):
+                ro.extend(['image', 'image_url'])
+        return ro
 
     def image_preview(self, obj):
         if obj.display_image:
@@ -112,6 +155,27 @@ class CaseAdmin(admin.ModelAdmin):
     ordering = ('order', 'price')
     readonly_fields = ('image_preview', 'created_at', 'total_items_in_case', 'total_openings_count')
 
+    def has_view_permission(self, request, obj=None):
+        return has_admin_perm(request.user, 'can_view_cases')
+
+    def has_add_permission(self, request):
+        return has_admin_perm(request.user, 'can_add_cases')
+
+    def has_change_permission(self, request, obj=None):
+        return has_admin_perm(request.user, 'can_edit_cases')
+
+    def has_delete_permission(self, request, obj=None):
+        return has_admin_perm(request.user, 'can_delete_cases')
+
+    def get_readonly_fields(self, request, obj=None):
+        ro = list(super().get_readonly_fields(request, obj))
+        if not request.user.is_superuser:
+            if not has_admin_perm(request.user, 'can_edit_prices'):
+                ro.append('price')
+            if not has_admin_perm(request.user, 'can_edit_images'):
+                ro.append('image')
+        return ro
+
     def image_preview(self, obj):
         if obj.display_image:
             return format_html('<img src="{}" style="width: 52px; height: 38px; object-fit: contain; border-radius: 6px; background: #0f172a; border: 1px solid #334155;" />', obj.display_image)
@@ -153,6 +217,18 @@ class CaseItemAdmin(admin.ModelAdmin):
     autocomplete_fields = ('case', 'item')
     ordering = ('case', '-weight')
 
+    def has_view_permission(self, request, obj=None):
+        return has_admin_perm(request.user, 'can_view_cases')
+
+    def has_change_permission(self, request, obj=None):
+        return has_admin_perm(request.user, 'can_edit_case_chances')
+
+    def has_add_permission(self, request):
+        return has_admin_perm(request.user, 'can_edit_case_chances')
+
+    def has_delete_permission(self, request, obj=None):
+        return has_admin_perm(request.user, 'can_edit_case_chances')
+
     def item_price_display(self, obj):
         return format_html('<strong style="color: #fbbf24;">{} UC</strong>', obj.item.value)
     item_price_display.short_description = "Цена скина"
@@ -183,6 +259,18 @@ class PersonalCaseChanceAdmin(admin.ModelAdmin):
     search_fields = ('user__username', 'case__name', 'item__name')
     autocomplete_fields = ('user', 'case', 'item')
     ordering = ('-created_at',)
+
+    def has_view_permission(self, request, obj=None):
+        return has_admin_perm(request.user, 'can_edit_case_chances') or has_admin_perm(request.user, 'can_view_cases')
+
+    def has_change_permission(self, request, obj=None):
+        return has_admin_perm(request.user, 'can_edit_case_chances')
+
+    def has_add_permission(self, request):
+        return has_admin_perm(request.user, 'can_edit_case_chances')
+
+    def has_delete_permission(self, request, obj=None):
+        return has_admin_perm(request.user, 'can_edit_case_chances')
 
     @admin.display(description="Персональный шанс")
     def chance_display(self, obj):
@@ -255,11 +343,25 @@ class PromoCodeAdmin(admin.ModelAdmin):
         }),
     )
 
+    def has_view_permission(self, request, obj=None):
+        return has_admin_perm(request.user, 'can_manage_promocodes') or has_admin_perm(request.user, 'can_view_blogger_stats')
+
+    def has_add_permission(self, request):
+        return has_admin_perm(request.user, 'can_manage_promocodes')
+
+    def has_change_permission(self, request, obj=None):
+        return has_admin_perm(request.user, 'can_manage_promocodes') or has_admin_perm(request.user, 'can_edit_blogger_percent')
+
+    def has_delete_permission(self, request, obj=None):
+        return has_admin_perm(request.user, 'can_manage_promocodes')
+
     def get_readonly_fields(self, request, obj=None):
         ro = list(super().get_readonly_fields(request, obj))
         if not request.user.is_superuser:
-            # Regular staff can view promo codes and stats, but CANNOT edit blogger percentages or blogger name
-            ro.extend(['blogger_percentage', 'blogger_name', 'code'])
+            if not has_admin_perm(request.user, 'can_edit_blogger_percent'):
+                ro.extend(['blogger_percentage', 'blogger_name'])
+            if not has_admin_perm(request.user, 'can_manage_promocodes'):
+                ro.extend(['code', 'bonus_type', 'bonus_value', 'case', 'is_active', 'max_uses', 'starts_at', 'expires_at', 'min_deposit', 'max_bonus'])
         return ro
 
     def changeform_view(self, request, object_id=None, form_url='', extra_context=None):
