@@ -1,4 +1,5 @@
 import os
+import sys
 import tempfile
 from decimal import Decimal
 from django.test import TestCase, override_settings
@@ -146,3 +147,22 @@ class DatabasePersistenceTests(TestCase):
         self.assertIn('db_is_persistent', ctx)
         self.assertIn('db_engine_name', ctx)
         self.assertIn('db_host_display', ctx)
+
+    def test_render_runtime_without_database_url_raises_runtime_error(self):
+        """Verify that Render runtime without DATABASE_URL strictly refuses to run on SQLite."""
+        import subprocess
+        # Run python check with RENDER=true and empty DATABASE_URL simulating gunicorn startup
+        env = os.environ.copy()
+        env['RENDER'] = 'true'
+        env['DATABASE_URL'] = ''
+        env['INTERNAL_DATABASE_URL'] = ''
+        env['POSTGRES_URL'] = ''
+        
+        proc = subprocess.run(
+            [sys.executable, '-c', "import os, django; os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings'); django.setup()"],
+            env=env,
+            capture_output=True,
+            text=True
+        )
+        self.assertNotEqual(proc.returncode, 0, "Render runtime must crash if DATABASE_URL is missing")
+        self.assertIn("DATABASE_URL IS MISSING!", proc.stderr)

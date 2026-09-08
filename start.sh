@@ -6,6 +6,32 @@ echo "====================================================="
 echo "  NEONDROP PRODUCTION STARTUP"
 echo "====================================================="
 
+# Guard: Strictly enforce PostgreSQL connection on Render production
+if [ -n "$RENDER" ] || [ -n "$RENDER_SERVICE_ID" ]; then
+    if [ -z "$DATABASE_URL" ] && [ -z "$INTERNAL_DATABASE_URL" ] && [ -z "$POSTGRES_URL" ] && [ -z "$DATABASE_PRIVATE_URL" ] && [ -z "$DB_URL" ]; then
+        echo ""
+        echo "======================================================================"
+        echo "  [FATAL ERROR] DATABASE_URL IS NOT CONFIGURED IN RENDER PRODUCTION!"
+        echo "======================================================================"
+        echo "  NEONDROP production is strictly prohibited from running on SQLite."
+        echo "  Running on SQLite causes all data to be wiped on 15-minute spin-down."
+        echo ""
+        echo "  ACTION REQUIRED IN RENDER DASHBOARD:"
+        echo "  1. Open https://dashboard.render.com/"
+        echo "  2. Click on PostgreSQL database: 'neondrop-db'"
+        echo "  3. In Info / Connections, copy 'Internal Database URL'"
+        echo "     (e.g. postgres://neondrop_user:PASSWORD@dpg-xxxx-a:5432/neondrop)"
+        echo "  4. Click on Web Service: 'neondrop-ujly' -> 'Environment'"
+        echo "  5. Add Environment Variable:"
+        echo "     Key:   DATABASE_URL"
+        echo "     Value: <paste your copied Internal Database URL>"
+        echo "  6. Click 'Save Changes' to deploy with persistent PostgreSQL."
+        echo "======================================================================"
+        echo ""
+        exit 1
+    fi
+fi
+
 # Step 0: Inspect active database engine & persistence status
 echo "==> Verifying database engine and persistence configuration..."
 python manage.py check_database_config

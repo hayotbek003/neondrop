@@ -1,4 +1,5 @@
 import os
+import sys
 from pathlib import Path
 from decimal import Decimal
 
@@ -159,9 +160,32 @@ if raw_database_url:
     DATABASE_ENGINE_NAME = 'PostgreSQL' if ('postgresql' in db_engine) else 'SQLite'
     DATABASE_HOST_DISPLAY = parsed_db.hostname or 'localhost'
 else:
-    # DATABASE_URL is not set — use SQLite fallback.
-    # Safe for local development and build-phase commands (e.g. collectstatic).
-    # If running at runtime on Render without DATABASE_URL, data will be ephemeral.
+    # Check if running at runtime in production (Render)
+    is_render = bool(os.environ.get('RENDER') or os.environ.get('RENDER_SERVICE_ID'))
+    is_build_or_test = any(cmd in sys.argv for cmd in ['collectstatic', 'test'])
+
+    if is_render and not is_build_or_test:
+        raise RuntimeError(
+            "\n" + "=" * 70 + "\n"
+            "  [FATAL PRODUCTION CONFIGURATION ERROR] DATABASE_URL IS MISSING!\n"
+            "=" * 70 + "\n"
+            "  NEONDROP production is strictly prohibited from running on SQLite.\n"
+            "  On Render Free, SQLite data is destroyed on container spin-down.\n"
+            "\n"
+            "  ACTION REQUIRED IN RENDER DASHBOARD:\n"
+            "  1. Go to https://dashboard.render.com/\n"
+            "  2. Click on PostgreSQL database 'neondrop-db'\n"
+            "  3. Copy the 'Internal Database URL'\n"
+            "     (Format: postgres://neondrop_user:PASSWORD@dpg-xxx:5432/neondrop)\n"
+            "  4. Go to Web Service 'neondrop-ujly' -> Environment\n"
+            "  5. Add/Update Environment Variable:\n"
+            "     Key:   DATABASE_URL\n"
+            "     Value: <paste your Internal Database URL>\n"
+            "  6. Save Changes.\n"
+            "=" * 70 + "\n"
+        )
+
+    # Local development & build-phase fallback only (collectstatic, tests)
     sqlite_file = BASE_DIR / 'db.sqlite3'
     DATABASES = {
         'default': {
@@ -174,7 +198,7 @@ else:
     }
     IS_PERSISTENT_DATABASE = False
     DATABASE_ENGINE_NAME = 'SQLite'
-    DATABASE_HOST_DISPLAY = 'Local Container Disk (Ephemeral)'
+    DATABASE_HOST_DISPLAY = 'Local Development Disk'
 
 
 # Cache & Rate Limiting Configuration

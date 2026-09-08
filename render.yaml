@@ -7,7 +7,7 @@ databases:
 
 services:
   - type: web
-    name: neondrop
+    name: neondrop-ujly
     env: python
     buildCommand: "bash build.sh"
     startCommand: "bash start.sh"

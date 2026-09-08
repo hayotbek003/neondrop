@@ -2,14 +2,16 @@
   "metadata": {
     "project": "NEONDROP",
     "version": "2.0.0",
-    "export_timestamp_utc": "2026-09-06T17:24:18.571834Z",
+    "export_timestamp_utc": "2026-09-08T16:29:20.033893Z",
     "database_engine": "django.db.backends.sqlite3",
-    "total_records": 255,
+    "total_records": 270,
     "record_counts": {
       "auth.Group": 0,
-      "auth.Permission": 100,
-      "auth.User": 2,
-      "users.Profile": 2,
+      "auth.Permission": 112,
+      "auth.User": 3,
+      "users.Profile": 3,
+      "users.GoogleAccount": 0,
+      "payments.CurrencySetting": 1,
       "cases.Category": 4,
       "cases.Item": 27,
       "cases.Case": 8,
@@ -17,6 +19,7 @@
       "cases.Opening": 21,
       "cases.PersonalCaseChance": 0,
       "cases.PromoCode": 0,
+      "cases.BloggerPayout": 0,
       "payments.Transaction": 0,
       "cases.PromoCodeUse": 0,
       "cases.UserFreeOpening": 0,
@@ -28,7 +31,7 @@
       "battles.BattlePlayer": 0,
       "battles.BattleRound": 0
     },
-    "checksum_sha256": "282dcbc7e3a70a3d8c6a15b4bd8e04c6abe2af35f85fcec303467829cb31c8d6",
+    "checksum_sha256": "0db7893765ab865bba21132081b87950da3763283010d287a39153d28a74c54d",
     "compressed": false
   },
   "data": [
@@ -933,11 +936,119 @@
       }
     },
     {
+      "model": "auth.permission",
+      "pk": 101,
+      "fields": {
+        "name": "Can add Google \u0430\u043a\u043a\u0430\u0443\u043d\u0442",
+        "content_type": 26,
+        "codename": "add_googleaccount"
+      }
+    },
+    {
+      "model": "auth.permission",
+      "pk": 102,
+      "fields": {
+        "name": "Can change Google \u0430\u043a\u043a\u0430\u0443\u043d\u0442",
+        "content_type": 26,
+        "codename": "change_googleaccount"
+      }
+    },
+    {
+      "model": "auth.permission",
+      "pk": 103,
+      "fields": {
+        "name": "Can delete Google \u0430\u043a\u043a\u0430\u0443\u043d\u0442",
+        "content_type": 26,
+        "codename": "delete_googleaccount"
+      }
+    },
+    {
+      "model": "auth.permission",
+      "pk": 104,
+      "fields": {
+        "name": "Can view Google \u0430\u043a\u043a\u0430\u0443\u043d\u0442",
+        "content_type": 26,
+        "codename": "view_googleaccount"
+      }
+    },
+    {
+      "model": "auth.permission",
+      "pk": 105,
+      "fields": {
+        "name": "Can add \u0412\u044b\u043f\u043b\u0430\u0442\u0430 \u0431\u043b\u043e\u0433\u0435\u0440\u0443",
+        "content_type": 27,
+        "codename": "add_bloggerpayout"
+      }
+    },
+    {
+      "model": "auth.permission",
+      "pk": 106,
+      "fields": {
+        "name": "Can change \u0412\u044b\u043f\u043b\u0430\u0442\u0430 \u0431\u043b\u043e\u0433\u0435\u0440\u0443",
+        "content_type": 27,
+        "codename": "change_bloggerpayout"
+      }
+    },
+    {
+      "model": "auth.permission",
+      "pk": 107,
+      "fields": {
+        "name": "Can delete \u0412\u044b\u043f\u043b\u0430\u0442\u0430 \u0431\u043b\u043e\u0433\u0435\u0440\u0443",
+        "content_type": 27,
+        "codename": "delete_bloggerpayout"
+      }
+    },
+    {
+      "model": "auth.permission",
+      "pk": 108,
+      "fields": {
+        "name": "Can view \u0412\u044b\u043f\u043b\u0430\u0442\u0430 \u0431\u043b\u043e\u0433\u0435\u0440\u0443",
+        "content_type": 27,
+        "codename": "view_bloggerpayout"
+      }
+    },
+    {
+      "model": "auth.permission",
+      "pk": 109,
+      "fields": {
+        "name": "Can add \u041f\u0440\u0430\u0432\u0430 \u0430\u0434\u043c\u0438\u043d\u0438\u0441\u0442\u0440\u0430\u0442\u043e\u0440\u0430",
+        "content_type": 28,
+        "codename": "add_adminpermissionprofile"
+      }
+    },
+    {
+      "model": "auth.permission",
+      "pk": 110,
+      "fields": {
+        "name": "Can change \u041f\u0440\u0430\u0432\u0430 \u0430\u0434\u043c\u0438\u043d\u0438\u0441\u0442\u0440\u0430\u0442\u043e\u0440\u0430",
+        "content_type": 28,
+        "codename": "change_adminpermissionprofile"
+      }
+    },
+    {
+      "model": "auth.permission",
+      "pk": 111,
+      "fields": {
+        "name": "Can delete \u041f\u0440\u0430\u0432\u0430 \u0430\u0434\u043c\u0438\u043d\u0438\u0441\u0442\u0440\u0430\u0442\u043e\u0440\u0430",
+        "content_type": 28,
+        "codename": "delete_adminpermissionprofile"
+      }
+    },
+    {
+      "model": "auth.permission",
+      "pk": 112,
+      "fields": {
+        "name": "Can view \u041f\u0440\u0430\u0432\u0430 \u0430\u0434\u043c\u0438\u043d\u0438\u0441\u0442\u0440\u0430\u0442\u043e\u0440\u0430",
+        "content_type": 28,
+        "codename": "view_adminpermissionprofile"
+      }
+    },
+    {
       "model": "auth.user",
       "pk": 1,
       "fields": {
         "password": "pbkdf2_sha256$1000000$xphIj091DQb3GtyrFXyEFG$B3Q+0Qu6bLIpIRcmSKwrpzUpJ+w5+/Qz33Stg4Tsszc=",
-        "last_login": "2026-09-06T16:56:30.238Z",
+        "last_login": "2026-09-06T19:27:08.337Z",
         "is_superuser": true,
         "username": "Smoke",
         "first_name": "",
@@ -969,6 +1080,24 @@
       }
     },
     {
+      "model": "auth.user",
+      "pk": 3,
+      "fields": {
+        "password": "pbkdf2_sha256$1000000$wh7YLI39T5PU16pVJajdSG$HkKTF4Gs+BwPu0Fcl+6gqEQZu08WL74sMydO2nRkkjQ=",
+        "last_login": null,
+        "is_superuser": true,
+        "username": "admin",
+        "first_name": "",
+        "last_name": "",
+        "email": "admin@neondrop.gg",
+        "is_staff": true,
+        "is_active": true,
+        "date_joined": "2026-09-07T08:40:15.083Z",
+        "groups": [],
+        "user_permissions": []
+      }
+    },
+    {
       "model": "users.profile",
       "pk": 1,
       "fields": {
@@ -994,6 +1123,30 @@
         "total_opened": 18,
         "total_winnings": "393.15",
         "created_at": "2026-08-31T18:24:12.197Z"
+      }
+    },
+    {
+      "model": "users.profile",
+      "pk": 3,
+      "fields": {
+        "user": 3,
+        "balance": "100.00",
+        "telegram_username": null,
+        "avatar": "",
+        "avatar_url": null,
+        "total_opened": 0,
+        "total_winnings": "0.00",
+        "created_at": "2026-09-07T08:40:15.476Z"
+      }
+    },
+    {
+      "model": "payments.currencysetting",
+      "pk": 1,
+      "fields": {
+        "uc_to_uzs": "250.00",
+        "usd_to_uzs": "12000.00",
+        "is_active": true,
+        "updated_at": "2026-09-06T16:49:12.686Z"
       }
     },
     {
