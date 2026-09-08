@@ -14,6 +14,8 @@ import secrets
 from .forms import RegistrationForm, LoginForm, ProfileSettingsForm
 from .models import Profile
 from .oauth import (
+    get_google_client_id,
+    get_google_client_secret,
     is_google_oauth_configured,
     get_google_redirect_uri,
     build_google_auth_url,
@@ -109,10 +111,22 @@ def google_login_view(request):
     if request.user.is_authenticated:
         return redirect('cases:home')
 
-    if not is_google_oauth_configured():
+    client_id = get_google_client_id()
+    client_secret = get_google_client_secret()
+
+    if not (client_id and client_secret):
+        missing = []
+        if not client_id:
+            missing.append('GOOGLE_CLIENT_ID')
+        if not client_secret:
+            missing.append('GOOGLE_CLIENT_SECRET')
+        security_logger.warning(
+            f"Google OAuth not configured: client_id_present={bool(client_id)}, "
+            f"client_secret_present={bool(client_secret)}, missing={missing}"
+        )
         messages.warning(
             request,
-            "Вход через Google временно недоступен (не настроены GOOGLE_CLIENT_ID и GOOGLE_CLIENT_SECRET в переменных окружения)."
+            f"Вход через Google временно недоступен (не настроены {', '.join(missing)} в переменных окружения Render)."
         )
         return redirect('users:login')
 
@@ -127,7 +141,7 @@ def google_login_view(request):
 
     redirect_uri = get_google_redirect_uri(request)
     try:
-        auth_url = build_google_auth_url(request, state, redirect_uri)
+        auth_url = build_google_auth_url(request, state, redirect_uri, client_id=client_id)
         return redirect(auth_url)
     except GoogleOAuthError as e:
         messages.error(request, str(e))

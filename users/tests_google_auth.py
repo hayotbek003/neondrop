@@ -74,7 +74,7 @@ class GoogleAuthAndRegistrationTests(TestCase):
         self.assertEqual(resp2.status_code, 200)
         self.assertEqual(int(self.client.session.get('_auth_user_id')), user.id)
 
-    @patch('users.oauth.get_google_client_id', return_value='')
+    @patch('users.views.get_google_client_id', return_value='')
     def test_google_login_redirect_when_not_configured(self, mock_client_id):
         """
         When Google OAuth credentials are not set, redirect to login with a warning.
@@ -83,8 +83,8 @@ class GoogleAuthAndRegistrationTests(TestCase):
         response = self.client.get(url)
         self.assertRedirects(response, reverse('users:login'))
 
-    @patch('users.oauth.get_google_client_id', return_value='test-client-id-12345')
-    @patch('users.oauth.get_google_client_secret', return_value='test-client-secret-abcde')
+    @patch('users.views.get_google_client_id', return_value='test-client-id-12345')
+    @patch('users.views.get_google_client_secret', return_value='test-client-secret-abcde')
     def test_google_login_initiates_oauth_with_state(self, mock_secret, mock_id):
         """
         When credentials are set, google_login_view redirects to accounts.google.com

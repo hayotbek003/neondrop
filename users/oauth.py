@@ -89,11 +89,12 @@ def get_google_redirect_uri(request):
     return uri
 
 
-def build_google_auth_url(request, state, redirect_uri):
+def build_google_auth_url(request, state, redirect_uri, client_id=None):
     """
     Builds the Google OAuth 2.0 authorization URL with required scopes.
     """
-    client_id = get_google_client_id()
+    if not client_id:
+        client_id = get_google_client_id()
     if not client_id:
         raise GoogleOAuthError("GOOGLE_CLIENT_ID is not configured in environment variables.")
 
