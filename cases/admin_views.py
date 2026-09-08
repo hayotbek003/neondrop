@@ -654,3 +654,144 @@ def ajax_upload_grid_image_view(request):
         })
     except Exception as e:
         return JsonResponse({'status': 'error', 'message': f'Ошибка обработки изображения: {str(e)}'}, status=400)
+
+
+# ==============================================================================
+# PROVABLY FAIR SERVER RNG MONTE CARLO SIMULATION VIEWS
+# ==============================================================================
+from cases.models import RngSimulationRun
+from cases.rng_simulation_service import run_monte_carlo_simulation
+from django.shortcuts import get_object_or_404
+
+
+@staff_member_required
+@require_http_methods(["GET"])
+def admin_rng_simulation_view(request):
+    """
+    Dedicated Admin GUI View for Provably Fair Server-Side RNG Monte Carlo Simulation.
+    Allows verifying mathematical accuracy, RTP convergence, and Chi-Square goodness-of-fit.
+    """
+    if not has_admin_perm(request.user, 'can_run_rng_simulation'):
+        return HttpResponseForbidden("⛔ Ошибка доступа: у вас нет прав на симуляцию RNG (can_run_rng_simulation).")
+
+    all_cases = list(Case.objects.prefetch_related('case_items__item').all().order_by('order', 'price'))
+    cases_meta = {}
+    cases_list = []
+
+    for c in all_cases:
+        items = list(c.case_items.all())
+        total_w = sum(ci.weight for ci in items)
+        if total_w > 0:
+            target_ev = sum((ci.weight / total_w) * float(ci.item.value) for ci in items)
+        else:
+            target_ev = 0.0
+        price = float(c.price)
+        target_rtp = (target_ev / price * 100.0) if price > 0 else 0.0
+
+        c_info = {
+            'id': c.id,
+            'name': c.name,
+            'slug': c.slug,
+            'price': price,
+            'items_count': len(items),
+            'target_rtp': round(target_rtp, 2),
+            'target_ev': round(target_ev, 2),
+            'house_edge': round(max(0.0, 100.0 - target_rtp), 2),
+        }
+        cases_meta[str(c.id)] = c_info
+        cases_list.append(c_info)
+
+    recent_runs = RngSimulationRun.objects.select_related('case', 'user').order_by('-created_at')[:15]
+
+    context = {
+        'title': '🎲 Симуляция честного серверного RNG (Monte Carlo Test)',
+        'app_label': 'cases',
+        'is_nav_sidebar_enabled': True,
+        'has_permission': True,
+        'cases': cases_list,
+        'cases_meta_json': json.dumps(cases_meta),
+        'recent_runs': recent_runs,
+    }
+    return render(request, 'admin/rng_simulation.html', context)
+
+
+@staff_member_required
+@require_http_methods(["POST"])
+def ajax_run_rng_simulation_view(request):
+    """
+    AJAX endpoint to execute Monte Carlo simulation for selected case.
+    Strictly non-destructive: zero writes to Opening, Transaction, InventoryItem, Profile.
+    """
+    if not has_admin_perm(request.user, 'can_run_rng_simulation'):
+        return JsonResponse({'status': 'error', 'message': '⛔ Ошибка доступа: у вас нет прав на симуляцию RNG.'}, status=403)
+
+    try:
+        if request.content_type == 'application/json':
+            data = json.loads(request.body.decode('utf-8'))
+        else:
+            data = request.POST
+
+        case_id = data.get('case_id')
+        num_simulations = int(data.get('num_simulations', 100000))
+
+        if not case_id:
+            return JsonResponse({'status': 'error', 'message': 'Выберите кейс для симуляции.'}, status=400)
+
+        case = Case.objects.filter(id=case_id).first()
+        if not case:
+            return JsonResponse({'status': 'error', 'message': 'Выбранный кейс не найден.'}, status=404)
+
+        if not case.case_items.exists():
+            return JsonResponse({'status': 'error', 'message': 'В выбранном кейсе нет предметов для проведения симуляции.'}, status=400)
+
+        result = run_monte_carlo_simulation(
+            case=case,
+            num_simulations=num_simulations,
+            user=request.user,
+            save_run=True
+        )
+
+        return JsonResponse({
+            'status': 'success',
+            'data': result
+        })
+    except Exception as e:
+        return JsonResponse({'status': 'error', 'message': f'Ошибка проведения симуляции: {str(e)}'}, status=400)
+
+
+@staff_member_required
+@require_http_methods(["GET"])
+def ajax_get_rng_simulation_run_view(request, run_id):
+    """
+    AJAX endpoint to retrieve details of a previous simulation run.
+    """
+    if not has_admin_perm(request.user, 'can_run_rng_simulation'):
+        return JsonResponse({'status': 'error', 'message': '⛔ Ошибка доступа: у вас нет прав на симуляцию RNG.'}, status=403)
+
+    run_record = get_object_or_404(RngSimulationRun, id=run_id)
+    return JsonResponse({
+        'status': 'success',
+        'data': {
+            'run_id': run_record.id,
+            'case_id': run_record.case_id,
+            'case_name': run_record.case.name,
+            'case_price': float(run_record.case_price),
+            'num_simulations': run_record.num_simulations,
+            'total_spent': float(run_record.total_spent),
+            'total_payout': float(run_record.total_payout),
+            'target_rtp': run_record.target_rtp,
+            'actual_rtp': run_record.actual_rtp,
+            'deviation': run_record.deviation,
+            'house_edge': run_record.house_edge,
+            'chi_square_stat': run_record.chi_square_stat,
+            'p_value': run_record.p_value,
+            'status': run_record.status,
+            'status_level': run_record.status_level,
+            'ci_lower': run_record.ci_lower,
+            'ci_upper': run_record.ci_upper,
+            'server_seed': run_record.server_seed,
+            'client_seed': run_record.client_seed,
+            'items': run_record.item_stats,
+            'created_at': run_record.created_at.strftime('%d.%m.%Y %H:%M:%S'),
+        }
+    })

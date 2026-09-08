@@ -1,0 +1,900 @@
+{% extends "admin/base_site.html" %}
+{% load i18n static humanize %}
+
+{% block title %}🎲 Симуляция честного серверного RNG (Monte Carlo Test) | NEONDROP CYBER ADMIN{% endblock %}
+
+{% block extrastyle %}
+{{ block.super }}
+<style>
+    .rng-container {
+        max-width: 1440px;
+        margin: 0 auto;
+        padding: 10px 20px 60px;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    }
+    .cyber-card {
+        background: #090d16;
+        border: 1px solid #1e293b;
+        border-radius: 12px;
+        padding: 22px 26px;
+        margin-bottom: 24px;
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
+    }
+    .cyber-card.accent-pink {
+        border-color: #ec4899;
+        box-shadow: 0 0 25px rgba(236, 72, 153, 0.2);
+    }
+    .cyber-card.accent-purple {
+        border-color: #7e22ce;
+        box-shadow: 0 0 25px rgba(126, 34, 206, 0.2);
+    }
+    .cyber-card.accent-green {
+        border-color: #10b981;
+        box-shadow: 0 0 25px rgba(16, 185, 129, 0.2);
+    }
+    .cyber-title {
+        font-size: 20px;
+        font-weight: 800;
+        margin-top: 0;
+        margin-bottom: 8px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        color: #f8fafc;
+    }
+    .stat-kpi-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+        gap: 14px;
+        margin: 16px 0;
+    }
+    .stat-kpi-card {
+        background: #0f172a;
+        border: 1px solid #334155;
+        border-radius: 10px;
+        padding: 14px 18px;
+        display: flex;
+        flex-direction: column;
+        transition: transform 0.15s ease, border-color 0.15s ease;
+    }
+    .stat-kpi-card:hover {
+        border-color: #ec4899;
+        transform: translateY(-2px);
+    }
+    .stat-kpi-label {
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 0.8px;
+        color: #94a3b8;
+        font-weight: 700;
+        margin-bottom: 6px;
+    }
+    .stat-kpi-val {
+        font-size: 24px;
+        font-weight: 900;
+        color: #f8fafc;
+        line-height: 1.1;
+    }
+    .stat-kpi-sub {
+        font-size: 11px;
+        color: #64748b;
+        margin-top: 4px;
+    }
+    .sim-count-group {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+    .sim-count-btn {
+        background: #0f172a;
+        border: 1px solid #334155;
+        color: #cbd5e1;
+        font-size: 14px;
+        font-weight: 800;
+        padding: 10px 18px;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+    .sim-count-btn:hover {
+        border-color: #ec4899;
+        color: #fff;
+    }
+    .sim-count-btn.active {
+        background: linear-gradient(135deg, #ec4899, #f43f5e);
+        border-color: #ec4899;
+        color: #fff;
+        box-shadow: 0 0 15px rgba(236, 72, 153, 0.4);
+    }
+    .cyber-btn-primary {
+        background: linear-gradient(135deg, #ec4899, #f43f5e);
+        border: none;
+        color: #fff;
+        font-weight: 900;
+        font-size: 15px;
+        padding: 14px 28px;
+        border-radius: 8px;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        transition: all 0.2s ease;
+        box-shadow: 0 4px 15px rgba(236, 72, 153, 0.35);
+    }
+    .cyber-btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(236, 72, 153, 0.5);
+    }
+    .cyber-btn-primary:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        transform: none;
+    }
+    .status-badge-panel {
+        border-radius: 10px;
+        padding: 16px 20px;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 14px;
+    }
+    .status-green {
+        background: rgba(16, 185, 129, 0.12);
+        border: 1px solid #10b981;
+        color: #34d399;
+    }
+    .status-yellow {
+        background: rgba(245, 158, 11, 0.12);
+        border: 1px solid #f59e0b;
+        color: #fbbf24;
+    }
+    .status-red {
+        background: rgba(239, 68, 68, 0.12);
+        border: 1px solid #ef4444;
+        color: #f87171;
+    }
+    .cyber-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 14px;
+    }
+    .cyber-table th {
+        background: #0f172a;
+        color: #94a3b8;
+        font-size: 11px;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        padding: 12px 14px;
+        text-align: left;
+        border-bottom: 1px solid #1e293b;
+        cursor: pointer;
+        user-select: none;
+    }
+    .cyber-table th:hover {
+        color: #ec4899;
+    }
+    .cyber-table td {
+        padding: 12px 14px;
+        font-size: 13px;
+        border-bottom: 1px solid #1e293b;
+        color: #cbd5e1;
+    }
+    .cyber-table tr:hover td {
+        background: rgba(255, 255, 255, 0.02);
+    }
+    .spinner {
+        display: inline-block;
+        width: 18px;
+        height: 18px;
+        border: 3px solid rgba(255,255,255,0.3);
+        border-radius: 50%;
+        border-top-color: #fff;
+        animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+</style>
+<!-- Chart.js CDN -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+{% endblock %}
+
+{% block content %}
+<div class="rng-container">
+
+    <!-- TOP BAR -->
+    <div style="background: linear-gradient(135deg, #090d16 0%, #131b2e 100%); border: 1px solid #ec4899; border-radius: 12px; padding: 22px 26px; margin-bottom: 24px; box-shadow: 0 4px 24px rgba(236, 72, 153, 0.25); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
+        <div>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <h1 style="margin: 0; color: #f8fafc; font-size: 22px; font-weight: 900; letter-spacing: 0.8px;">
+                    🎲 СИМУЛЯЦИЯ ЧЕСТНОГО СЕРВЕРНОГО RNG
+                </h1>
+                <span style="background: rgba(236, 72, 153, 0.18); border: 1px solid #ec4899; color: #f472b6; font-size: 11px; font-weight: 800; padding: 3px 8px; border-radius: 4px; text-transform: uppercase;">
+                    MONTE CARLO AUDIT
+                </span>
+            </div>
+            <p style="margin: 6px 0 0 0; color: #94a3b8; font-size: 13px;">
+                Инструмент математической проверки корректности алгоритма Provably Fair (HMAC-SHA256) на независимых испытаниях. Не изменяет результаты реальных игроков.
+            </p>
+        </div>
+
+        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+            <a href="{% url 'admin_image_import' %}" style="background: #1e293b; border: 1px solid #334155; color: #cbd5e1 !important; font-weight: 700; text-decoration: none; padding: 10px 18px; border-radius: 6px; font-size: 13px; display: inline-flex; align-items: center; gap: 6px;">
+                <span>📦</span> ИМПОРТ КЕЙСОВ
+            </a>
+            <a href="{% url 'admin:cases_case_changelist' %}" style="background: #1e293b; border: 1px solid #334155; color: #cbd5e1 !important; font-weight: 700; text-decoration: none; padding: 10px 18px; border-radius: 6px; font-size: 13px; display: inline-flex; align-items: center; gap: 6px;">
+                <span>⚙️</span> СПИСОК КЕЙСОВ
+            </a>
+            <a href="{% url 'admin:index' %}" style="background: #1e293b; border: 1px solid #334155; color: #cbd5e1 !important; font-weight: 700; text-decoration: none; padding: 10px 18px; border-radius: 6px; font-size: 13px; display: inline-flex; align-items: center; gap: 6px;">
+                <span>⚡</span> DASHBOARD
+            </a>
+        </div>
+    </div>
+
+    <!-- SIMULATION CONTROL FORM -->
+    <div class="cyber-card accent-pink">
+        <h2 class="cyber-title">
+            <span>⚙️</span> Параметры симуляции
+        </h2>
+        <div style="color: #94a3b8; font-size: 13px; margin-bottom: 20px;">
+            Выберите кейс и количество испытаний. Симуляция выполнит криптографические прокрутки по серверному алгоритму HMAC-SHA256 с нулевой записью в историю пользователей.
+        </div>
+
+        <form id="simulationForm" onsubmit="runSimulation(event)">
+            {% csrf_token %}
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; align-items: flex-end;">
+                <!-- CASE SELECT -->
+                <div>
+                    <label style="display: block; font-size: 12px; font-weight: 800; color: #94a3b8; text-transform: uppercase; margin-bottom: 8px;">
+                        Кейс для тестирования:
+                    </label>
+                    <select id="caseSelect" onchange="onCaseChanged()" style="width: 100%; background: #0f172a; border: 1px solid #334155; color: #f8fafc; font-size: 14px; font-weight: 700; padding: 12px 14px; border-radius: 8px; outline: none;">
+                        {% for c in cases %}
+                        <option value="{{ c.id }}" {% if c.slug == 'paradise-eruption' %}selected{% endif %}>
+                            {{ c.name }} ({{ c.price }} UC) • {{ c.items_count }} предметов • RTP: {{ c.target_rtp }}%
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- SIMULATIONS COUNT -->
+                <div>
+                    <label style="display: block; font-size: 12px; font-weight: 800; color: #94a3b8; text-transform: uppercase; margin-bottom: 8px;">
+                        Количество симуляций:
+                    </label>
+                    <div class="sim-count-group">
+                        <button type="button" class="sim-count-btn" onclick="selectCount(1000, this)">1 000</button>
+                        <button type="button" class="sim-count-btn" onclick="selectCount(10000, this)">10 000</button>
+                        <button type="button" class="sim-count-btn active" onclick="selectCount(100000, this)">100 000</button>
+                        <button type="button" class="sim-count-btn" onclick="selectCount(1000000, this)">1 000 000</button>
+                    </div>
+                    <input type="hidden" id="numSimulations" value="100000">
+                </div>
+
+                <!-- RUN BUTTON -->
+                <div>
+                    <button type="submit" id="runBtn" class="cyber-btn-primary" style="width: 100%; justify-content: center;">
+                        <span id="btnIcon">🚀</span>
+                        <span id="btnText">Запустить симуляцию</span>
+                    </button>
+                </div>
+            </div>
+        </form>
+
+        <!-- CASE TARGET RTP PREVIEW BAR -->
+        <div id="caseMetaBar" style="margin-top: 22px; padding-top: 18px; border-top: 1px solid #1e293b; display: flex; gap: 20px; flex-wrap: wrap; align-items: center; justify-content: space-between;">
+            <div style="display: flex; gap: 24px; flex-wrap: wrap; font-size: 13px;">
+                <div>
+                    <span style="color: #64748b;">Цена кейса:</span>
+                    <strong id="metaPrice" style="color: #38bdf8; margin-left: 4px;">15.00 UC</strong>
+                </div>
+                <div>
+                    <span style="color: #64748b;">Target RTP:</span>
+                    <strong id="metaTargetRtp" style="color: #34d399; margin-left: 4px;">70.00%</strong>
+                </div>
+                <div>
+                    <span style="color: #64748b;">Ожидаемый возврат (EV):</span>
+                    <strong id="metaEv" style="color: #f8fafc; margin-left: 4px;">10.50 UC</strong>
+                </div>
+                <div>
+                    <span style="color: #64748b;">House Edge:</span>
+                    <strong id="metaHouseEdge" style="color: #f472b6; margin-left: 4px;">30.00%</strong>
+                </div>
+                <div>
+                    <span style="color: #64748b;">Предметов в кейсе:</span>
+                    <strong id="metaItemsCount" style="color: #cbd5e1; margin-left: 4px;">24</strong>
+                </div>
+            </div>
+            <div style="color: #94a3b8; font-size: 12px; display: flex; align-items: center; gap: 6px;">
+                <span>🔒</span> Серверный HMAC-SHA256 Provably Fair Roll
+            </div>
+        </div>
+    </div>
+
+    <!-- SIMULATION RESULTS CONTAINER -->
+    <div id="resultsContainer" style="display: none;">
+
+        <!-- STATUS BANNER (CHI-SQUARE & CONVERGENCE) -->
+        <div id="statusBanner" class="status-badge-panel status-green">
+            <div style="display: flex; align-items: center; gap: 14px;">
+                <div id="statusIcon" style="font-size: 28px;">🟢</div>
+                <div>
+                    <div id="statusTitle" style="font-size: 16px; font-weight: 900;">
+                        RNG соответствует заданным шансам (p > 0.05)
+                    </div>
+                    <div id="statusDetails" style="font-size: 13px; opacity: 0.9; margin-top: 3px;">
+                        Критерий согласия Пирсона (Chi-Square Goodness-of-Fit): χ² = 18.234 (df = 23, p-value = 0.7451). Отклонения находятся в пределах нормы случайного шума.
+                    </div>
+                </div>
+            </div>
+            <div>
+                <button type="button" onclick="runSimulation(event)" class="button" style="background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.3); color: #fff !important; font-weight: 800; padding: 8px 18px; border-radius: 6px; cursor: pointer;">
+                    🔄 Запустить снова
+                </button>
+            </div>
+        </div>
+
+        <!-- KPI TILES GRID -->
+        <div class="stat-kpi-grid">
+            <div class="stat-kpi-card">
+                <span class="stat-kpi-label">Количество симуляций</span>
+                <span id="kpiSimulations" class="stat-kpi-val">100,000</span>
+                <span class="stat-kpi-sub">Независимых испытаний</span>
+            </div>
+            <div class="stat-kpi-card">
+                <span class="stat-kpi-label">Цена кейса</span>
+                <span id="kpiCasePrice" class="stat-kpi-val" style="color: #38bdf8;">15.00 UC</span>
+                <span class="stat-kpi-sub">Стоимость 1 открытия</span>
+            </div>
+            <div class="stat-kpi-card">
+                <span class="stat-kpi-label">Потрачено (Spent)</span>
+                <span id="kpiSpent" class="stat-kpi-val">1,500,000 UC</span>
+                <span class="stat-kpi-sub">N × Цена кейса</span>
+            </div>
+            <div class="stat-kpi-card">
+                <span class="stat-kpi-label">Выплачено (Payout)</span>
+                <span id="kpiPayout" class="stat-kpi-val" style="color: #34d399;">1,050,420 UC</span>
+                <span class="stat-kpi-sub">Сумма всех дропов</span>
+            </div>
+            <div class="stat-kpi-card">
+                <span class="stat-kpi-label">Actual RTP</span>
+                <span id="kpiActualRtp" class="stat-kpi-val" style="color: #ec4899;">70.03%</span>
+                <span id="kpiCi" class="stat-kpi-sub">95% CI: 69.75% - 70.31%</span>
+            </div>
+            <div class="stat-kpi-card">
+                <span class="stat-kpi-label">Target RTP</span>
+                <span id="kpiTargetRtp" class="stat-kpi-val">70.00%</span>
+                <span class="stat-kpi-sub">Заданная математика</span>
+            </div>
+            <div class="stat-kpi-card">
+                <span class="stat-kpi-label">Отклонение (Deviation)</span>
+                <span id="kpiDeviation" class="stat-kpi-val" style="color: #34d399;">+0.03%</span>
+                <span class="stat-kpi-sub">Actual RTP - Target RTP</span>
+            </div>
+            <div class="stat-kpi-card">
+                <span class="stat-kpi-label">House Edge</span>
+                <span id="kpiHouseEdge" class="stat-kpi-val" style="color: #f472b6;">29.97%</span>
+                <span class="stat-kpi-sub">100% - Actual RTP</span>
+            </div>
+        </div>
+
+        <!-- CHARTS SECTION -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(420px, 1fr)); gap: 24px; margin-bottom: 24px;">
+            <!-- RTP COMPARISON CHART -->
+            <div class="cyber-card">
+                <h3 class="cyber-title" style="font-size: 16px;">
+                    <span>📊</span> Сравнение Target RTP vs Actual RTP
+                </h3>
+                <div style="height: 280px; position: relative;">
+                    <canvas id="rtpChart"></canvas>
+                </div>
+            </div>
+
+            <!-- STATISTICAL DETAILS & SEEDS CARD -->
+            <div class="cyber-card">
+                <h3 class="cyber-title" style="font-size: 16px;">
+                    <span>🔬</span> Статистическая достоверность и ключи RNG
+                </h3>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; font-size: 13px; margin-bottom: 16px;">
+                    <div style="background: #0f172a; padding: 12px; border-radius: 8px; border: 1px solid #1e293b;">
+                        <div style="color: #64748b; font-size: 11px;">КРИТЕРИЙ ХИ-КВАДРАТ (χ²)</div>
+                        <div id="statChi2" style="font-size: 18px; font-weight: 800; color: #f8fafc; margin-top: 4px;">18.234</div>
+                        <div id="statDf" style="color: #94a3b8; font-size: 11px; margin-top: 2px;">Степеней свободы (df): 23</div>
+                    </div>
+                    <div style="background: #0f172a; padding: 12px; border-radius: 8px; border: 1px solid #1e293b;">
+                        <div style="color: #64748b; font-size: 11px;">P-VALUE (ВЕРОЯТНОСТЬ СОГЛАСИЯ)</div>
+                        <div id="statPval" style="font-size: 18px; font-weight: 800; color: #34d399; margin-top: 4px;">0.74512</div>
+                        <div style="color: #94a3b8; font-size: 11px; margin-top: 2px;">Порог H₀: p > 0.05</div>
+                    </div>
+                </div>
+
+                <div style="background: #0f172a; padding: 12px; border-radius: 8px; border: 1px solid #1e293b; font-size: 12px; font-family: monospace;">
+                    <div style="color: #94a3b8; margin-bottom: 4px;">PROVABLY FAIR SEEDS:</div>
+                    <div style="word-break: break-all; margin-bottom: 4px;">
+                        <span style="color: #64748b;">Server Seed:</span> <span id="valServerSeed" style="color: #38bdf8;">-</span>
+                    </div>
+                    <div style="word-break: break-all; margin-bottom: 4px;">
+                        <span style="color: #64748b;">Client Seed:</span> <span id="valClientSeed" style="color: #ec4899;">-</span>
+                    </div>
+                    <div style="word-break: break-all;">
+                        <span style="color: #64748b;">Server Hash:</span> <span id="valServerHash" style="color: #34d399;">-</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ITEM DROP CHANCE COMPARISON HORIZONTAL BAR CHART -->
+        <div class="cyber-card">
+            <h3 class="cyber-title" style="font-size: 16px;">
+                <span>🎯</span> Сравнение шансов по всем предметам (Target Chance vs Actual Chance)
+            </h3>
+            <p style="color: #94a3b8; font-size: 12px; margin-top: 0;">
+                Синяя/голубая полоса — заданный теоретический шанс. Розовая/зеленая полоса — фактическая частота выпадений в симуляции.
+            </p>
+            <div style="height: 520px; position: relative;">
+                <canvas id="itemsChart"></canvas>
+            </div>
+        </div>
+
+        <!-- ITEMS BREAKDOWN TABLE -->
+        <div class="cyber-card">
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px; margin-bottom: 14px;">
+                <h3 class="cyber-title" style="margin: 0; font-size: 16px;">
+                    <span>📋</span> Детальная статистика по каждому предмету кейса
+                </h3>
+                <div style="display: flex; gap: 10px; align-items: center;">
+                    <input type="text" id="itemSearch" placeholder="Поиск предмета..." oninput="filterItemsTable()" style="background: #0f172a; border: 1px solid #334155; color: #f8fafc; padding: 8px 12px; border-radius: 6px; font-size: 13px; outline: none;">
+                    <button type="button" onclick="sortItems('chance')" class="button" style="background: #1e293b; color: #cbd5e1 !important; padding: 8px 12px; border-radius: 6px; font-size: 12px; cursor: pointer;">
+                        Сорт: Шанс ↕
+                    </button>
+                    <button type="button" onclick="sortItems('price')" class="button" style="background: #1e293b; color: #cbd5e1 !important; padding: 8px 12px; border-radius: 6px; font-size: 12px; cursor: pointer;">
+                        Сорт: Цена ↕
+                    </button>
+                </div>
+            </div>
+
+            <div style="overflow-x: auto;">
+                <table class="cyber-table" id="itemsTable">
+                    <thead>
+                        <tr>
+                            <th onclick="sortItems('name')">Предмет</th>
+                            <th onclick="sortItems('price')">Цена (UC)</th>
+                            <th onclick="sortItems('chance')">Заданный шанс (%)</th>
+                            <th onclick="sortItems('actual')">Факт. шанс (%)</th>
+                            <th onclick="sortItems('drops')">Дропов (Count)</th>
+                            <th>Ожидаемо (Exp)</th>
+                            <th>Абс. откл. (%)</th>
+                            <th>Относ. откл. (%)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="itemsTableBody">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- RECENT SIMULATION RUNS HISTORY -->
+    <div class="cyber-card">
+        <h3 class="cyber-title" style="font-size: 16px;">
+            <span>🕒</span> История последних запусков симулятора
+        </h3>
+        <p style="color: #94a3b8; font-size: 12px; margin-top: 0;">
+            Нажмите на строку любого прошлого теста, чтобы мгновенно загрузить его графики, метрики и предметы.
+        </p>
+
+        <div style="overflow-x: auto;">
+            <table class="cyber-table">
+                <thead>
+                    <tr>
+                        <th>Дата и время</th>
+                        <th>Кейс</th>
+                        <th>Симуляций</th>
+                        <th>Target RTP</th>
+                        <th>Actual RTP</th>
+                        <th>Отклонение</th>
+                        <th>p-value (Chi²)</th>
+                        <th>Статус</th>
+                        <th>Действие</th>
+                    </tr>
+                </thead>
+                <tbody id="historyTableBody">
+                    {% for run in recent_runs %}
+                    <tr style="cursor: pointer;" onclick="loadHistoryRun({{ run.id }})">
+                        <td style="color: #94a3b8; font-size: 12px;">{{ run.created_at|date:"d.m.Y H:i:s" }}</td>
+                        <td><strong style="color: #f8fafc;">{{ run.case.name }}</strong> ({{ run.case_price }} UC)</td>
+                        <td>{{ run.num_simulations|intcomma }}</td>
+                        <td>{{ run.target_rtp }}%</td>
+                        <td><strong style="color: {% if run.actual_rtp >= run.target_rtp %}#34d399{% else %}#f87171{% endif %};">{{ run.actual_rtp }}%</strong></td>
+                        <td style="color: {% if run.deviation >= 0 %}#34d399{% else %}#f87171{% endif %};">
+                            {% if run.deviation > 0 %}+{% endif %}{{ run.deviation }}%
+                        </td>
+                        <td>{{ run.p_value }}</td>
+                        <td>
+                            <span style="font-size: 11px; font-weight: 700; padding: 2px 6px; border-radius: 4px; {% if run.status_level == 'green' %}background: rgba(16,185,129,0.2); color: #34d399;{% elif run.status_level == 'yellow' %}background: rgba(245,158,11,0.2); color: #fbbf24;{% else %}background: rgba(239,68,68,0.2); color: #f87171;{% endif %}">
+                                {{ run.status }}
+                            </span>
+                        </td>
+                        <td>
+                            <button type="button" onclick="event.stopPropagation(); loadHistoryRun({{ run.id }})" style="background: #1e293b; border: 1px solid #334155; color: #38bdf8; font-size: 11px; font-weight: 700; padding: 4px 8px; border-radius: 4px; cursor: pointer;">
+                                Посмотреть
+                            </button>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr id="noHistoryRow">
+                        <td colspan="9" style="text-align: center; color: #64748b; padding: 24px;">
+                            История симуляций пуста. Выберите кейс выше и запустите первый тест!
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+
+<!-- JAVASCRIPT LOGIC -->
+<script>
+    const casesMeta = {{ cases_meta_json|safe }};
+    let currentItems = [];
+    let sortKey = 'chance';
+    let sortAsc = false;
+    let rtpChartInstance = null;
+    let itemsChartInstance = null;
+
+    function onCaseChanged() {
+        const caseId = document.getElementById('caseSelect').value;
+        const meta = casesMeta[caseId];
+        if (meta) {
+            document.getElementById('metaPrice').textContent = meta.price.toFixed(2) + ' UC';
+            document.getElementById('metaTargetRtp').textContent = meta.target_rtp.toFixed(2) + '%';
+            document.getElementById('metaEv').textContent = meta.target_ev.toFixed(2) + ' UC';
+            document.getElementById('metaHouseEdge').textContent = meta.house_edge.toFixed(2) + '%';
+            document.getElementById('metaItemsCount').textContent = meta.items_count;
+        }
+    }
+
+    function selectCount(count, btn) {
+        document.querySelectorAll('.sim-count-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        document.getElementById('numSimulations').value = count;
+    }
+
+    async function runSimulation(e) {
+        if (e) e.preventDefault();
+        const caseId = document.getElementById('caseSelect').value;
+        const numSimulations = parseInt(document.getElementById('numSimulations').value, 10);
+        const runBtn = document.getElementById('runBtn');
+        const btnIcon = document.getElementById('btnIcon');
+        const btnText = document.getElementById('btnText');
+
+        runBtn.disabled = true;
+        btnIcon.innerHTML = '<span class="spinner"></span>';
+        btnText.textContent = `Расчет ${numSimulations.toLocaleString()} испытаний...`;
+
+        try {
+            const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+            const resp = await fetch("{% url 'admin_ajax_run_rng_simulation' %}", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfToken
+                },
+                body: JSON.stringify({
+                    case_id: caseId,
+                    num_simulations: numSimulations
+                })
+            });
+
+            const data = await resp.json();
+            if (data.status === 'success') {
+                renderSimulationResults(data.data);
+                addRunToHistoryTable(data.data);
+            } else {
+                alert('Ошибка симуляции: ' + (data.message || 'Неизвестная ошибка'));
+            }
+        } catch (err) {
+            alert('Сетевая ошибка при запуске симуляции: ' + err.message);
+        } finally {
+            runBtn.disabled = false;
+            btnIcon.textContent = '🚀';
+            btnText.textContent = 'Запустить симуляцию';
+        }
+    }
+
+    async function loadHistoryRun(runId) {
+        try {
+            const resp = await fetch(`/admin/cases/rng-simulation/history/${runId}/`);
+            const data = await resp.json();
+            if (data.status === 'success') {
+                renderSimulationResults(data.data);
+                window.scrollTo({ top: document.getElementById('resultsContainer').offsetTop - 20, behavior: 'smooth' });
+            } else {
+                alert('Не удалось загрузить результаты: ' + data.message);
+            }
+        } catch (err) {
+            alert('Ошибка сети: ' + err.message);
+        }
+    }
+
+    function renderSimulationResults(res) {
+        document.getElementById('resultsContainer').style.display = 'block';
+
+        // Status Banner
+        const banner = document.getElementById('statusBanner');
+        banner.className = 'status-badge-panel ' + (
+            res.status_level === 'green' ? 'status-green' :
+            res.status_level === 'yellow' ? 'status-yellow' : 'status-red'
+        );
+        document.getElementById('statusIcon').textContent = (
+            res.status_level === 'green' ? '🟢' :
+            res.status_level === 'yellow' ? '🟡' : '🔴'
+        );
+        document.getElementById('statusTitle').textContent = res.status;
+        document.getElementById('statusDetails').textContent = 
+            `Критерий согласия Пирсона (Chi-Square): χ² = ${res.chi_square_stat} (df = ${res.df || (res.items.length - 1)}, p-value = ${res.p_value}). ` +
+            `Доверительный интервал 95%: [${res.ci_lower}% – ${res.ci_upper}%].`;
+
+        // KPI
+        document.getElementById('kpiSimulations').textContent = res.num_simulations.toLocaleString();
+        document.getElementById('kpiCasePrice').textContent = res.case_price.toFixed(2) + ' UC';
+        document.getElementById('kpiSpent').textContent = res.total_spent.toLocaleString() + ' UC';
+        document.getElementById('kpiPayout').textContent = res.total_payout.toLocaleString() + ' UC';
+        document.getElementById('kpiActualRtp').textContent = res.actual_rtp.toFixed(2) + '%';
+        document.getElementById('kpiCi').textContent = `95% CI: ${res.ci_lower}% - ${res.ci_upper}%`;
+        document.getElementById('kpiTargetRtp').textContent = res.target_rtp.toFixed(2) + '%';
+
+        const devEl = document.getElementById('kpiDeviation');
+        const sign = res.deviation >= 0 ? '+' : '';
+        devEl.textContent = `${sign}${res.deviation.toFixed(2)}%`;
+        devEl.style.color = Math.abs(res.deviation) <= 1.0 ? '#34d399' : (res.deviation > 0 ? '#38bdf8' : '#f87171');
+
+        document.getElementById('kpiHouseEdge').textContent = res.house_edge.toFixed(2) + '%';
+
+        // Stats & Seeds
+        document.getElementById('statChi2').textContent = res.chi_square_stat;
+        document.getElementById('statDf').textContent = `Степеней свободы (df): ${res.df || (res.items.length - 1)}`;
+        document.getElementById('statPval').textContent = res.p_value;
+        document.getElementById('valServerSeed').textContent = res.server_seed || 'N/A';
+        document.getElementById('valClientSeed').textContent = res.client_seed || 'N/A';
+        document.getElementById('valServerHash').textContent = res.server_seed_hash || 'N/A';
+
+        // Items Table & Charts
+        currentItems = res.items || [];
+        renderItemsTable();
+        renderRtpChart(res.target_rtp, res.actual_rtp);
+        renderItemsChart(currentItems);
+    }
+
+    function renderRtpChart(targetRtp, actualRtp) {
+        const ctx = document.getElementById('rtpChart').getContext('2d');
+        if (rtpChartInstance) rtpChartInstance.destroy();
+
+        rtpChartInstance = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: ['Target RTP', 'Actual RTP'],
+                datasets: [{
+                    label: 'RTP (%)',
+                    data: [targetRtp, actualRtp],
+                    backgroundColor: [
+                        'rgba(56, 189, 248, 0.7)',
+                        actualRtp >= targetRtp ? 'rgba(52, 211, 153, 0.8)' : 'rgba(244, 114, 182, 0.8)'
+                    ],
+                    borderColor: [
+                        '#38bdf8',
+                        actualRtp >= targetRtp ? '#34d399' : '#ec4899'
+                    ],
+                    borderWidth: 2,
+                    borderRadius: 6
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            label: function(c) { return `${c.dataset.label}: ${c.raw}%`; }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: Math.max(100, Math.ceil(Math.max(targetRtp, actualRtp) * 1.15)),
+                        grid: { color: 'rgba(255, 255, 255, 0.08)' },
+                        ticks: { color: '#94a3b8', callback: v => v + '%' }
+                    },
+                    x: {
+                        grid: { display: false },
+                        ticks: { color: '#f8fafc', font: { weight: 'bold' } }
+                    }
+                }
+            }
+        });
+    }
+
+    function renderItemsChart(items) {
+        const ctx = document.getElementById('itemsChart').getContext('2d');
+        if (itemsChartInstance) itemsChartInstance.destroy();
+
+        const sorted = [...items].sort((a, b) => b.target_chance - a.target_chance);
+        const labels = sorted.map(it => it.name.length > 25 ? it.name.substring(0, 23) + '..' : it.name);
+        const targetData = sorted.map(it => it.target_chance);
+        const actualData = sorted.map(it => it.actual_chance);
+
+        itemsChartInstance = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [
+                    {
+                        label: 'Заданный шанс (%)',
+                        data: targetData,
+                        backgroundColor: 'rgba(56, 189, 248, 0.65)',
+                        borderColor: '#38bdf8',
+                        borderWidth: 1.5,
+                        borderRadius: 4
+                    },
+                    {
+                        label: 'Фактический шанс (%)',
+                        data: actualData,
+                        backgroundColor: 'rgba(236, 72, 153, 0.75)',
+                        borderColor: '#ec4899',
+                        borderWidth: 1.5,
+                        borderRadius: 4
+                    }
+                ]
+            },
+            options: {
+                indexAxis: 'y',
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        labels: { color: '#f8fafc', font: { weight: 'bold' } }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(c) {
+                                return `${c.dataset.label}: ${c.raw.toFixed(4)}%`;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        beginAtZero: true,
+                        grid: { color: 'rgba(255, 255, 255, 0.08)' },
+                        ticks: { color: '#94a3b8', callback: v => v + '%' }
+                    },
+                    y: {
+                        grid: { display: false },
+                        ticks: { color: '#cbd5e1', font: { size: 11 } }
+                    }
+                }
+            }
+        });
+    }
+
+    function sortItems(key) {
+        if (sortKey === key) {
+            sortAsc = !sortAsc;
+        } else {
+            sortKey = key;
+            sortAsc = (key === 'name');
+        }
+        renderItemsTable();
+    }
+
+    function filterItemsTable() {
+        renderItemsTable();
+    }
+
+    function renderItemsTable() {
+        const tbody = document.getElementById('itemsTableBody');
+        const q = (document.getElementById('itemSearch').value || '').toLowerCase();
+
+        let filtered = currentItems.filter(it => {
+            return it.name.toLowerCase().includes(q) ||
+                   (it.weapon_type && it.weapon_type.toLowerCase().includes(q)) ||
+                   (it.skin_name && it.skin_name.toLowerCase().includes(q));
+        });
+
+        filtered.sort((a, b) => {
+            let valA, valB;
+            if (sortKey === 'name') { valA = a.name; valB = b.name; }
+            else if (sortKey === 'price') { valA = a.price; valB = b.price; }
+            else if (sortKey === 'chance') { valA = a.target_chance; valB = b.target_chance; }
+            else if (sortKey === 'actual') { valA = a.actual_chance; valB = b.actual_chance; }
+            else if (sortKey === 'drops') { valA = a.drop_count; valB = b.drop_count; }
+            else { valA = a.target_chance; valB = b.target_chance; }
+
+            if (valA < valB) return sortAsc ? -1 : 1;
+            if (valA > valB) return sortAsc ? 1 : -1;
+            return 0;
+        });
+
+        tbody.innerHTML = '';
+        filtered.forEach(it => {
+            const tr = document.createElement('tr');
+            const absDevSign = it.abs_deviation >= 0 ? '+' : '';
+            const relDevSign = it.rel_deviation >= 0 ? '+' : '';
+            const devColor = Math.abs(it.rel_deviation) <= 5.0 ? '#34d399' : (Math.abs(it.rel_deviation) <= 15.0 ? '#fbbf24' : '#f87171');
+
+            tr.innerHTML = `
+                <td>
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        ${it.image_url ? `<img src="${it.image_url}" style="width: 38px; height: 38px; object-fit: contain; background: #0f172a; border-radius: 6px; padding: 2px; border: 1px solid ${it.rarity_color};">` : ''}
+                        <div>
+                            <strong style="color: #f8fafc; font-size: 13px;">${it.name}</strong>
+                            <div style="margin-top: 2px;">
+                                <span style="font-size: 10px; font-weight: 800; color: ${it.rarity_color}; text-transform: uppercase; border: 1px solid ${it.rarity_color}; padding: 1px 5px; border-radius: 3px;">
+                                    ${it.rarity_name}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </td>
+                <td><strong style="color: #38bdf8;">${it.price.toFixed(2)} UC</strong></td>
+                <td><span style="font-weight: 700; color: #f8fafc;">${it.target_chance.toFixed(4)}%</span></td>
+                <td><strong style="color: #ec4899;">${it.actual_chance.toFixed(4)}%</strong></td>
+                <td><strong style="color: #34d399;">${it.drop_count.toLocaleString()}</strong></td>
+                <td style="color: #94a3b8;">${it.expected_count.toLocaleString()}</td>
+                <td style="color: ${devColor};">${absDevSign}${it.abs_deviation.toFixed(4)}%</td>
+                <td style="color: ${devColor}; font-weight: 700;">${relDevSign}${it.rel_deviation.toFixed(2)}%</td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+
+    function addRunToHistoryTable(res) {
+        const tbody = document.getElementById('historyTableBody');
+        const noRow = document.getElementById('noHistoryRow');
+        if (noRow) noRow.remove();
+
+        const tr = document.createElement('tr');
+        tr.style.cursor = 'pointer';
+        tr.onclick = () => loadHistoryRun(res.run_id);
+
+        const devSign = res.deviation >= 0 ? '+' : '';
+        const devColor = res.deviation >= 0 ? '#34d399' : '#f87171';
+        const statusBadgeStyle = res.status_level === 'green' ? 'background: rgba(16,185,129,0.2); color: #34d399;' :
+                                (res.status_level === 'yellow' ? 'background: rgba(245,158,11,0.2); color: #fbbf24;' : 'background: rgba(239,68,68,0.2); color: #f87171;');
+
+        tr.innerHTML = `
+            <td style="color: #94a3b8; font-size: 12px;">${res.created_at || 'Сейчас'}</td>
+            <td><strong style="color: #f8fafc;">${res.case_name}</strong> (${res.case_price} UC)</td>
+            <td>${res.num_simulations.toLocaleString()}</td>
+            <td>${res.target_rtp}%</td>
+            <td><strong style="color: ${res.actual_rtp >= res.target_rtp ? '#34d399' : '#f87171'};">${res.actual_rtp}%</strong></td>
+            <td style="color: ${devColor};">${devSign}${res.deviation}%</td>
+            <td>${res.p_value}</td>
+            <td>
+                <span style="font-size: 11px; font-weight: 700; padding: 2px 6px; border-radius: 4px; ${statusBadgeStyle}">
+                    ${res.status}
+                </span>
+            </td>
+            <td>
+                <button type="button" onclick="event.stopPropagation(); loadHistoryRun(${res.run_id})" style="background: #1e293b; border: 1px solid #334155; color: #38bdf8; font-size: 11px; font-weight: 700; padding: 4px 8px; border-radius: 4px; cursor: pointer;">
+                    Посмотреть
+                </button>
+            </td>
+        `;
+
+        tbody.insertBefore(tr, tbody.firstChild);
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        onCaseChanged();
+    });
+</script>
+{% endblock %}

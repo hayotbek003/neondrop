@@ -669,3 +669,34 @@ class BloggerPayout(models.Model):
     def __str__(self):
         return f"Выплата {self.amount} UC блогеру {self.promo_code.blogger_name or self.promo_code.code} за {self.period}"
 
+
+class RngSimulationRun(models.Model):
+    case = models.ForeignKey(Case, on_delete=models.CASCADE, related_name='rng_simulations', verbose_name="Кейс")
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, verbose_name="Запустил")
+    num_simulations = models.PositiveIntegerField(verbose_name="Количество симуляций")
+    case_price = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal('0.00'), verbose_name="Цена кейса (UC)")
+    target_rtp = models.FloatField(verbose_name="Target RTP (%)")
+    actual_rtp = models.FloatField(verbose_name="Actual RTP (%)")
+    deviation = models.FloatField(verbose_name="Отклонение (%)")
+    total_spent = models.DecimalField(max_digits=14, decimal_places=2, verbose_name="Потрачено (UC)")
+    total_payout = models.DecimalField(max_digits=14, decimal_places=2, verbose_name="Выплачено (UC)")
+    house_edge = models.FloatField(verbose_name="House Edge (%)")
+    chi_square_stat = models.FloatField(verbose_name="Chi-Square статистика")
+    p_value = models.FloatField(verbose_name="p-value")
+    status = models.CharField(max_length=100, verbose_name="Статус проверки")
+    status_level = models.CharField(max_length=20, default='green', verbose_name="Уровень статуса (green/yellow/red)")
+    ci_lower = models.FloatField(default=0.0, verbose_name="Доверительный интервал (нижний, %)")
+    ci_upper = models.FloatField(default=0.0, verbose_name="Доверительный интервал (верхний, %)")
+    server_seed = models.CharField(max_length=64, blank=True, verbose_name="Server Seed")
+    client_seed = models.CharField(max_length=64, blank=True, verbose_name="Client Seed")
+    item_stats = models.JSONField(default=list, verbose_name="Статистика по предметам")
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Дата запуска")
+
+    class Meta:
+        verbose_name = "Результат RNG симуляции"
+        verbose_name_plural = "Результаты RNG симуляций"
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"Симуляция {self.case.name}: {self.num_simulations:,} прокруток -> RTP {self.actual_rtp:.2f}% ({self.created_at.strftime('%d.%m.%Y %H:%M')})"
+

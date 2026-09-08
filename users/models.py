@@ -50,6 +50,7 @@ ADMIN_PERMISSIONS_LIST = [
     ('can_view_backup', 'Просматривать Backup', 'Резервные копии'),
     ('can_create_backup', 'Делать Backup', 'Резервные копии'),
     ('can_restore_backup', 'Восстанавливать Backup', 'Резервные копии'),
+    ('can_run_rng_simulation', 'Запускать симуляцию честного серверного RNG', 'Кейсы / RNG'),
 ]
 
 
@@ -106,6 +107,9 @@ class AdminPermissionProfile(models.Model):
     can_view_backup = models.BooleanField(default=False, verbose_name="Просматривать Backup")
     can_create_backup = models.BooleanField(default=False, verbose_name="Делать Backup")
     can_restore_backup = models.BooleanField(default=False, verbose_name="Восстанавливать Backup")
+
+    # Симуляция RNG
+    can_run_rng_simulation = models.BooleanField(default=False, verbose_name="Запускать симуляцию честного серверного RNG")
 
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Дата назначения")
     updated_at = models.DateTimeField(auto_now=True, verbose_name="Дата обновления")

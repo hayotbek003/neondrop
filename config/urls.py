@@ -38,6 +38,11 @@ urlpatterns = [
     path('admin/cases/image-import/create-case/', admin_views.ajax_create_case_from_import_view, name='admin_ajax_create_case'),
     path('admin/cases/image-import/upload-grid/', admin_views.ajax_upload_grid_image_view, name='admin_ajax_upload_grid'),
 
+    # Dedicated Admin Provably Fair Server RNG Monte Carlo Simulator
+    path('admin/cases/rng-simulation/', admin_views.admin_rng_simulation_view, name='admin_rng_simulation'),
+    path('admin/cases/rng-simulation/run/', admin_views.ajax_run_rng_simulation_view, name='admin_ajax_run_rng_simulation'),
+    path('admin/cases/rng-simulation/history/<int:run_id>/', admin_views.ajax_get_rng_simulation_run_view, name='admin_ajax_get_rng_run'),
+
     path('admin/', admin.site.urls),
     path('', include('cases.urls', namespace='cases')),
     path('users/', include('users.urls', namespace='users')),
