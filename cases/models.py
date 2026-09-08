@@ -81,14 +81,24 @@ class Item(models.Model):
 
     @property
     def display_image(self):
+        if self.image_url and (self.image_url.startswith('http://') or self.image_url.startswith('https://') or self.image_url.startswith('/')):
+            return self.image_url
         if self.image:
             try:
                 return self.image.url
             except Exception:
                 pass
-        if self.image_url and (self.image_url.startswith('http://') or self.image_url.startswith('https://') or self.image_url.startswith('/')):
-            return self.image_url
+        # Static file fallback based on slug or name
+        from django.conf import settings
+        from pathlib import Path
+        from django.utils.text import slugify
+
+        slug = slugify(self.name or f"{self.weapon_type}-{self.skin_name}")
+        static_candidate = Path(settings.BASE_DIR) / 'static' / 'items' / f"{slug}.png"
+        if static_candidate.is_file():
+            return f"{settings.STATIC_URL}items/{slug}.png"
         return None
+
 
     def __str__(self):
         return f"{self.name} ({self.value} UC)"
@@ -145,14 +155,27 @@ class Case(models.Model):
 
     @property
     def display_image(self):
+        if self.image_url and (self.image_url.startswith('http://') or self.image_url.startswith('https://') or self.image_url.startswith('/')):
+            return self.image_url
         if self.image:
             try:
                 return self.image.url
             except Exception:
                 pass
-        if self.image_url and (self.image_url.startswith('http://') or self.image_url.startswith('https://') or self.image_url.startswith('/')):
-            return self.image_url
+        # Static file fallback based on case slug
+        from django.conf import settings
+        from pathlib import Path
+
+        if self.slug:
+            clean_slug = self.slug.replace('-', '_')
+            static_case = Path(settings.BASE_DIR) / 'static' / 'cases' / f"{clean_slug}.jpg"
+            if static_case.is_file():
+                return f"{settings.STATIC_URL}cases/{clean_slug}.jpg"
+            static_case_dash = Path(settings.BASE_DIR) / 'static' / 'cases' / f"{self.slug}.jpg"
+            if static_case_dash.is_file():
+                return f"{settings.STATIC_URL}cases/{self.slug}.jpg"
         return None
+
 
     def __str__(self):
         return f"{self.name} ({self.price} UC)"

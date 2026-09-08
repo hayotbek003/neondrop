@@ -1,3 +1,4 @@
+from pathlib import Path
 from django.contrib import admin
 from django.urls import path, include, re_path
 from django.conf import settings
@@ -45,10 +46,43 @@ urlpatterns = [
     path('upgrade/', include('upgrades.urls', namespace='upgrades')),
     path('contracts/', include('contracts.urls', namespace='contracts')),
     path('battles/', include('battles.urls', namespace='battles')),
-    
-    # Media file direct serving (uploaded case images, user avatars, etc.)
-    re_path(r'^media/(?P<path>.*)$', serve, {'document_root': settings.MEDIA_ROOT}),
 ]
+
+
+def robust_media_serve(request, path, **kwargs):
+    """
+    Robust media file server for NEONDROP:
+    1. Checks MEDIA_ROOT (disk).
+    2. If not found on disk (e.g. Render Free ephemeral containers),
+       seamlessly falls back to static/ and staticfiles/ directories
+       where repository-tracked case artworks and item icons are permanently bundled.
+    Guarantees zero broken images across all deployments and restarts.
+    """
+    media_file = Path(settings.MEDIA_ROOT) / path
+    if media_file.is_file():
+        return serve(request, path, document_root=str(settings.MEDIA_ROOT))
+
+    static_file = Path(settings.BASE_DIR) / 'static' / path
+    if static_file.is_file():
+        return serve(request, path, document_root=str(Path(settings.BASE_DIR) / 'static'))
+
+    if getattr(settings, 'STATIC_ROOT', None):
+        staticfiles_file = Path(settings.STATIC_ROOT) / path
+        if staticfiles_file.is_file():
+            return serve(request, path, document_root=str(settings.STATIC_ROOT))
+
+    resources_file = Path(settings.BASE_DIR) / 'cases' / 'resources' / path
+    if resources_file.is_file():
+        return serve(request, path, document_root=str(Path(settings.BASE_DIR) / 'cases' / 'resources'))
+
+    return serve(request, path, document_root=str(settings.MEDIA_ROOT))
+
+
+urlpatterns = urlpatterns + [
+    # Media file direct serving with static fallback
+    re_path(r'^media/(?P<path>.*)$', robust_media_serve),
+]
+
 
 handler400 = 'cases.views.custom_bad_request_view'
 handler403 = 'cases.views.custom_permission_denied_view'

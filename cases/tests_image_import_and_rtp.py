@@ -1,7 +1,9 @@
 import os
 import json
+from pathlib import Path
 from decimal import Decimal
 from PIL import Image
+
 from django.test import TestCase, Client
 from django.contrib.auth.models import User
 from django.conf import settings
@@ -219,6 +221,32 @@ class AdminImageImportEndpointsTestCase(TestCase):
         self.assertEqual(case.price, Decimal("15.00"))
         self.assertEqual(case.case_items.count(), 3)
         self.assertAlmostEqual(sum(ci.weight for ci in case.case_items.all()), 100.0, places=2)
+
+    def test_all_24_item_images_and_case_cover_serve_200(self):
+        """
+        Guarantees that all 24 item icons and case artwork exist in static storage
+        and return HTTP 200 OK via /media/ with static fallback, preventing broken images on Render.
+        """
+        # 1. Test case cover
+        cover_static = Path(settings.BASE_DIR) / 'static' / 'cases' / 'paradise_eruption.jpg'
+        self.assertTrue(cover_static.is_file(), "Cover image must exist in static/cases/")
+
+        resp_cover_media = self.client.get('/media/cases/paradise_eruption.jpg')
+        self.assertEqual(resp_cover_media.status_code, 200)
+        self.assertEqual(resp_cover_media.headers.get('Content-Type'), 'image/jpeg')
+
+        # 2. Test all 24 items
+        for m in PARADISE_ITEMS_METADATA:
+            slug = m['slug']
+            item_static = Path(settings.BASE_DIR) / 'static' / 'items' / f"{slug}.png"
+            self.assertTrue(item_static.is_file(), f"Item {slug}.png must exist in static/items/")
+
+            url_media = f"/media/items/{slug}.png"
+            res_m = self.client.get(url_media)
+            self.assertEqual(res_m.status_code, 200, f"Media URL {url_media} must return 200")
+            self.assertEqual(res_m.headers.get('Content-Type'), 'image/png')
+
+
 
 
 class ProvablyFairRNGTestCase(TestCase):
