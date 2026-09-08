@@ -701,7 +701,15 @@ def admin_rng_simulation_view(request):
         cases_meta[str(c.id)] = c_info
         cases_list.append(c_info)
 
-    recent_runs = RngSimulationRun.objects.select_related('case', 'user').order_by('-created_at')[:15]
+    try:
+        recent_runs = list(RngSimulationRun.objects.select_related('case', 'user').order_by('-created_at')[:15])
+    except Exception:
+        try:
+            from django.core.management import call_command
+            call_command('migrate', interactive=False)
+            recent_runs = list(RngSimulationRun.objects.select_related('case', 'user').order_by('-created_at')[:15])
+        except Exception:
+            recent_runs = []
 
     context = {
         'title': '🎲 Симуляция честного серверного RNG (Monte Carlo Test)',

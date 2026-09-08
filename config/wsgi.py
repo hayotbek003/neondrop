@@ -7,18 +7,15 @@ os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings')
 application = get_wsgi_application()
 
 # Render / Ephemeral Container Startup Integrity Check
-# Ensures core database tables exist before handling requests without touching application data
+# Ensures core database tables and all pending schema migrations are applied on startup
 try:
     from django.db import connection
     from django.core.management import call_command
 
-    with connection.cursor() as cursor:
-        existing_tables = connection.introspection.table_names(cursor)
-
-    if 'django_session' not in existing_tables or 'django_migrations' not in existing_tables:
-        logging.getLogger('django').info("[NEONDROP] Missing core tables detected. Running automatic schema migrations...")
+    try:
         call_command('migrate', interactive=False)
-        logging.getLogger('django').info("[NEONDROP] Automatic schema migrations completed.")
+    except Exception as me:
+        logging.getLogger('django').warning(f"[NEONDROP] Startup migration notice: {me}")
 
     # Ensure case catalog exists without touching existing data
     try:

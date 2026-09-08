@@ -1,4 +1,4 @@
-﻿import hashlib
+import hashlib
 import hmac
 import math
 import secrets
@@ -216,28 +216,59 @@ def run_monte_carlo_simulation(
     }
 
     if save_run:
-        run_record = RngSimulationRun.objects.create(
-            case=case,
-            user=user if (user and user.is_authenticated) else None,
-            num_simulations=num_simulations,
-            case_price=Decimal(str(round(case_price, 2))),
-            target_rtp=round(target_rtp, 2),
-            actual_rtp=round(actual_rtp, 2),
-            deviation=round(deviation, 2),
-            total_spent=Decimal(str(round(total_spent, 2))),
-            total_payout=Decimal(str(round(total_payout, 2))),
-            house_edge=round(actual_house_edge, 2),
-            chi_square_stat=round(chi2_stat, 3),
-            p_value=round(p_val, 5),
-            status=status_text,
-            status_level=status_level,
-            ci_lower=round(ci_lower, 2),
-            ci_upper=round(ci_upper, 2),
-            server_seed=server_seed,
-            client_seed=client_seed,
-            item_stats=item_stats,
-        )
-        result['run_id'] = run_record.id
-        result['created_at'] = run_record.created_at.strftime('%d.%m.%Y %H:%M:%S')
+        try:
+            run_record = RngSimulationRun.objects.create(
+                case=case,
+                user=user if (user and user.is_authenticated) else None,
+                num_simulations=num_simulations,
+                case_price=Decimal(str(round(case_price, 2))),
+                target_rtp=round(target_rtp, 2),
+                actual_rtp=round(actual_rtp, 2),
+                deviation=round(deviation, 2),
+                total_spent=Decimal(str(round(total_spent, 2))),
+                total_payout=Decimal(str(round(total_payout, 2))),
+                house_edge=round(actual_house_edge, 2),
+                chi_square_stat=round(chi2_stat, 3),
+                p_value=round(p_val, 5),
+                status=status_text,
+                status_level=status_level,
+                ci_lower=round(ci_lower, 2),
+                ci_upper=round(ci_upper, 2),
+                server_seed=server_seed,
+                client_seed=client_seed,
+                item_stats=item_stats,
+            )
+            result['run_id'] = run_record.id
+            result['created_at'] = run_record.created_at.strftime('%d.%m.%Y %H:%M:%S')
+        except Exception:
+            try:
+                from django.core.management import call_command
+                call_command('migrate', interactive=False)
+                run_record = RngSimulationRun.objects.create(
+                    case=case,
+                    user=user if (user and user.is_authenticated) else None,
+                    num_simulations=num_simulations,
+                    case_price=Decimal(str(round(case_price, 2))),
+                    target_rtp=round(target_rtp, 2),
+                    actual_rtp=round(actual_rtp, 2),
+                    deviation=round(deviation, 2),
+                    total_spent=Decimal(str(round(total_spent, 2))),
+                    total_payout=Decimal(str(round(total_payout, 2))),
+                    house_edge=round(actual_house_edge, 2),
+                    chi_square_stat=round(chi2_stat, 3),
+                    p_value=round(p_val, 5),
+                    status=status_text,
+                    status_level=status_level,
+                    ci_lower=round(ci_lower, 2),
+                    ci_upper=round(ci_upper, 2),
+                    server_seed=server_seed,
+                    client_seed=client_seed,
+                    item_stats=item_stats,
+                )
+                result['run_id'] = run_record.id
+                result['created_at'] = run_record.created_at.strftime('%d.%m.%Y %H:%M:%S')
+            except Exception:
+                result['run_id'] = 0
+                result['created_at'] = ''
 
     return result
