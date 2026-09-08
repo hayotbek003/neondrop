@@ -9,13 +9,13 @@ from django.core import serializers
 from django.conf import settings
 from django.contrib.auth.models import User, Group, Permission
 from django.contrib.sessions.models import Session
-from users.models import Profile
+from users.models import Profile, GoogleAccount
 from cases.models import (
     Category, Item, Case, CaseItem, Opening,
     PersonalCaseChance, PromoCode, PromoCodeUse, UserFreeOpening
 )
 from inventory.models import InventoryItem
-from payments.models import Transaction
+from payments.models import Transaction, CurrencySetting
 from upgrades.models import UpgradeAttempt
 from contracts.models import Contract, ContractInputItem
 from battles.models import Battle, BattlePlayer, BattleRound
@@ -25,6 +25,8 @@ MODELS_EXPORT_ORDER = [
     ('auth.Permission', Permission),
     ('auth.User', User),
     ('users.Profile', Profile),
+    ('users.GoogleAccount', GoogleAccount),
+    ('payments.CurrencySetting', CurrencySetting),
     ('cases.Category', Category),
     ('cases.Item', Item),
     ('cases.Case', Case),

@@ -9,16 +9,17 @@ from django.db import transaction, connection
 from django.db.models.signals import post_save
 from django.contrib.auth.models import User, Group, Permission
 from django.contrib.sessions.models import Session
-from users.models import Profile
+from users.models import Profile, GoogleAccount
 from cases.models import (
     Category, Item, Case, CaseItem, Opening,
     PersonalCaseChance, PromoCode, PromoCodeUse, UserFreeOpening
 )
 from inventory.models import InventoryItem
-from payments.models import Transaction
+from payments.models import Transaction, CurrencySetting
 from upgrades.models import UpgradeAttempt
 from contracts.models import Contract, ContractInputItem
 from battles.models import Battle, BattlePlayer, BattleRound
+from cases.backup_restore_service import create_full_backup_zip
 
 MODELS_CLEAN_REVERSE_ORDER = [
     BattleRound,
@@ -31,6 +32,7 @@ MODELS_CLEAN_REVERSE_ORDER = [
     UserFreeOpening,
     PromoCodeUse,
     Transaction,
+    CurrencySetting,
     PromoCode,
     PersonalCaseChance,
     Opening,
@@ -38,6 +40,7 @@ MODELS_CLEAN_REVERSE_ORDER = [
     Case,
     Item,
     Category,
+    GoogleAccount,
     Profile,
     User,
     Permission,
@@ -62,6 +65,11 @@ class Command(BaseCommand):
             '--ignore-checksum',
             action='store_true',
             help='Proceed even if SHA256 checksum mismatch is detected'
+        )
+        parser.add_argument(
+            '--no-auto-backup',
+            action='store_true',
+            help='Skip automatic safety backup creation before restore'
         )
 
     def handle(self, *args, **options):
@@ -105,6 +113,14 @@ class Command(BaseCommand):
             metadata = {}
         else:
             raise CommandError("Unrecognized backup file format.")
+
+        # Safety auto-backup of current database state before restoration
+        if not options.get('no_auto_backup'):
+            try:
+                pre_backup_path, _ = create_full_backup_zip(include_media=False)
+                self.stdout.write(self.style.SUCCESS(f" -> Auto-backup of current database created: {pre_backup_path.name}"))
+            except Exception as e:
+                self.stdout.write(self.style.WARNING(f" -> Notice: Could not create pre-restore backup: {e}"))
 
         # Disconnect User post_save signal to prevent automatic empty Profile creation collisions
         from users.signals import create_or_update_user_profile

@@ -1,0 +1,403 @@
+﻿{% extends "admin/base_site.html" %}
+{% load i18n static %}
+
+{% block extrastyle %}
+{{ block.super }}
+<style>
+    .cyber-card {
+        background: #0f172a;
+        border: 1px solid #1e293b;
+        border-radius: 12px;
+        padding: 24px;
+        margin-bottom: 24px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    }
+    .cyber-card.accent {
+        border-color: #0284c7;
+        box-shadow: 0 0 25px rgba(2, 132, 199, 0.15);
+    }
+    .cyber-card.warning-glow {
+        border-color: #f59e0b;
+        box-shadow: 0 0 25px rgba(245, 158, 11, 0.15);
+    }
+    .cyber-card.success-glow {
+        border-color: #10b981;
+        box-shadow: 0 0 25px rgba(16, 185, 129, 0.15);
+    }
+    .cyber-title {
+        font-size: 20px;
+        font-weight: 800;
+        margin-top: 0;
+        margin-bottom: 8px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    .cyber-badge-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 12px;
+        margin: 16px 0;
+    }
+    .cyber-badge {
+        background: #1e293b;
+        border: 1px solid #334155;
+        border-radius: 8px;
+        padding: 12px 16px;
+        display: flex;
+        flex-direction: column;
+    }
+    .cyber-badge-label {
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: #94a3b8;
+        margin-bottom: 4px;
+    }
+    .cyber-badge-val {
+        font-size: 18px;
+        font-weight: 800;
+        color: #38bdf8;
+    }
+    .btn-cyber-primary {
+        background: linear-gradient(135deg, #0284c7, #0ea5e9);
+        color: #ffffff !important;
+        font-weight: 700;
+        text-decoration: none;
+        padding: 12px 28px;
+        border-radius: 8px;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 14px;
+        border: none;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        box-shadow: 0 4px 14px rgba(14, 165, 233, 0.35);
+    }
+    .btn-cyber-primary:hover {
+        background: linear-gradient(135deg, #0369a1, #0284c7);
+        transform: translateY(-1px);
+        box-shadow: 0 6px 20px rgba(14, 165, 233, 0.5);
+    }
+    .btn-cyber-warning {
+        background: linear-gradient(135deg, #d97706, #f59e0b);
+        color: #0f172a !important;
+        font-weight: 800;
+        text-decoration: none;
+        padding: 13px 32px;
+        border-radius: 8px;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 15px;
+        border: none;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        box-shadow: 0 4px 14px rgba(245, 158, 11, 0.4);
+    }
+    .btn-cyber-warning:hover {
+        background: linear-gradient(135deg, #b45309, #d97706);
+        transform: translateY(-1px);
+        box-shadow: 0 6px 22px rgba(245, 158, 11, 0.6);
+    }
+    .btn-cyber-secondary {
+        background: #334155;
+        color: #f1f5f9 !important;
+        font-weight: 600;
+        text-decoration: none;
+        padding: 10px 20px;
+        border-radius: 6px;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 13px;
+        border: 1px solid #475569;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+    .btn-cyber-secondary:hover {
+        background: #475569;
+    }
+    .csv-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 12px;
+        margin-top: 14px;
+    }
+    .csv-btn {
+        background: #1e293b;
+        border: 1px solid #334155;
+        color: #cbd5e1 !important;
+        padding: 10px 14px;
+        border-radius: 6px;
+        text-decoration: none;
+        font-size: 13px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        transition: all 0.15s ease;
+    }
+    .csv-btn:hover {
+        background: #334155;
+        border-color: #64748b;
+        color: #ffffff !important;
+    }
+</style>
+{% endblock %}
+
+{% block breadcrumbs %}
+<div class="breadcrumbs">
+    <a href="{% url 'admin:index' %}">{% translate 'Home' %}</a>
+    &rsaquo; <span>Backup / Restore</span>
+</div>
+{% endblock %}
+
+{% block content %}
+<div style="max-width: 1100px; margin: 0 auto; padding: 10px 0 40px 0;">
+
+    <div style="margin-bottom: 24px;">
+        <h1 style="font-size: 26px; font-weight: 900; color: #f8fafc; margin: 0 0 6px 0;">
+            💾 NEONDROP BACKUP / RESTORE
+        </h1>
+        <p style="color: #94a3b8; font-size: 14px; margin: 0;">
+            Централизованная система резервного копирования и транзакционного восстановления данных проекта.
+        </p>
+    </div>
+
+    <!-- STATS OVERVIEW -->
+    <div class="cyber-card">
+        <h3 style="margin: 0 0 12px 0; font-size: 14px; text-transform: uppercase; letter-spacing: 0.8px; color: #94a3b8;">
+            📊 Текущее состояние базы данных (Production PostgreSQL)
+        </h3>
+        <div class="cyber-badge-grid">
+            <div class="cyber-badge">
+                <span class="cyber-badge-label">👤 Пользователи</span>
+                <span class="cyber-badge-val">{{ current_stats.users_count }}</span>
+            </div>
+            <div class="cyber-badge">
+                <span class="cyber-badge-label">📦 Кейсы</span>
+                <span class="cyber-badge-val">{{ current_stats.cases_count }}</span>
+            </div>
+            <div class="cyber-badge">
+                <span class="cyber-badge-label">🔫 Предметы (Скины)</span>
+                <span class="cyber-badge-val">{{ current_stats.items_count }}</span>
+            </div>
+            <div class="cyber-badge">
+                <span class="cyber-badge-label">🎯 Содержимое кейсов</span>
+                <span class="cyber-badge-val">{{ current_stats.case_items_count }}</span>
+            </div>
+            <div class="cyber-badge">
+                <span class="cyber-badge-label">🎒 Инвентарь</span>
+                <span class="cyber-badge-val">{{ current_stats.inventory_count }}</span>
+            </div>
+            <div class="cyber-badge">
+                <span class="cyber-badge-label">🎰 Открытия</span>
+                <span class="cyber-badge-val">{{ current_stats.openings_count }}</span>
+            </div>
+            <div class="cyber-badge">
+                <span class="cyber-badge-label">💳 Транзакции</span>
+                <span class="cyber-badge-val">{{ current_stats.transactions_count }}</span>
+            </div>
+            <div class="cyber-badge">
+                <span class="cyber-badge-label">🎟️ Промокоды</span>
+                <span class="cyber-badge-val">{{ current_stats.promocodes_count }}</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- 1. BACKUP SECTION -->
+    <div class="cyber-card accent">
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
+            <div style="max-width: 650px;">
+                <h2 class="cyber-title" style="color: #38bdf8;">
+                    <span>📥</span> Скачать полный backup
+                </h2>
+                <p style="color: #cbd5e1; font-size: 13.5px; line-height: 1.5; margin: 0;">
+                    Формирует единый архив <code>neondrop_backup_YYYY-MM-DD_HH-MM-SS.zip</code>. В архив включаются:
+                    пользователи, хэши паролей Django, балансы, инвентарь, кейсы, предметы, точные веса и шансы, 
+                    история открытий, транзакции, промокоды, апгрейды, контракты, битвы, а также вся папка медиа-файлов.
+                </p>
+            </div>
+            <div>
+                <a href="{% url 'admin_backup_download' %}" class="btn-cyber-primary">
+                    <span>📥</span> Скачать полный backup (.zip)
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. RESTORE SECTION -->
+    <div class="cyber-card {% if preview %}warning-glow{% endif %}">
+        <h2 class="cyber-title" style="color: #f59e0b;">
+            <span>📤</span> Загрузить backup
+        </h2>
+        <p style="color: #94a3b8; font-size: 13.5px; margin: 0 0 16px 0;">
+            Выберите ранее сохранённый <code>.zip</code> архив. Перед применением система распакует его во временную директорию, 
+            проверит целостность и покажет предпросмотр количества объектов.
+        </p>
+
+        {% if not preview %}
+        <!-- STEP 1: Upload Form -->
+        <form method="post" enctype="multipart/form-data" style="margin-top: 14px;">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="inspect">
+            
+            <div style="display: flex; align-items: center; gap: 16px; flex-wrap: wrap;">
+                <div style="flex: 1; min-width: 260px;">
+                    <input type="file" name="backup_file" accept=".zip" required
+                           style="background: #1e293b; border: 1px solid #475569; border-radius: 6px; padding: 10px 14px; color: #f1f5f9; width: 100%; font-size: 13px;">
+                </div>
+                <div>
+                    <button type="submit" class="btn-cyber-secondary" style="padding: 11px 22px; font-size: 14px;">
+                        <span>🔍</span> Проверить backup
+                    </button>
+                </div>
+            </div>
+        </form>
+        {% endif %}
+
+        {% if preview %}
+        <!-- STEP 2: Pre-Restore Verification Preview -->
+        <div style="background: rgba(245, 158, 11, 0.05); border: 1px solid #d97706; border-radius: 8px; padding: 20px; margin-top: 16px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; flex-wrap: wrap; gap: 10px;">
+                <h3 style="margin: 0; color: #fbbf24; font-size: 16px; font-weight: 800; display: flex; align-items: center; gap: 8px;">
+                    <span>📋</span> ПРЕДПРОСМОТР BACKUP: {{ uploaded_filename }}
+                </h3>
+                <span style="color: #cbd5e1; font-size: 13px; font-weight: bold; background: #1e293b; padding: 4px 10px; border-radius: 4px; border: 1px solid #475569;">
+                    🕒 Backup создан: {{ preview.created_at_display }}
+                </span>
+            </div>
+
+            <p style="color: #e2e8f0; font-size: 13px; margin: 0 0 14px 0;">
+                Проверка архива завершена успешно. Ниже приведено количество записей, готовых к восстановлению:
+            </p>
+
+            <div class="cyber-badge-grid">
+                <div class="cyber-badge">
+                    <span class="cyber-badge-label">👤 Пользователи</span>
+                    <span class="cyber-badge-val">{{ preview.users }}</span>
+                </div>
+                <div class="cyber-badge">
+                    <span class="cyber-badge-label">📦 Cases</span>
+                    <span class="cyber-badge-val">{{ preview.cases }}</span>
+                </div>
+                <div class="cyber-badge">
+                    <span class="cyber-badge-label">🔫 Items</span>
+                    <span class="cyber-badge-val">{{ preview.items }}</span>
+                </div>
+                <div class="cyber-badge">
+                    <span class="cyber-badge-label">🎯 Case Contents</span>
+                    <span class="cyber-badge-val">{{ preview.case_contents }}</span>
+                </div>
+                <div class="cyber-badge">
+                    <span class="cyber-badge-label">🎒 Inventory</span>
+                    <span class="cyber-badge-val">{{ preview.inventory }}</span>
+                </div>
+                <div class="cyber-badge">
+                    <span class="cyber-badge-label">🎰 Openings</span>
+                    <span class="cyber-badge-val">{{ preview.openings }}</span>
+                </div>
+                <div class="cyber-badge">
+                    <span class="cyber-badge-label">💳 Transactions</span>
+                    <span class="cyber-badge-val">{{ preview.transactions }}</span>
+                </div>
+                <div class="cyber-badge">
+                    <span class="cyber-badge-label">🎟️ Promo Codes</span>
+                    <span class="cyber-badge-val">{{ preview.promocodes }}</span>
+                </div>
+                <div class="cyber-badge">
+                    <span class="cyber-badge-label">💰 Withdrawals</span>
+                    <span class="cyber-badge-val">{{ preview.withdrawals }}</span>
+                </div>
+                <div class="cyber-badge">
+                    <span class="cyber-badge-label">🖼️ Media files</span>
+                    <span class="cyber-badge-val">{{ preview.media_files }}</span>
+                </div>
+            </div>
+
+            <div style="background: #1e293b; border-left: 4px solid #f59e0b; padding: 12px 16px; margin: 18px 0; border-radius: 0 6px 6px 0;">
+                <p style="margin: 0; color: #f8fafc; font-size: 13px; line-height: 1.5;">
+                    <strong>🛡️ Гарантия безопасности:</strong> Перед началом восстановления система автоматически создаст страховочную копию текущей production-базы данных. 
+                    Восстановление работает транзакционно по существующим ID без удаления данных (non-destructive upsert). Пароли и шансы сохраняются.
+                </p>
+            </div>
+
+            <!-- Confirmation Form -->
+            <div style="display: flex; align-items: center; gap: 14px; margin-top: 18px; flex-wrap: wrap;">
+                <form method="post">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="confirm">
+                    <button type="submit" class="btn-cyber-warning">
+                        <span>⚠️</span> Подтвердить восстановление
+                    </button>
+                </form>
+
+                <form method="post">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="cancel">
+                    <button type="submit" class="btn-cyber-secondary">
+                        <span>✕</span> Отменить
+                    </button>
+                </form>
+            </div>
+        </div>
+        {% endif %}
+
+        {% if restore_result %}
+        <!-- STEP 3: Restoration Result -->
+        <div style="background: rgba(16, 185, 129, 0.08); border: 1px solid #10b981; border-radius: 8px; padding: 20px; margin-top: 20px;">
+            <h3 style="margin: 0 0 10px 0; color: #34d399; font-size: 17px; font-weight: 800; display: flex; align-items: center; gap: 8px;">
+                <span>✅</span> Восстановление завершено успешно!
+            </h3>
+            <p style="margin: 0 0 12px 0; color: #e2e8f0; font-size: 13.5px;">
+                Все записи и медиа-файлы успешно восстановлены и синхронизированы:
+            </p>
+            <ul style="color: #cbd5e1; font-size: 13px; line-height: 1.6; margin: 0 0 14px 20px;">
+                <li>Всего восстановлено записей моделей: <strong>{{ restore_result.total_restored }}</strong></li>
+                <li>Извлечено медиа-файлов: <strong>{{ restore_result.extracted_media }}</strong></li>
+                <li>Контрольный пользователь Smoke: <strong>{% if restore_result.smoke_verified %}Проверен (хэш пароля и доступ сохранены){% else %}Не найден или не проверен{% endif %}</strong></li>
+                {% if restore_result.pre_backup_path %}
+                <li>Автоматический pre-restore бэкап: <code style="color: #38bdf8;">{{ restore_result.pre_backup_path }}</code></li>
+                {% endif %}
+            </ul>
+            <a href="{% url 'admin_backup_restore' %}" class="btn-cyber-secondary">
+                <span>↻</span> Обновить страницу
+            </a>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- 3. CSV EXPORTS SECTION -->
+    <div class="cyber-card">
+        <h2 class="cyber-title" style="color: #a855f7;">
+            <span>📊</span> Экспорт отчётов в CSV
+        </h2>
+        <p style="color: #94a3b8; font-size: 13.5px; margin: 0;">
+            Скачивание структурированных таблиц (с поддержкой кириллицы UTF-8 SIG для Microsoft Excel) по отдельным модулям:
+        </p>
+
+        <div class="csv-grid">
+            <a href="{% url 'admin_export_users_csv' %}" class="csv-btn">
+                <span>👤</span> Export Users CSV
+            </a>
+            <a href="{% url 'admin_export_cases_csv' %}" class="csv-btn">
+                <span>📦</span> Export Cases CSV
+            </a>
+            <a href="{% url 'admin_export_items_csv' %}" class="csv-btn">
+                <span>🔫</span> Export Items CSV
+            </a>
+            <a href="{% url 'admin_export_case_contents_csv' %}" class="csv-btn" style="border-color: #a855f7;">
+                <span>🎯</span> Export Case Contents & Chances CSV
+            </a>
+            <a href="{% url 'admin_export_openings_csv' %}" class="csv-btn">
+                <span>🎰</span> Export Openings CSV
+            </a>
+            <a href="{% url 'admin_export_transactions_csv' %}" class="csv-btn">
+                <span>💳</span> Export Transactions CSV
+            </a>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

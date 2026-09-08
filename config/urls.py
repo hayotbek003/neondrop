@@ -4,7 +4,19 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.views.static import serve
 
+import cases.admin_views as admin_views
+
 urlpatterns = [
+    # Dedicated Admin Backup / Restore GUI & Export Endpoints
+    path('admin/backup-restore/', admin_views.admin_backup_restore_view, name='admin_backup_restore'),
+    path('admin/backup-restore/download/', admin_views.admin_backup_download_view, name='admin_backup_download'),
+    path('admin/backup-restore/export/users/', admin_views.export_users_csv_view, name='admin_export_users_csv'),
+    path('admin/backup-restore/export/cases/', admin_views.export_cases_csv_view, name='admin_export_cases_csv'),
+    path('admin/backup-restore/export/items/', admin_views.export_items_csv_view, name='admin_export_items_csv'),
+    path('admin/backup-restore/export/case-contents/', admin_views.export_case_contents_csv_view, name='admin_export_case_contents_csv'),
+    path('admin/backup-restore/export/openings/', admin_views.export_openings_csv_view, name='admin_export_openings_csv'),
+    path('admin/backup-restore/export/transactions/', admin_views.export_transactions_csv_view, name='admin_export_transactions_csv'),
+
     path('admin/', admin.site.urls),
     path('', include('cases.urls', namespace='cases')),
     path('users/', include('users.urls', namespace='users')),
