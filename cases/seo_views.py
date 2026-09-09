@@ -1,5 +1,5 @@
 import os
-from django.http import HttpResponse
+from django.http import HttpResponse, FileResponse
 from django.conf import settings
 
 
@@ -27,6 +27,8 @@ def robots_txt_view(request):
         "Allow: /users/register/",
         "Allow: /static/",
         "Allow: /media/",
+        "Allow: /favicon.ico",
+        "Allow: /site.webmanifest",
         "",
         "# Disallow private user accounts, financial transactions, games, and internal APIs",
         "Disallow: /admin/",
@@ -48,6 +50,32 @@ def robots_txt_view(request):
     return HttpResponse(content, content_type="text/plain; charset=utf-8")
 
 
+def favicon_ico_view(request):
+    """
+    Serves /favicon.ico directly at the root of the domain for Googlebot,
+    search engines, and browsers with status 200 OK.
+    """
+    for candidate in [
+        settings.BASE_DIR / 'static' / 'favicon.ico',
+        getattr(settings, 'STATIC_ROOT', settings.BASE_DIR / 'staticfiles') / 'favicon.ico',
+        settings.BASE_DIR / 'static' / 'images' / 'favicon.ico',
+    ]:
+        if candidate.is_file():
+            return HttpResponse(candidate.read_bytes(), content_type='image/x-icon')
+    return HttpResponse(b"", status=200, content_type='image/x-icon')
+
+
+def webmanifest_view(request):
+    """
+    Serves /site.webmanifest for PWA and Google mobile search engines with status 200 OK.
+    """
+    candidate = settings.BASE_DIR / 'static' / 'site.webmanifest'
+    if candidate.is_file():
+        content = candidate.read_text(encoding='utf-8')
+        return HttpResponse(content, content_type='application/manifest+json')
+    return HttpResponse('{"name":"NEONDROP"}', content_type='application/manifest+json')
+
+
 def google_verification_file_view(request):
     """
     Handles Google Search Console HTML verification file request for /googlea35031ec8cebfe94.html.
@@ -62,5 +90,6 @@ def google_verification_file_view(request):
     else:
         content = "google-site-verification: googlea35031ec8cebfe94.html"
     return HttpResponse(content, content_type="text/html; charset=utf-8")
+
 
 

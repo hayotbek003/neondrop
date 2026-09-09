@@ -192,3 +192,35 @@ class SEOTestCase(TestCase):
         content = response.content.decode('utf-8')
         self.assertNotIn(f'/cases/{inactive_case.slug}/', content)
 
+    def test_favicon_ico_endpoint(self):
+        """Verify /favicon.ico returns 200 OK and valid image/x-icon content for Googlebot."""
+        response = self.client.get('/favicon.ico')
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('image/x-icon', response['Content-Type'])
+        self.assertTrue(len(response.content) > 0)
+
+    def test_site_webmanifest_endpoint(self):
+        """Verify /site.webmanifest returns 200 OK, valid JSON, and contains standard icon sizes."""
+        response = self.client.get('/site.webmanifest')
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('application/manifest+json', response['Content-Type'])
+        data = json.loads(response.content.decode('utf-8'))
+        self.assertEqual(data.get('name'), 'NEONDROP')
+        self.assertTrue(len(data.get('icons', [])) > 0)
+        sizes = [icon.get('sizes') for icon in data.get('icons', [])]
+        self.assertIn('48x48', sizes)
+        self.assertIn('96x96', sizes)
+        self.assertIn('192x192', sizes)
+
+    def test_favicon_tags_in_base_template(self):
+        """Verify base HTML template includes Google Search compliant multi-resolution favicon tags."""
+        response = self.client.get('/')
+        self.assertEqual(response.status_code, 200)
+        content = response.content.decode('utf-8')
+        self.assertIn('rel="icon" type="image/x-icon" href="/favicon.ico"', content)
+        self.assertIn('rel="icon" type="image/png" sizes="48x48"', content)
+        self.assertIn('rel="icon" type="image/png" sizes="96x96"', content)
+        self.assertIn('rel="icon" type="image/png" sizes="192x192"', content)
+        self.assertIn('rel="apple-touch-icon"', content)
+        self.assertIn('rel="manifest" href="/site.webmanifest"', content)
+

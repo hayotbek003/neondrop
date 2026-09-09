@@ -10,7 +10,7 @@ import cases.admin_views as admin_views
 import cases.blogger_views as blogger_views
 import users.admin_views as user_admin_views
 from cases.sitemaps import StaticViewSitemap, CaseSitemap
-from cases.seo_views import robots_txt_view, google_verification_file_view
+from cases.seo_views import robots_txt_view, google_verification_file_view, favicon_ico_view, webmanifest_view
 
 sitemaps = {
     'static': StaticViewSitemap,
@@ -54,6 +54,8 @@ urlpatterns = [
     # SEO & Search Engine Indexation Endpoints
     path('robots.txt', robots_txt_view, name='robots_txt'),
     path('sitemap.xml', sitemap, {'sitemaps': sitemaps}, name='django.contrib.sitemaps.views.sitemap'),
+    path('favicon.ico', favicon_ico_view, name='favicon_ico'),
+    path('site.webmanifest', webmanifest_view, name='webmanifest'),
     path('googlea35031ec8cebfe94.html', google_verification_file_view, name='google_verification_file'),
 
     path('admin/', admin.site.urls),
