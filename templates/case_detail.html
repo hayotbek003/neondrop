@@ -1,16 +1,16 @@
 {% extends 'base.html' %}
 {% load static humanize currency_tags %}
 
-{% block title %}Кейс {{ case.name }} — Открыть за {{ case.price|uc }} | NEONDROP{% endblock %}
-{% block meta_description %}Открыть кейс {{ case.name }} за {{ case.price|uc }} ({{ case.price|usd_approx }}) на NEONDROP. Честный серверный рандом Provably Fair (SHA-256), {{ items_with_chances|length }} редких предметов и моментальный вывод.{% endblock %}
+{% block title %}{{ case.name }} — кейс за {{ case.price|uc }} | NEONDROP{% endblock %}
+{% block meta_description %}Открой кейс «{{ case.name }}» на NEONDROP за {{ case.price|uc }}. Смотри содержимое кейса, редкость предметов и шансы выпадения.{% endblock %}
 
 {% block og_type %}product{% endblock %}
-{% block og_title %}Кейс {{ case.name }} — Открыть за {{ case.price|uc }} на NEONDROP{% endblock %}
-{% block og_description %}Откройте кейс {{ case.name }} на платформе NEONDROP. Прозрачные вероятности выпадения предметов, доказанная честность Provably Fair (SHA-256).{% endblock %}
+{% block og_title %}{{ case.name }} — кейс за {{ case.price|uc }} | NEONDROP{% endblock %}
+{% block og_description %}Открой кейс «{{ case.name }}» на NEONDROP за {{ case.price|uc }}. Смотри содержимое кейса, редкость предметов и шансы выпадения.{% endblock %}
 {% block og_image %}{% if case.display_image %}{% if "http" in case.display_image %}{{ case.display_image }}{% else %}{{ site_url }}{{ case.display_image }}{% endif %}{% else %}{{ default_og_image }}{% endif %}{% endblock %}
 
-{% block twitter_title %}Кейс {{ case.name }} — Открыть за {{ case.price|uc }} | NEONDROP{% endblock %}
-{% block twitter_description %}Откройте кейс {{ case.name }} на платформе NEONDROP. Честный рандом Provably Fair, легендарные скины.{% endblock %}
+{% block twitter_title %}{{ case.name }} — кейс за {{ case.price|uc }} | NEONDROP{% endblock %}
+{% block twitter_description %}Открой кейс «{{ case.name }}» на NEONDROP за {{ case.price|uc }}. Смотри содержимое кейса, редкость предметов и шансы выпадения.{% endblock %}
 {% block twitter_image %}{% if case.display_image %}{% if "http" in case.display_image %}{{ case.display_image }}{% else %}{{ site_url }}{{ case.display_image }}{% endif %}{% else %}{{ default_og_image }}{% endif %}{% endblock %}
 
 {% block schema_json_ld %}

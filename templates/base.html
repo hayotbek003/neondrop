@@ -24,8 +24,9 @@
   <link rel="canonical" href="{% block canonical_url %}{{ canonical_url }}{% endblock %}">
 
   <!-- Favicon / Brand Icons -->
-  <link rel="icon" type="image/png" href="{% static 'images/uc_icon.png' %}">
-  <link rel="apple-touch-icon" href="{% static 'images/uc_icon.png' %}">
+  <link rel="icon" type="image/png" href="{% static 'images/brand-avatar.png' %}">
+  <link rel="shortcut icon" href="{% static 'favicon.ico' %}">
+  <link rel="apple-touch-icon" href="{% static 'images/apple-touch-icon.png' %}">
 
   <!-- Open Graph / Facebook -->
   <meta property="og:locale" content="ru_RU">
@@ -72,6 +73,7 @@
   <aside class="mobile-drawer" id="mobileDrawer">
     <div class="mobile-drawer-header">
       <div class="logo-wrapper">
+        <img src="{% static 'images/brand-avatar.png' %}" alt="NEONDROP" class="logo-brand-icon" width="34" height="34">
         <span class="logo-text">NEONDROP</span>
         <span class="logo-badge">PRO</span>
       </div>
@@ -218,6 +220,7 @@
         </button>
 
         <a href="{% url 'cases:home' %}" class="logo-wrapper">
+          <img src="{% static 'images/brand-avatar.png' %}" alt="NEONDROP" class="logo-brand-icon" width="36" height="36">
           <span class="logo-text">NEONDROP</span>
           <span class="logo-badge">PRO</span>
         </a>
@@ -317,6 +320,7 @@
       <div class="footer-grid">
         <div class="footer-brand">
           <div class="logo-wrapper">
+            <img src="{% static 'images/brand-avatar.png' %}" alt="NEONDROP" class="logo-brand-icon" width="32" height="32">
             <span class="logo-text">NEONDROP</span>
           </div>
           <p>Инновационная игровая платформа с доказанной честностью Provably Fair. Открывай лучшие кейсы CS:GO и забирай топовые скины прямо сейчас!</p>

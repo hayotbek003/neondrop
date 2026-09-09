@@ -131,6 +131,23 @@ button {
   text-decoration: none;
 }
 
+.logo-brand-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+  border: 1.5px solid rgba(168, 85, 247, 0.7);
+  box-shadow: 0 0 12px rgba(168, 85, 247, 0.4);
+  transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+}
+
+.logo-wrapper:hover .logo-brand-icon {
+  transform: scale(1.08) rotate(3deg);
+  box-shadow: 0 0 18px rgba(236, 72, 153, 0.8);
+  border-color: #ec4899;
+}
+
 .logo-text {
   font-family: var(--font-display);
   font-size: 22px;

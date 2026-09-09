@@ -17,7 +17,7 @@ def seo_context(request):
     clean_path = request.path
     canonical_url = f"{site_url}{clean_path}"
 
-    default_og_image = f"{site_url}/static/images/og-banner.png"
+    default_og_image = f"{site_url}/static/images/brand-logo.png"
     google_site_verification = getattr(
         settings,
         'GOOGLE_SITE_VERIFICATION',

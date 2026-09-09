@@ -118,7 +118,8 @@ class SEOTestCase(TestCase):
         content = response.content.decode('utf-8')
         
         # Title and Canonical
-        self.assertIn(f'Кейс {self.case.name}', content)
+        self.assertIn(f'{self.case.name} — кейс за', content)
+        self.assertIn(f'Открой кейс «{self.case.name}» на NEONDROP за', content)
         self.assertIn(f'link rel="canonical" href="https://neondrop-ujly.onrender.com/cases/{self.case.slug}/"', content)
         
         # Meta and Open Graph
