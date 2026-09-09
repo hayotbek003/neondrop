@@ -48,17 +48,19 @@ def robots_txt_view(request):
     return HttpResponse(content, content_type="text/plain; charset=utf-8")
 
 
-def google_verification_file_view(request, token='a35031ec8cebfe94'):
+def google_verification_file_view(request):
     """
-    Handles Google Search Console HTML verification file requests, e.g. /google<token>.html
+    Handles Google Search Console HTML verification file request for /googlea35031ec8cebfe94.html.
+    CRITICAL SECURITY REQUIREMENT:
+    Strictly returns HTTP 200 ONLY for the exact authorized verification file.
+    Does NOT dynamically spoof or generate tokens for arbitrary requests,
+    which satisfies Google's anti-tampering and anti-hack canary verification checks.
     """
-    filename = f"google{token}.html"
-    file_path = settings.BASE_DIR / filename
-    if file_path.exists():
-        try:
-            content = file_path.read_text(encoding='utf-8').strip()
-            return HttpResponse(content, content_type="text/html; charset=utf-8")
-        except Exception:
-            pass
-    return HttpResponse(f"google-site-verification: {filename}", content_type="text/html; charset=utf-8")
+    file_path = settings.BASE_DIR / 'googlea35031ec8cebfe94.html'
+    if file_path.is_file():
+        content = file_path.read_text(encoding='utf-8').strip()
+    else:
+        content = "google-site-verification: googlea35031ec8cebfe94.html"
+    return HttpResponse(content, content_type="text/html; charset=utf-8")
+
 

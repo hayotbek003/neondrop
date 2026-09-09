@@ -71,12 +71,15 @@ class SEOTestCase(TestCase):
         self.assertIn(f'/cases/{self.case.slug}/', urls_joined)
 
     def test_google_site_verification_file(self):
-        """Verify google<token>.html responds with 200 and the correct verification text."""
-        token = "1234567890abcdef"
-        response = self.client.get(f'/google{token}.html')
+        """Verify googlea35031ec8cebfe94.html responds with 200 and fake tokens respond with 404."""
+        response = self.client.get('/googlea35031ec8cebfe94.html')
         self.assertEqual(response.status_code, 200)
         self.assertTrue('text/html' in response['Content-Type'])
-        self.assertEqual(response.content.decode('utf-8').strip(), f"google-site-verification: google{token}.html")
+        self.assertEqual(response.content.decode('utf-8').strip(), "google-site-verification: googlea35031ec8cebfe94.html")
+
+        # Security & Google anti-abuse canary check: Non-existent verification files MUST return 404
+        fake_response = self.client.get('/googleFakeCanary12345.html')
+        self.assertEqual(fake_response.status_code, 404)
 
     def test_homepage_seo(self):
         """Verify homepage has unique title, description, canonical, open graph, and valid Schema.org."""
