@@ -1,4 +1,4 @@
-﻿from decimal import Decimal
+from decimal import Decimal
 from django.test import TestCase, Client
 from django.urls import reverse
 from django.contrib.auth.models import User
@@ -20,6 +20,10 @@ class AdminDesignAndDashboardTests(TestCase):
     """
 
     def setUp(self):
+        # Clean existing migration-seeded cases/items to ensure clean isolation
+        Case.objects.all().delete()
+        Item.objects.all().delete()
+
         self.client = Client()
         self.admin_user = User.objects.create_superuser(
             username='AdminCyber',

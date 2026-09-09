@@ -1,4 +1,4 @@
-﻿import os
+import os
 import io
 import json
 import shutil
@@ -39,6 +39,10 @@ class AdminBackupRestoreTests(TestCase):
     def setUp(self):
         self.temp_media_dir = tempfile.mkdtemp()
         self.client = Client()
+
+        # Clean existing migration-seeded cases/items to ensure clean isolation
+        Case.objects.all().delete()
+        Item.objects.all().delete()
 
         # Create staff superuser
         self.admin_user = User.objects.create_superuser(
