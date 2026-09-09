@@ -1,7 +1,41 @@
 {% extends 'base.html' %}
 {% load static humanize currency_tags %}
 
-{% block title %}NEONDROP - Топ игроков платформы{% endblock %}
+{% block title %}Топ игроков и таблица лидеров | NEONDROP{% endblock %}
+{% block meta_description %}Рейтинг лучших игроков платформы NEONDROP. Самые крупные выигрыши скинов, статистика открытий и рекорды дропа в реальном времени.{% endblock %}
+
+{% block og_title %}Топ игроков и таблица лидеров | NEONDROP{% endblock %}
+{% block og_description %}Рейтинг лучших игроков платформы NEONDROP. Самые крупные выигрыши и рекорды открытий кейсов.{% endblock %}
+
+{% block twitter_title %}Топ игроков и таблица лидеров | NEONDROP{% endblock %}
+{% block twitter_description %}Рейтинг лучших игроков платформы NEONDROP. Самые крупные выигрыши и рекорды открытий кейсов.{% endblock %}
+
+{% block schema_json_ld %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Главная",
+          "item": "{{ site_url }}/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Топ игроков",
+          "item": "{{ canonical_url }}"
+        }
+      ]
+    }
+  ]
+}
+</script>
+{% endblock %}
 
 {% block content %}
 <div class="container" style="padding-top: 30px; padding-bottom: 60px;">

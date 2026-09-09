@@ -3,9 +3,53 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover">
   <meta name="csrf-token" content="{{ csrf_token }}">
-  <title>{% block title %}NEONDROP - Открывай лучшие кейсы{% endblock %}</title>
+
+  <!-- Primary SEO Meta Tags -->
+  <title>{% block title %}NEONDROP — Открытие кейсов с топовыми скинами и честным рандомом Provably Fair{% endblock %}</title>
+  <meta name="description" content="{% block meta_description %}NEONDROP — инновационная платформа открытия кейсов с доказанной честностью Provably Fair (SHA-256). Легендарные скины, редкий транспорт, прозрачные шансы и моментальный вывод.{% endblock %}">
+  <meta name="keywords" content="{% block meta_keywords %}кейсы, открытие кейсов, neondrop, скины, provably fair, дроп, рулетка скинов, uc, pubg mobile, csgo{% endblock %}">
+  <meta name="robots" content="{% block meta_robots %}index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1{% endblock %}">
+  <meta name="author" content="NEONDROP">
+
+  <!-- Google Search Console Verification -->
+  {% block google_verification %}
+    {% if google_site_verification %}
+      <meta name="google-site-verification" content="{{ google_site_verification }}">
+    {% endif %}
+  {% endblock %}
+
+  <!-- Canonical URL (Absolute HTTPS) -->
+  <link rel="canonical" href="{% block canonical_url %}{{ canonical_url }}{% endblock %}">
+
+  <!-- Favicon / Brand Icons -->
+  <link rel="icon" type="image/png" href="{% static 'images/uc_icon.png' %}">
+  <link rel="apple-touch-icon" href="{% static 'images/uc_icon.png' %}">
+
+  <!-- Open Graph / Facebook -->
+  <meta property="og:locale" content="ru_RU">
+  <meta property="og:type" content="{% block og_type %}website{% endblock %}">
+  <meta property="og:site_name" content="NEONDROP">
+  <meta property="og:title" content="{% block og_title %}{% block title_plain %}NEONDROP — Открытие кейсов с топовыми скинами{% endblock %}{% endblock %}">
+  <meta property="og:description" content="{% block og_description %}Открывайте кейсы на NEONDROP с доказанной честностью Provably Fair (SHA-256). Топовые скины, суперкары, мгновенные выплаты и прозрачные шансы.{% endblock %}">
+  <meta property="og:url" content="{% block og_url %}{{ canonical_url }}{% endblock %}">
+  <meta property="og:image" content="{% block og_image %}{{ default_og_image }}{% endblock %}">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="NEONDROP — Честное открытие кейсов">
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="{% block twitter_card %}summary_large_image{% endblock %}">
+  <meta name="twitter:site" content="@neondrop">
+  <meta name="twitter:creator" content="@neondrop">
+  <meta name="twitter:title" content="{% block twitter_title %}{% block twitter_title_plain %}NEONDROP — Открытие кейсов с топовыми скинами{% endblock %}{% endblock %}">
+  <meta name="twitter:description" content="{% block twitter_description %}Открывайте кейсы на NEONDROP с доказанной честностью Provably Fair (SHA-256). Топовые скины, суперкары, мгновенные выплаты и прозрачные шансы.{% endblock %}">
+  <meta name="twitter:image" content="{% block twitter_image %}{{ default_og_image }}{% endblock %}">
+
+  <!-- Structured Data (Schema.org JSON-LD) -->
+  {% block schema_json_ld %}{% endblock %}
+
   <link rel="stylesheet" href="{% static 'css/main.css' %}">
   <link rel="stylesheet" href="{% static 'css/components.css' %}">
   <link rel="stylesheet" href="{% static 'css/roulette.css' %}">

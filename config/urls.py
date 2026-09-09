@@ -4,10 +4,18 @@ from django.urls import path, include, re_path
 from django.conf import settings
 from django.conf.urls.static import static
 from django.views.static import serve
+from django.contrib.sitemaps.views import sitemap
 
 import cases.admin_views as admin_views
 import cases.blogger_views as blogger_views
 import users.admin_views as user_admin_views
+from cases.sitemaps import StaticViewSitemap, CaseSitemap
+from cases.seo_views import robots_txt_view, google_verification_file_view
+
+sitemaps = {
+    'static': StaticViewSitemap,
+    'cases': CaseSitemap,
+}
 
 urlpatterns = [
     # Dedicated Cyberpunk Admin Management System («👑 Управление администраторами»)
@@ -42,6 +50,11 @@ urlpatterns = [
     path('admin/cases/rng-simulation/', admin_views.admin_rng_simulation_view, name='admin_rng_simulation'),
     path('admin/cases/rng-simulation/run/', admin_views.ajax_run_rng_simulation_view, name='admin_ajax_run_rng_simulation'),
     path('admin/cases/rng-simulation/history/<int:run_id>/', admin_views.ajax_get_rng_simulation_run_view, name='admin_ajax_get_rng_run'),
+
+    # SEO & Search Engine Indexation Endpoints
+    path('robots.txt', robots_txt_view, name='robots_txt'),
+    path('sitemap.xml', sitemap, {'sitemaps': sitemaps}, name='django.contrib.sitemaps.views.sitemap'),
+    re_path(r'^google(?P<token>[a-zA-Z0-9_-]+)\.html$', google_verification_file_view, name='google_verification_file'),
 
     path('admin/', admin.site.urls),
     path('', include('cases.urls', namespace='cases')),

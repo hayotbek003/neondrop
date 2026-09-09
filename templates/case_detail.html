@@ -1,7 +1,86 @@
 {% extends 'base.html' %}
 {% load static humanize currency_tags %}
 
-{% block title %}NEONDROP - {{ case.name }} ({{ case.price|uc }}){% endblock %}
+{% block title %}Кейс {{ case.name }} — Открыть за {{ case.price|uc }} | NEONDROP{% endblock %}
+{% block meta_description %}Открыть кейс {{ case.name }} за {{ case.price|uc }} ({{ case.price|usd_approx }}) на NEONDROP. Честный серверный рандом Provably Fair (SHA-256), {{ items_with_chances|length }} редких предметов и моментальный вывод.{% endblock %}
+
+{% block og_type %}product{% endblock %}
+{% block og_title %}Кейс {{ case.name }} — Открыть за {{ case.price|uc }} на NEONDROP{% endblock %}
+{% block og_description %}Откройте кейс {{ case.name }} на платформе NEONDROP. Прозрачные вероятности выпадения предметов, доказанная честность Provably Fair (SHA-256).{% endblock %}
+{% block og_image %}{% if case.display_image %}{% if "http" in case.display_image %}{{ case.display_image }}{% else %}{{ site_url }}{{ case.display_image }}{% endif %}{% else %}{{ default_og_image }}{% endif %}{% endblock %}
+
+{% block twitter_title %}Кейс {{ case.name }} — Открыть за {{ case.price|uc }} | NEONDROP{% endblock %}
+{% block twitter_description %}Откройте кейс {{ case.name }} на платформе NEONDROP. Честный рандом Provably Fair, легендарные скины.{% endblock %}
+{% block twitter_image %}{% if case.display_image %}{% if "http" in case.display_image %}{{ case.display_image }}{% else %}{{ site_url }}{{ case.display_image }}{% endif %}{% else %}{{ default_og_image }}{% endif %}{% endblock %}
+
+{% block schema_json_ld %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Главная",
+          "item": "{{ site_url }}/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Кейсы",
+          "item": "{{ site_url }}/cases/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "name": "{{ case.name|escapejs }}",
+          "item": "{{ canonical_url }}"
+        }
+      ]
+    },
+    {
+      "@type": "Product",
+      "name": "Кейс {{ case.name|escapejs }}",
+      "image": "{% if case.display_image %}{% if 'http' in case.display_image %}{{ case.display_image }}{% else %}{{ site_url }}{{ case.display_image }}{% endif %}{% else %}{{ default_og_image }}{% endif %}",
+      "description": "Кейс {{ case.name|escapejs }} на платформе NEONDROP по цене {{ case.price }} UC. Честная генерация дропа с помощью Provably Fair (SHA-256).",
+      "brand": {
+        "@type": "Brand",
+        "name": "NEONDROP"
+      },
+      "offers": {
+        "@type": "Offer",
+        "url": "{{ canonical_url }}",
+        "priceCurrency": "UC",
+        "price": "{{ case.price }}",
+        "availability": "https://schema.org/InStock",
+        "seller": {
+          "@type": "Organization",
+          "name": "NEONDROP"
+        }
+      }
+    },
+    {
+      "@type": "ItemList",
+      "name": "Содержимое кейса {{ case.name|escapejs }}",
+      "numberOfItems": {{ items_with_chances|length }},
+      "itemListElement": [
+        {% for entry in items_with_chances %}
+        {
+          "@type": "ListItem",
+          "position": {{ forloop.counter }},
+          "name": "{{ entry.item.name|escapejs }}",
+          "description": "{{ entry.item.weapon_type|escapejs }} {{ entry.item.skin_name|escapejs }} ({{ entry.item.rarity_display_ru|escapejs }} - {{ entry.chance_percent }}%)"
+        }{% if not forloop.last %},{% endif %}
+        {% endfor %}
+      ]
+    }
+  ]
+}
+</script>
+{% endblock %}
 
 {% block content %}
 <div class="container" style="padding-top: 24px; padding-bottom: 60px;">
@@ -46,7 +125,7 @@
   <div class="case-hero-showcase">
     <div class="case-hero-glow-box" style="--case-theme-glow: {{ case.accent_color }};">
       {% if case.display_image %}
-        <img src="{{ case.display_image }}" alt="{{ case.name }}" class="case-hero-img">
+        <img src="{{ case.display_image }}" alt="Кейс {{ case.name }} — NEONDROP" class="case-hero-img">
       {% else %}
         <svg viewBox="0 0 200 160" style="width: 100%; height: 100%; filter: drop-shadow(0 0 35px {{ case.accent_color }});">
           <use href="#icon-case-{{ case.color_theme }}"></use>
@@ -142,7 +221,7 @@
         </div>
         <div class="item-card-img-wrapper">
           {% if entry.item.display_image %}
-            <img src="{{ entry.item.display_image }}" alt="{{ entry.item.name }}" class="item-card-img">
+            <img src="{{ entry.item.display_image }}" alt="{{ entry.item.name }} ({{ entry.item.rarity_display_ru }}) — скин из кейса {{ case.name }}" class="item-card-img" loading="lazy" decoding="async" width="160" height="110">
           {% else %}
             <svg class="item-card-img"><use href="#icon-{{ entry.item.image_url|default:'generic_weapon' }}"></use></svg>
           {% endif %}
@@ -159,6 +238,26 @@
       </div>
     {% endfor %}
   </div>
+
+  <!-- ==================== О КЕЙСЕ & ЧЕСТНОСТЬ (SEO & SSR) ==================== -->
+  <section class="case-seo-details" style="margin-top: 50px; padding: 28px 32px; background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 16px;">
+    <h2 style="font-family: var(--font-heading); font-size: 20px; color: #fff; margin-bottom: 14px; letter-spacing: 1px;">
+      О КЕЙСЕ {{ case.name|upper }} НА NEONDROP
+    </h2>
+    <div style="font-family: var(--font-sub); font-size: 14px; line-height: 1.7; color: #94a3b8; display: flex; flex-direction: column; gap: 12px;">
+      <p>
+        Кейс <strong>{{ case.name }}</strong> доступен для открытия по цене <strong>{{ case.price|uc }}</strong> ({{ case.price|usd_approx }}).
+        В кейсе представлено <strong>{{ items_with_chances|length }}</strong> уникальных скинов и игровых предметов различных уровней редкости: от базовых до эксклюзивных и легендарных.
+      </p>
+      <p>
+        Все открытия на платформе NEONDROP работают под управлением криптографически верифицируемого алгоритма <strong>Provably Fair</strong> на базе хеширования <strong>SHA-256</strong>.
+        Результат каждого выпадения рассчитывается сервером заранее с использованием Server Seed и Client Seed, гарантируя 100% честность и независимость генерации дропа.
+      </p>
+      <p>
+        Полученные скины мгновенно добавляются в ваш инвентарь с возможностью вывода на игровой аккаунт или быстрой продажи обратно на баланс.
+      </p>
+    </div>
+  </section>
 
 </div>
 

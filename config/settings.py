@@ -66,6 +66,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django.contrib.humanize',
+    'django.contrib.sitemaps',
     
     # Custom NEONDROP Apps
     'users.apps.UsersConfig',
@@ -102,6 +103,7 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
                 'users.context_processors.user_profile_context',
+                'cases.context_processors.seo_context',
             ],
         },
     },
@@ -379,3 +381,8 @@ LOGGING = {
         },
     },
 }
+
+# SEO & Google Search Console Settings
+SITE_DOMAIN = os.environ.get('SITE_DOMAIN', 'neondrop-ujly.onrender.com')
+GOOGLE_SITE_VERIFICATION = os.environ.get('GOOGLE_SITE_VERIFICATION', '')
+

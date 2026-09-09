@@ -1,6 +1,54 @@
 {% extends 'base.html' %}
 
-{% block title %}NEONDROP - Доказуемая честность (Provably Fair){% endblock %}
+{% block title %}Честный серверный рандом Provably Fair (SHA-256) | NEONDROP{% endblock %}
+{% block meta_description %}Принцип доказуемой честности Provably Fair на NEONDROP. Проверка SHA-256 хешей, Server Seed и Client Seed для каждого открытия кейса и апгрейда.{% endblock %}
+
+{% block og_title %}Честный серверный рандом Provably Fair (SHA-256) | NEONDROP{% endblock %}
+{% block og_description %}Криптографическая проверка честности каждого открытия кейса на NEONDROP с помощью SHA-256 и HMAC. Полная прозрачность шансов.{% endblock %}
+
+{% block twitter_title %}Честный серверный рандом Provably Fair (SHA-256) | NEONDROP{% endblock %}
+{% block twitter_description %}Криптографическая проверка честности каждого открытия кейса на NEONDROP с помощью SHA-256 и HMAC.{% endblock %}
+
+{% block schema_json_ld %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Главная",
+          "item": "{{ site_url }}/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Доказуемая честность",
+          "item": "{{ canonical_url }}"
+        }
+      ]
+    },
+    {
+      "@type": "TechArticle",
+      "headline": "Доказуемая честность (Provably Fair) алгоритма NEONDROP",
+      "description": "Техническое описание алгоритма генерации случайных чисел на базе SHA-256 и HMAC с использованием Server Seed, Client Seed и Nonce.",
+      "author": {
+        "@type": "Organization",
+        "name": "NEONDROP"
+      },
+      "publisher": {
+        "@type": "Organization",
+        "name": "NEONDROP"
+      },
+      "inLanguage": "ru-RU"
+    }
+  ]
+}
+</script>
+{% endblock %}
 
 {% block content %}
 <div class="container" style="padding-top: 30px; padding-bottom: 60px; max-width: 900px;">

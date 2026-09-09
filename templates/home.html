@@ -1,7 +1,49 @@
 {% extends 'base.html' %}
 {% load static humanize currency_tags %}
 
-{% block title %}NEONDROP - Главная страница | Открывай лучшие кейсы CS:GO{% endblock %}
+{% block title %}NEONDROP — Честное открытие кейсов | Топовые скины и суперкары{% endblock %}
+{% block meta_description %}Открывайте кейсы на платформе NEONDROP с честным криптографическим рандомом Provably Fair (SHA-256). Легендарные суперкары Lamborghini, эксклюзивные скины и мгновенный вывод.{% endblock %}
+
+{% block schema_json_ld %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "WebSite",
+      "@id": "{{ site_url }}/#website",
+      "url": "{{ site_url }}/",
+      "name": "NEONDROP",
+      "description": "Инновационная платформа открытия кейсов с доказанной честностью Provably Fair",
+      "potentialAction": {
+        "@type": "SearchAction",
+        "target": {
+          "@type": "EntryPoint",
+          "urlTemplate": "{{ site_url }}/cases/?q={search_term_string}"
+        },
+        "query-input": "required name=search_term_string"
+      },
+      "inLanguage": "ru"
+    },
+    {
+      "@type": "Organization",
+      "@id": "{{ site_url }}/#organization",
+      "name": "NEONDROP",
+      "url": "{{ site_url }}/",
+      "logo": {
+        "@type": "ImageObject",
+        "url": "{{ default_og_image }}",
+        "width": 1200,
+        "height": 630
+      },
+      "sameAs": [
+        "https://t.me/neondrop_admin"
+      ]
+    }
+  ]
+}
+</script>
+{% endblock %}
 
 {% block content %}
 <div class="container">
@@ -117,9 +159,9 @@
         <a href="{% url 'cases:case_detail' case.slug %}" class="case-card" style="--case-accent: {{ case.accent_color }};">
           <div class="case-card-img-wrapper">
             {% if case.display_image %}
-              <img src="{{ case.display_image }}" alt="{{ case.name }}" class="case-card-img">
+              <img src="{{ case.display_image }}" alt="Кейс {{ case.name }} — NEONDROP" class="case-card-img" loading="lazy" decoding="async" width="200" height="160">
             {% else %}
-              <svg class="case-card-img" viewBox="0 0 200 160">
+              <svg class="case-card-img" viewBox="0 0 200 160" width="200" height="160">
                 <use href="#icon-case-{{ case.color_theme }}"></use>
               </svg>
             {% endif %}
@@ -149,7 +191,7 @@
         {% for winner in top_winners %}
           <div class="winner-row">
             <span class="winner-rank">#{{ winner.rank }}</span>
-            <img src="{{ winner.avatar }}" alt="{{ winner.username }}" class="winner-avatar">
+            <img src="{{ winner.avatar }}" alt="Победитель {{ winner.username }}" class="winner-avatar" loading="lazy" decoding="async" width="32" height="32">
             <span class="winner-username">{{ winner.username }}</span>
             <svg class="winner-weapon-thumb"><use href="#icon-{{ winner.weapon_image }}"></use></svg>
             <span class="winner-amount">
@@ -197,6 +239,41 @@
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path></svg>
           </div>
           <span class="step-title">Используй предмет</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== 6. SEO DESCRIPTION & PLATFORM ADVANTAGES ==================== -->
+  <section class="panel-card seo-platform-info" style="margin-top: 35px; padding: 32px; background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(56, 189, 248, 0.15); border-radius: 16px;">
+    <div style="max-width: 960px; margin: 0 auto;">
+      <h2 style="font-family: var(--font-display); font-size: 20px; font-weight: 800; color: #38bdf8; margin-bottom: 14px; letter-spacing: 0.5px;">
+        NEONDROP — ПЕРЕДОВАЯ ПЛАТФОРМА ОТКРЫТИЯ КЕЙСОВ
+      </h2>
+      <p style="color: #cbd5e1; font-size: 14px; line-height: 1.8; margin-bottom: 14px;">
+        Добро пожаловать на <strong>NEONDROP</strong> — современный сервис открытия кейсов нового поколения с криптографически подтверждённой честностью. Мы предлагаем игрокам уникальную коллекцию авторских кейсов, содержащих топовые скины оружия, эксклюзивные костюмы X-Suits, планеры и легендарный транспорт, включая суперкары <em>Lamborghini</em>, <em>Bugatti</em>, <em>Koenigsegg</em> и <em>Bentley</em>.
+      </p>
+      
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; margin-top: 20px;">
+        <div style="background: rgba(30, 41, 59, 0.4); padding: 18px; border-radius: 10px; border-left: 3px solid #38bdf8;">
+          <h3 style="font-size: 15px; font-weight: 700; color: #f1f5f9; margin-bottom: 6px;">Криптографический Provably Fair</h3>
+          <p style="font-size: 13px; color: #94a3b8; line-height: 1.6;">
+            Каждое открытие рассчитывается с помощью непредвзятого алгоритма на базе SHA-256 с открытыми Server Seed и Client Seed. Результат формируется до клика и может быть проверен любым пользователем.
+          </p>
+        </div>
+
+        <div style="background: rgba(30, 41, 59, 0.4); padding: 18px; border-radius: 10px; border-left: 3px solid #a855f7;">
+          <h3 style="font-size: 15px; font-weight: 700; color: #f1f5f9; margin-bottom: 6px;">Прозрачный RTP и честные шансы</h3>
+          <p style="font-size: 13px; color: #94a3b8; line-height: 1.6;">
+            Точные процентные вероятности каждого предмета отображаются на странице каждого кейса. Никаких скрытых корректировок — математическое ожидание строго выверено тестами Монте-Карло.
+          </p>
+        </div>
+
+        <div style="background: rgba(30, 41, 59, 0.4); padding: 18px; border-radius: 10px; border-left: 3px solid #10b981;">
+          <h3 style="font-size: 15px; font-weight: 700; color: #f1f5f9; margin-bottom: 6px;">Быстрый вывод и мгновенный инвентарь</h3>
+          <p style="font-size: 13px; color: #94a3b8; line-height: 1.6;">
+            Выигранные скины и предметы сразу попадают в личный инвентарь, откуда их можно мгновенно перевести в баланс UC, использовать в Апгрейдах или Контрактах обмена.
+          </p>
         </div>
       </div>
     </div>

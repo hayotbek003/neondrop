@@ -1,13 +1,43 @@
 {% extends 'base.html' %}
 {% load static humanize currency_tags %}
 
-{% block title %}NEONDROP - Каталог Кейсов CS:GO{% endblock %}
+{% block title %}Кейсы NEONDROP — Каталог кейсов с легендарными скинами и машинами{% endblock %}
+{% block meta_description %}Полный каталог кейсов NEONDROP: от доступных кейсов от 4 UC до эксклюзивных кейсов с суперкарами Lamborghini, Bugatti и X-Suits. Честный криптографический рандом Provably Fair.{% endblock %}
+
+{% block schema_json_ld %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "CollectionPage",
+  "name": "Каталог кейсов NEONDROP",
+  "url": "{{ canonical_url }}",
+  "description": "Каталог кейсов с оружием, одеждой и машинами на платформе NEONDROP с честным рандомом Provably Fair",
+  "mainEntity": {
+    "@type": "ItemList",
+    "numberOfItems": {{ cases|length }},
+    "itemListElement": [
+      {% for c in cases %}
+      {
+        "@type": "ListItem",
+        "position": {{ forloop.counter }},
+        "name": "{{ c.name }}",
+        "url": "{{ site_url }}{% url 'cases:case_detail' c.slug %}"
+      }{% if not forloop.last %},{% endif %}
+      {% endfor %}
+    ]
+  }
+}
+</script>
+{% endblock %}
 
 {% block content %}
 <div class="container" style="padding-top: 30px; padding-bottom: 50px;">
   
   <div class="section-header" style="flex-wrap: wrap; gap: 16px;">
-    <h1 class="section-title">КЕЙСЫ</h1>
+    <div>
+      <h1 class="section-title">КАТАЛОГ КЕЙСОВ</h1>
+      <p style="color: #94a3b8; font-size: 14px; margin-top: 4px;">Выбирайте кейсы с прозрачными шансами и проверяемым рандомом Provably Fair</p>
+    </div>
 
     <!-- Price Range / Search -->
     <form method="get" action="{% url 'cases:cases_list' %}" style="display: flex; gap: 10px; align-items: center;">
@@ -50,14 +80,14 @@
       <a href="{% url 'cases:case_detail' case.slug %}" class="case-card" style="--case-accent: {{ case.accent_color }};">
         <div class="case-card-img-wrapper">
           {% if case.display_image %}
-            <img src="{{ case.display_image }}" alt="{{ case.name }}" class="case-card-img">
+            <img src="{{ case.display_image }}" alt="Кейс {{ case.name }} — NEONDROP" class="case-card-img" loading="lazy" decoding="async" width="200" height="160">
           {% else %}
-            <svg class="case-card-img" viewBox="0 0 200 160">
+            <svg class="case-card-img" viewBox="0 0 200 160" width="200" height="160">
               <use href="#icon-case-{{ case.color_theme }}"></use>
             </svg>
           {% endif %}
         </div>
-        <h3 class="case-card-name">{{ case.name }}</h3>
+        <h2 class="case-card-name" style="font-size: 15px; margin: 8px 0;">{{ case.name }}</h2>
         <div class="case-card-price">
           <span class="uc-badge">
             <img src="{% static 'images/uc_icon.png' %}" class="uc-icon" alt="UC">
@@ -65,7 +95,7 @@
           </span>
           <span class="usd-approx-sub">{{ case.price|usd_approx }}</span>
         </div>
-        <button class="case-card-btn">ОТКРЫТЬ КЕЙС</button>
+        <span class="case-card-btn">ОТКРЫТЬ КЕЙС</span>
       </a>
     {% empty %}
       <div style="grid-column: 1 / -1; text-align: center; padding: 60px 20px; color: #94a3b8;">
