@@ -48,14 +48,17 @@ def robots_txt_view(request):
     return HttpResponse(content, content_type="text/plain; charset=utf-8")
 
 
-def google_verification_file_view(request, token):
+def google_verification_file_view(request, token='a35031ec8cebfe94'):
     """
     Handles Google Search Console HTML verification file requests, e.g. /google<token>.html
     """
-    expected_token = getattr(
-        settings,
-        'GOOGLE_SITE_VERIFICATION',
-        os.environ.get('GOOGLE_SITE_VERIFICATION', '')
-    )
-    # Return verification string
-    return HttpResponse(f"google-site-verification: google{token}.html", content_type="text/html; charset=utf-8")
+    filename = f"google{token}.html"
+    file_path = settings.BASE_DIR / filename
+    if file_path.exists():
+        try:
+            content = file_path.read_text(encoding='utf-8').strip()
+            return HttpResponse(content, content_type="text/html; charset=utf-8")
+        except Exception:
+            pass
+    return HttpResponse(f"google-site-verification: {filename}", content_type="text/html; charset=utf-8")
+

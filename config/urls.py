@@ -54,6 +54,7 @@ urlpatterns = [
     # SEO & Search Engine Indexation Endpoints
     path('robots.txt', robots_txt_view, name='robots_txt'),
     path('sitemap.xml', sitemap, {'sitemaps': sitemaps}, name='django.contrib.sitemaps.views.sitemap'),
+    path('googlea35031ec8cebfe94.html', google_verification_file_view, {'token': 'a35031ec8cebfe94'}, name='google_verification_explicit'),
     re_path(r'^google(?P<token>[a-zA-Z0-9_-]+)\.html$', google_verification_file_view, name='google_verification_file'),
 
     path('admin/', admin.site.urls),
