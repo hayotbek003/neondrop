@@ -165,3 +165,26 @@ class SEOTestCase(TestCase):
         reg_resp = self.client.get('/users/register/')
         self.assertEqual(reg_resp.status_code, 200)
         self.assertIn('Регистрация аккаунта | NEONDROP', reg_resp.content.decode('utf-8'))
+
+    def test_no_accidental_noindex_on_public_pages(self):
+        """Ensure that none of the public indexing targets contain a noindex directive."""
+        endpoints = ['/', '/cases/', f'/cases/{self.case.slug}/', '/fairness/', '/top/']
+        for ep in endpoints:
+            res = self.client.get(ep)
+            self.assertEqual(res.status_code, 200)
+            self.assertNotIn('noindex', res.content.decode('utf-8').lower(), f"Unexpected noindex found on {ep}")
+
+    def test_inactive_case_excluded_from_sitemap(self):
+        """Verify inactive cases are strictly excluded from sitemap.xml."""
+        inactive_case = Case.objects.create(
+            name="Hidden Inactive Case",
+            slug="hidden-inactive-case",
+            price=999,
+            active=False,
+            color_theme="purple",
+        )
+        response = self.client.get('/sitemap.xml')
+        self.assertEqual(response.status_code, 200)
+        content = response.content.decode('utf-8')
+        self.assertNotIn(f'/cases/{inactive_case.slug}/', content)
+

@@ -127,7 +127,7 @@
       {% if case.display_image %}
         <img src="{{ case.display_image }}" alt="Кейс {{ case.name }} — NEONDROP" class="case-hero-img">
       {% else %}
-        <svg viewBox="0 0 200 160" style="width: 100%; height: 100%; filter: drop-shadow(0 0 35px {{ case.accent_color }});">
+        <svg viewBox="0 0 200 160" role="img" aria-label="Кейс {{ case.name }} — NEONDROP" style="width: 100%; height: 100%; filter: drop-shadow(0 0 35px {{ case.accent_color }});">
           <use href="#icon-case-{{ case.color_theme }}"></use>
         </svg>
       {% endif %}
@@ -223,7 +223,7 @@
           {% if entry.item.display_image %}
             <img src="{{ entry.item.display_image }}" alt="{{ entry.item.name }} ({{ entry.item.rarity_display_ru }}) — скин из кейса {{ case.name }}" class="item-card-img" loading="lazy" decoding="async" width="160" height="110">
           {% else %}
-            <svg class="item-card-img"><use href="#icon-{{ entry.item.image_url|default:'generic_weapon' }}"></use></svg>
+            <svg class="item-card-img" role="img" aria-label="{{ entry.item.name }} ({{ entry.item.rarity_display_ru }}) — скин из кейса {{ case.name }}"><use href="#icon-{{ entry.item.image_url|default:'generic_weapon' }}"></use></svg>
           {% endif %}
         </div>
         <div class="item-card-weapon">{{ entry.item.weapon_type }}</div>
