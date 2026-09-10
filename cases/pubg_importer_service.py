@@ -275,34 +275,50 @@ class PubgZipImporter:
                     })
                     continue
 
-                # 7. Check if item already exists in DB
-                existing_item, match_type = self.find_existing_item(item)
+                # 7. Check if item already exists in NEONDROP DB
+                existing_item, match_type, match_explanation = self.find_existing_item(item)
 
-                # Also detect duplicates within the current ZIP batch
-                source_id = str(item.get('source_id') or item.get('id') or '').strip()
-                source_url_norm = normalize_url(item.get('source_url'))
-                name_key = (name.lower(), game.lower())
+                raw_source_id = item.get('source_id')
+                if raw_source_id is None and 'source_id' not in item:
+                    raw_source_id = item.get('id')
+                source_id = str(raw_source_id).strip() if raw_source_id is not None and str(raw_source_id).strip() else None
 
+                raw_source_url = item.get('source_url')
+                source_url_norm = normalize_url(str(raw_source_url).strip()) if raw_source_url is not None and str(raw_source_url).strip() else None
+
+                norm_name = " ".join(str(name).strip().split())
+                norm_game = " ".join(str(game).strip().split())
+
+                # Batch duplicate detection within this ZIP archive using the exact same hierarchy
                 is_batch_duplicate = False
-                if source_id and source_id in seen_in_batch_source_ids:
-                    is_batch_duplicate = True
-                elif source_url_norm and source_url_norm in seen_in_batch_urls:
-                    is_batch_duplicate = True
-                elif name_key in seen_in_batch_names:
-                    is_batch_duplicate = True
-
+                batch_dup_reason = None
                 if source_id:
+                    if source_id in seen_in_batch_source_ids:
+                        is_batch_duplicate = True
+                        batch_dup_reason = 'Дубликат в архиве (по source_id)'
                     seen_in_batch_source_ids.add(source_id)
-                if source_url_norm:
+                elif source_url_norm:
+                    if source_url_norm in seen_in_batch_urls:
+                        is_batch_duplicate = True
+                        batch_dup_reason = 'Дубликат в архиве (по source_url)'
                     seen_in_batch_urls.add(source_url_norm)
-                seen_in_batch_names.add(name_key)
+                elif norm_name:
+                    name_key = (norm_game.lower(), norm_name.lower())
+                    if name_key in seen_in_batch_names:
+                        is_batch_duplicate = True
+                        batch_dup_reason = 'Дубликат в архиве (по game + name)'
+                    seen_in_batch_names.add(name_key)
 
-                if existing_item or is_batch_duplicate:
+                # An item is EXISTING if and only if it was found in the database.
+                # If not found in DB, it is strictly NEW!
+                if existing_item:
                     existing_count += 1
                     status = 'exists'
+                    display_status = 'EXISTING'
                 else:
                     new_count += 1
                     status = 'new'
+                    display_status = 'NEW'
 
                 rarity_code, rarity_hex = map_pubg_rarity(item.get('rarity'))
 
@@ -317,12 +333,16 @@ class PubgZipImporter:
                     'quality': item.get('quality', ''),
                     'type': item.get('type', 'skin'),
                     'image': img_path,
-                    'source_id': source_id,
-                    'source_url': item.get('source_url', ''),
-                    'source_image_url': item.get('source_image_url', ''),
+                    'source_id': source_id or '',
+                    'source_url': item.get('source_url', '') or '',
+                    'source_image_url': item.get('source_image_url', '') or '',
                     'status': status,
+                    'display_status': display_status,
                     'existing_id': existing_item.id if existing_item else None,
-                    'matched_by': match_type if existing_item else ('batch_duplicate' if is_batch_duplicate else None),
+                    'matched_by': match_type,
+                    'match_explanation': match_explanation,
+                    'is_batch_duplicate': is_batch_duplicate,
+                    'batch_dup_reason': batch_dup_reason,
                     'error_message': None,
                 })
 
@@ -339,44 +359,76 @@ class PubgZipImporter:
                 'preview_items': preview_items,
             }
 
-    @staticmethod
-    def find_existing_item(item_data: Dict[str, Any]) -> Tuple[Optional[Item], Optional[str]]:
-        """
-        Finds an existing item using the strict priority hierarchy:
-        1. source_id (if present and non-empty)
-        2. normalized source_url
-        3. fallback by name + game (safe case-insensitive match)
-        """
-        # 1. By source_id (check both source_id and id from items.json)
-        source_id = str(item_data.get('source_id') or item_data.get('id') or '').strip()
-        if source_id:
-            existing = Item.objects.filter(source_id=source_id).first()
-            if existing:
-                return existing, 'source_id'
+    # Alias for convenience
+    inspect_and_validate = validate_and_inspect
 
-        # 2. By normalized source_url
-        source_url = str(item_data.get('source_url') or '').strip()
+    @staticmethod
+    def find_existing_item(item_data: Dict[str, Any]) -> Tuple[Optional[Item], Optional[str], Optional[str]]:
+        """
+        Strictly determines if an item already exists in NEONDROP.
+        Priority hierarchy (strictly exclusive, no fuzzy matching):
+        1. If source_id is present in imported item (non-empty string or integer):
+           Search existing Item by source_id ONLY.
+           If found -> return (item, 'source_id', 'Совпало по source_id')
+           If NOT found -> return (None, None, None) [Strictly NEW, no fallback!]
+
+        2. If source_id is absent, but source_url is present (non-empty):
+           Search existing Item by normalized source_url ONLY.
+           If found -> return (item, 'source_url', 'Совпало по source_url')
+           If NOT found -> return (None, None, None) [Strictly NEW, no fallback!]
+
+        3. If both source_id and source_url are absent:
+           Search existing Item by strict exact match: game + normalized full name.
+           No fuzzy matching.
+           If found -> return (item, 'name_game', 'Совпало по game + name')
+           If NOT found -> return (None, None, None) [Strictly NEW]
+        """
+        # Step 1: source_id check
+        raw_source_id = item_data.get('source_id')
+        if raw_source_id is None and 'source_id' not in item_data:
+            raw_source_id = item_data.get('id')
+
+        source_id = str(raw_source_id).strip() if raw_source_id is not None and str(raw_source_id).strip() else None
+
+        if source_id:
+            existing = Item.objects.exclude(source_id__isnull=True).exclude(source_id='').filter(source_id=source_id).first()
+            if existing:
+                return existing, 'source_id', 'Совпало по source_id'
+            # Has source_id, but no matching source_id in DB -> MUST be NEW!
+            return None, None, None
+
+        # Step 2: source_url check (only when source_id is absent)
+        raw_source_url = item_data.get('source_url')
+        source_url = str(raw_source_url).strip() if raw_source_url is not None and str(raw_source_url).strip() else None
+
         if source_url:
             norm_url = normalize_url(source_url)
             if norm_url:
-                existing = Item.objects.filter(source_url=norm_url).first()
+                existing = Item.objects.exclude(source_url__isnull=True).exclude(source_url='').filter(source_url=norm_url).first()
                 if not existing:
                     alt_url = norm_url.rstrip('/') if norm_url.endswith('/') else norm_url + '/'
-                    existing = Item.objects.filter(source_url=alt_url).first()
+                    existing = Item.objects.exclude(source_url__isnull=True).exclude(source_url='').filter(source_url=alt_url).first()
                 if existing:
-                    return existing, 'source_url'
+                    return existing, 'source_url', 'Совпало по source_url'
+            # Has source_url, but no matching source_url in DB -> MUST be NEW!
+            return None, None, None
 
-        # 3. Fallback by name + game
-        name = str(item_data.get('name') or '').strip()
-        game = str(item_data.get('game') or 'PUBG').strip()
-        if name:
-            existing = Item.objects.filter(name__iexact=name, game__iexact=game).first()
-            if not existing:
-                existing = Item.objects.filter(name__iexact=name).first()
+        # Step 3: Strict exact match by game + full normalized name
+        raw_name = item_data.get('name')
+        norm_name = " ".join(str(raw_name).strip().split()) if raw_name is not None and str(raw_name).strip() else ""
+        raw_game = item_data.get('game') or 'PUBG'
+        norm_game = " ".join(str(raw_game).strip().split())
+
+        if norm_name:
+            # Query exact match (case-insensitive on name, exact on game)
+            existing = Item.objects.filter(name__iexact=norm_name, game__iexact=norm_game).first()
             if existing:
-                return existing, 'name_game'
+                # Extra guard: verify that collapsed normalized string matches exactly
+                existing_norm_name = " ".join(existing.name.strip().split())
+                if existing_norm_name.lower() == norm_name.lower():
+                    return existing, 'name_game', 'Совпало по game + name'
 
-        return None, None
+        return None, None, None
 
     def execute_import(
         self,
@@ -440,18 +492,34 @@ class PubgZipImporter:
                     if progress_callback:
                         progress_callback(idx, total_items, item_name)
 
-                    # Check if already processed in this import batch
-                    source_id = p_item.get('source_id') or ''
-                    source_url_norm = normalize_url(p_item.get('source_url'))
-                    name_key = (item_name.lower(), p_item.get('game', 'PUBG').lower())
+                    # Find existing item using strict 3-step hierarchy
+                    existing_item, match_type, _ = self.find_existing_item(p_item)
 
-                    if (source_id and source_id in processed_source_ids) or \
-                       (source_url_norm and source_url_norm in processed_urls) or \
-                       (name_key in processed_names):
-                        skipped_count += 1
-                        continue
+                    raw_source_id = p_item.get('source_id')
+                    if raw_source_id is None and 'source_id' not in p_item:
+                        raw_source_id = p_item.get('id')
+                    source_id = str(raw_source_id).strip() if raw_source_id is not None and str(raw_source_id).strip() else None
 
-                    existing_item, _ = self.find_existing_item(p_item)
+                    raw_source_url = p_item.get('source_url')
+                    source_url_norm = normalize_url(str(raw_source_url).strip()) if raw_source_url is not None and str(raw_source_url).strip() else None
+
+                    norm_name = " ".join(str(item_name).strip().split())
+                    norm_game = " ".join(str(p_item.get('game') or 'PUBG').strip().split())
+                    name_key = (norm_game.lower(), norm_name.lower())
+
+                    # Batch deduplication in execute_import following exact hierarchy
+                    if source_id:
+                        if source_id in processed_source_ids:
+                            skipped_count += 1
+                            continue
+                    elif source_url_norm:
+                        if source_url_norm in processed_urls:
+                            skipped_count += 1
+                            continue
+                    elif norm_name:
+                        if name_key in processed_names:
+                            skipped_count += 1
+                            continue
 
                     # MODE: ADD ONLY
                     if mode == 'add_only':
@@ -459,9 +527,10 @@ class PubgZipImporter:
                             skipped_count += 1
                             if source_id:
                                 processed_source_ids.add(source_id)
-                            if source_url_norm:
+                            elif source_url_norm:
                                 processed_urls.add(source_url_norm)
-                            processed_names.add(name_key)
+                            elif norm_name:
+                                processed_names.add(name_key)
                             continue
 
                         # Create new Item

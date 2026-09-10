@@ -163,7 +163,7 @@ class PubgZipImporterServiceTestCase(TestCase):
             source_id="src_match_priority_1",
             game="PUBG"
         )
-        match_obj, match_type = PubgZipImporter.find_existing_item({
+        match_obj, match_type, _ = PubgZipImporter.find_existing_item({
             "name": "Completely Different Name",
             "source_id": "src_match_priority_1",
             "game": "PUBG"
@@ -178,7 +178,7 @@ class PubgZipImporterServiceTestCase(TestCase):
             source_url="https://market.pubg.com/items/555",
             game="PUBG"
         )
-        match_obj2, match_type2 = PubgZipImporter.find_existing_item({
+        match_obj2, match_type2, _ = PubgZipImporter.find_existing_item({
             "name": "Different Name Too",
             "source_url": "HTTPS://market.pubg.com/items/555/",
             "game": "PUBG"
@@ -192,7 +192,7 @@ class PubgZipImporterServiceTestCase(TestCase):
             value=Decimal("350.00"),
             game="PUBG"
         )
-        match_obj3, match_type3 = PubgZipImporter.find_existing_item({
+        match_obj3, match_type3, _ = PubgZipImporter.find_existing_item({
             "name": "Kar98k - Dragonfire",
             "game": "PUBG"
         })
@@ -464,3 +464,198 @@ class PubgImportAdminViewsTestCase(TestCase):
             self.assertIn("Импорт PUBG предметов", str(cm.exception))
         finally:
             Path(temp_path).unlink(missing_ok=True)
+
+
+class PubgExistingItemLogicTestCase(TestCase):
+    def setUp(self):
+        Item.objects.all().delete()
+
+    def test_test1_no_item_in_db_returns_new(self):
+        """TEST 1: In DB there is no item. ZIP contains this item. Result: NEW."""
+        item_data = {
+            "name": "M416 | Digital Camo",
+            "game": "PUBG",
+            "source_id": "item_test_001",
+            "price": 150.0,
+            "image": "images/item_01.webp"
+        }
+        item, match_type, reason = PubgZipImporter.find_existing_item(item_data)
+        self.assertIsNone(item)
+        self.assertIsNone(match_type)
+        self.assertIsNone(reason)
+
+    def test_test2_exact_source_id_in_db_returns_existing(self):
+        """TEST 2: In DB there is an item with the exact same source_id. Result: EXISTING."""
+        db_item = Item.objects.create(
+            name="M416 | Digital Camo",
+            game="PUBG",
+            value=Decimal("150.00"),
+            source_id="item_test_002"
+        )
+        item_data = {
+            "name": "M416 | Digital Camo",
+            "game": "PUBG",
+            "source_id": "item_test_002",
+            "price": 150.0,
+            "image": "images/item_02.webp"
+        }
+        matched_item, match_type, reason = PubgZipImporter.find_existing_item(item_data)
+        self.assertIsNotNone(matched_item)
+        self.assertEqual(matched_item.id, db_item.id)
+        self.assertEqual(match_type, 'source_id')
+        self.assertEqual(reason, 'Совпало по source_id')
+
+    def test_test3_same_name_different_source_id_or_url_returns_new(self):
+        """TEST 3: In DB there is an item with the same name, but different source_id/source_url. Result: NEW!"""
+        # DB item has source_id="src_db_001" and source_url="https://market.com/items/001"
+        Item.objects.create(
+            name="AKM | Wasteland Rebel",
+            game="PUBG",
+            value=Decimal("200.00"),
+            source_id="src_db_001",
+            source_url="https://market.com/items/001"
+        )
+
+        # Incoming item has same name, but DIFFERENT source_id
+        item_data_diff_source_id = {
+            "name": "AKM | Wasteland Rebel",
+            "game": "PUBG",
+            "source_id": "src_diff_999",
+            "price": 200.0,
+            "image": "images/item_03.webp"
+        }
+        matched_item, match_type, reason = PubgZipImporter.find_existing_item(item_data_diff_source_id)
+        self.assertIsNone(matched_item, "Must NOT match by name if source_id is provided and differs!")
+        self.assertIsNone(match_type)
+
+        # Incoming item has same name, no source_id, but DIFFERENT source_url
+        item_data_diff_source_url = {
+            "name": "AKM | Wasteland Rebel",
+            "game": "PUBG",
+            "source_url": "https://othermarket.com/items/999",
+            "price": 200.0,
+            "image": "images/item_03.webp"
+        }
+        matched_item, match_type, reason = PubgZipImporter.find_existing_item(item_data_diff_source_url)
+        self.assertIsNone(matched_item, "Must NOT match by name if source_url is provided and differs!")
+        self.assertIsNone(match_type)
+
+    def test_test4_similar_name_no_fuzzy_returns_new(self):
+        """TEST 4: In DB there is a similar name. Result: NEW, no fuzzy matching."""
+        Item.objects.create(
+            name="AKM | Wasteland Rebel",
+            game="PUBG",
+            value=Decimal("200.00")
+        )
+        Item.objects.create(
+            name="Item A",
+            game="PUBG",
+            value=Decimal("50.00")
+        )
+
+        # "AKM | Wasteland Rebel (Field-Tested)" vs "AKM | Wasteland Rebel"
+        item_data_1 = {
+            "name": "AKM | Wasteland Rebel (Field-Tested)",
+            "game": "PUBG",
+            "price": 200.0,
+            "image": "images/item_04a.webp"
+        }
+        matched_item, match_type, reason = PubgZipImporter.find_existing_item(item_data_1)
+        self.assertIsNone(matched_item, "AKM | Wasteland Rebel (Field-Tested) must NOT match AKM | Wasteland Rebel!")
+
+        # "Item A 2" vs "Item A"
+        item_data_2 = {
+            "name": "Item A 2",
+            "game": "PUBG",
+            "price": 50.0,
+            "image": "images/item_04b.webp"
+        }
+        matched_item, match_type, reason = PubgZipImporter.find_existing_item(item_data_2)
+        self.assertIsNone(matched_item, "Item A 2 must NOT match Item A!")
+
+    def test_test5_zip_with_27_new_items_preview_shows_new_27_existing_0(self):
+        """TEST 5: ZIP contains 27 new PUBG items. Preview must show: NEW = 27, EXISTING = 0."""
+        # Ensure DB has some other items
+        Item.objects.create(name="Existing DB Item 1", game="PUBG", value=Decimal("10.00"))
+        Item.objects.create(name="Existing DB Item 2", game="PUBG", value=Decimal("20.00"))
+
+        # Generate 27 distinct new items
+        items_27 = []
+        image_files = []
+        for i in range(1, 28):
+            img_path = f"images/item_{i:04d}.webp"
+            items_27.append({
+                "game": "PUBG",
+                "name": f"PUBG Weapon Skin #{i:03d}",
+                "price": 100.0 + i,
+                "rarity": "Rare",
+                "quality": "Refined",
+                "type": "weapon",
+                "source_id": f"pubg_unique_ext_{i:04d}",
+                "source_url": f"https://pubg.game/item/{i}",
+                "image": img_path
+            })
+            image_files.append(img_path)
+
+        zip_buf = create_test_zip(items_27, image_files)
+        with tempfile.NamedTemporaryFile(suffix='.zip', delete=False) as tf:
+            tf.write(zip_buf.getvalue())
+            temp_path = tf.name
+
+        try:
+            importer = PubgZipImporter(temp_path)
+            inspection = importer.inspect_and_validate()
+            self.assertTrue(inspection['is_valid'])
+            self.assertEqual(inspection['total_items'], 27)
+            self.assertEqual(inspection['new_items'], 27, "All 27 items must be NEW!")
+            self.assertEqual(inspection['existing_items'], 0, "EXISTING must be 0!")
+            self.assertEqual(inspection['error_items'], 0)
+
+            # Check every preview item has status 'new' and display_status 'NEW'
+            for it in inspection['preview_items']:
+                self.assertEqual(it['status'], 'new')
+                self.assertEqual(it['display_status'], 'NEW')
+                self.assertIsNone(it['existing_id'])
+                self.assertIsNone(it['matched_by'])
+        finally:
+            Path(temp_path).unlink(missing_ok=True)
+
+    def test_reverse_matching_existing_item_detected_correctly(self):
+        """Verify reverse: if item REALLY exists in DB, it is correctly identified as EXISTING."""
+        # 1. Match by source_id
+        db_item_1 = Item.objects.create(
+            name="Pan | Golden Dragon",
+            game="PUBG",
+            value=Decimal("500.00"),
+            source_id="src_dragon_1"
+        )
+        matched, match_type, reason = PubgZipImporter.find_existing_item({"source_id": "src_dragon_1"})
+        self.assertEqual(matched.id, db_item_1.id)
+        self.assertEqual(match_type, 'source_id')
+        self.assertEqual(reason, 'Совпало по source_id')
+
+        # 2. Match by source_url (no source_id)
+        db_item_2 = Item.objects.create(
+            name="Helmet | Level 3",
+            game="PUBG",
+            value=Decimal("300.00"),
+            source_url="https://pubg.market/item/helmet3"
+        )
+        matched, match_type, reason = PubgZipImporter.find_existing_item({"source_url": "https://pubg.market/item/helmet3/"})
+        self.assertEqual(matched.id, db_item_2.id)
+        self.assertEqual(match_type, 'source_url')
+        self.assertEqual(reason, 'Совпало по source_url')
+
+        # 3. Match by game + exact normalized name (no source_id, no source_url)
+        db_item_3 = Item.objects.create(
+            name="Beryl M762 | Cyberpunk",
+            game="PUBG",
+            value=Decimal("250.00")
+        )
+        matched, match_type, reason = PubgZipImporter.find_existing_item({
+            "name": "  Beryl   M762 |  Cyberpunk  ",
+            "game": "PUBG"
+        })
+        self.assertEqual(matched.id, db_item_3.id)
+        self.assertEqual(match_type, 'name_game')
+        self.assertEqual(reason, 'Совпало по game + name')
