@@ -7,12 +7,27 @@ from decimal import Decimal, InvalidOperation
 from pathlib import Path
 from urllib.parse import urlparse, urlunparse
 from typing import Dict, Any, List, Tuple, Optional, Callable
+import logging
 
+from django.conf import settings
 from django.core.files.base import ContentFile
 from django.db import transaction
 from django.utils.text import slugify
 
 from cases.models import Item
+
+logger = logging.getLogger(__name__)
+
+
+def get_pubg_import_storage_dir() -> Path:
+    """
+    Returns the persistent storage directory for PUBG import ZIP sessions.
+    Uses MEDIA_ROOT / 'pubg_import_sessions' instead of ephemeral /tmp
+    so all Gunicorn workers can reliably access uploaded archives.
+    """
+    storage_dir = Path(settings.MEDIA_ROOT) / 'pubg_import_sessions'
+    storage_dir.mkdir(parents=True, exist_ok=True)
+    return storage_dir
 
 
 class PubgImportValidationError(Exception):
@@ -471,8 +486,10 @@ class PubgZipImporter:
             _, prefix = self._locate_items_json(zf, norm_map)
 
             # Helper to read image bytes from zip
-            def get_image_bytes_and_ext(img_path: str) -> Tuple[bytes, str]:
-                clean_path = img_path.replace('\\', '/').lstrip('/')
+            def get_image_bytes_and_ext(img_path: str) -> Tuple[Optional[bytes], str]:
+                if not img_path:
+                    return None, '.webp'
+                clean_path = str(img_path).replace('\\', '/').lstrip('/')
                 alt_path = f"images/{clean_path}" if not clean_path.startswith('images/') else clean_path[7:]
                 actual_zip_name = (
                     norm_map.get(clean_path)
@@ -490,7 +507,10 @@ class PubgZipImporter:
                 for idx, p_item in enumerate(items_to_process, start=1):
                     item_name = p_item['name']
                     if progress_callback:
-                        progress_callback(idx, total_items, item_name)
+                        try:
+                            progress_callback(idx, total_items, item_name, created_count, updated_count, skipped_count, error_count)
+                        except TypeError:
+                            progress_callback(idx, total_items, item_name)
 
                     # Find existing item using strict 3-step hierarchy
                     existing_item, match_type, _ = self.find_existing_item(p_item)
@@ -521,6 +541,16 @@ class PubgZipImporter:
                             skipped_count += 1
                             continue
 
+                    # Attempt to safely load image bytes without aborting whole batch
+                    img_bytes = None
+                    ext = '.webp'
+                    if p_item.get('image'):
+                        try:
+                            img_bytes, ext = get_image_bytes_and_ext(p_item['image'])
+                        except Exception as img_err:
+                            logger.warning("Ошибка чтения картинки '%s' для предмета '%s': %s", p_item.get('image'), item_name, img_err)
+                            error_count += 1
+
                     # MODE: ADD ONLY
                     if mode == 'add_only':
                         if existing_item:
@@ -534,7 +564,6 @@ class PubgZipImporter:
                             continue
 
                         # Create new Item
-                        img_bytes, ext = get_image_bytes_and_ext(p_item['image'])
                         weapon_type, skin_name = parse_weapon_and_skin(item_name, p_item.get('type', ''))
                         rarity_code, rarity_hex = map_pubg_rarity(p_item.get('rarity'))
 
@@ -553,14 +582,15 @@ class PubgZipImporter:
                             source_image_url=p_item.get('source_image_url') or None,
                         )
 
-                        # Save image to Item.image
-                        safe_slug = slugify(item_name)[:40] or f"item_{idx}"
-                        filename = f"pubg_{safe_slug}_{idx}{ext}"
-                        new_item.image.save(filename, ContentFile(img_bytes), save=False)
-                        new_item.save()
+                        # Save image to Item.image if successfully extracted
+                        if img_bytes:
+                            safe_slug = slugify(item_name)[:40] or f"item_{idx}"
+                            filename = f"pubg_{safe_slug}_{idx}{ext}"
+                            new_item.image.save(filename, ContentFile(img_bytes), save=False)
+                            images_saved_count += 1
 
+                        new_item.save()
                         created_count += 1
-                        images_saved_count += 1
 
                         if source_id:
                             processed_source_ids.add(source_id)
@@ -591,14 +621,11 @@ class PubgZipImporter:
                                 existing_item.source_image_url = p_item['source_image_url']
 
                             # Update image if provided and exists
-                            try:
-                                img_bytes, ext = get_image_bytes_and_ext(p_item['image'])
+                            if img_bytes:
                                 safe_slug = slugify(item_name)[:40] or f"item_{existing_item.id}"
                                 filename = f"pubg_{safe_slug}_{existing_item.id}{ext}"
                                 existing_item.image.save(filename, ContentFile(img_bytes), save=False)
                                 images_saved_count += 1
-                            except Exception:
-                                pass
 
                             existing_item.save()
                             updated_count += 1
@@ -610,7 +637,6 @@ class PubgZipImporter:
                             processed_names.add(name_key)
                         else:
                             # Item doesn't exist, create it
-                            img_bytes, ext = get_image_bytes_and_ext(p_item['image'])
                             weapon_type, skin_name = parse_weapon_and_skin(item_name, p_item.get('type', ''))
                             rarity_code, rarity_hex = map_pubg_rarity(p_item.get('rarity'))
 
@@ -629,13 +655,14 @@ class PubgZipImporter:
                                 source_image_url=p_item.get('source_image_url') or None,
                             )
 
-                            safe_slug = slugify(item_name)[:40] or f"item_{idx}"
-                            filename = f"pubg_{safe_slug}_{idx}{ext}"
-                            new_item.image.save(filename, ContentFile(img_bytes), save=False)
-                            new_item.save()
+                            if img_bytes:
+                                safe_slug = slugify(item_name)[:40] or f"item_{idx}"
+                                filename = f"pubg_{safe_slug}_{idx}{ext}"
+                                new_item.image.save(filename, ContentFile(img_bytes), save=False)
+                                images_saved_count += 1
 
+                            new_item.save()
                             created_count += 1
-                            images_saved_count += 1
 
                             if source_id:
                                 processed_source_ids.add(source_id)

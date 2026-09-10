@@ -727,3 +727,48 @@ class RngSimulationRun(models.Model):
     def __str__(self):
         return f"Симуляция {self.case.name}: {self.num_simulations:,} прокруток -> RTP {self.actual_rtp:.2f}% ({self.created_at.strftime('%d.%m.%Y %H:%M')})"
 
+
+class PubgImportSession(models.Model):
+    STATUS_CHOICES = [
+        ('preview', 'Ожидает подтверждения (Preview)'),
+        ('importing', 'Выполняется импорт'),
+        ('completed', 'Импорт успешно завершён'),
+        ('failed', 'Ошибка при импорте'),
+        ('cancelled', 'Отменён пользователем'),
+    ]
+
+    session_id = models.CharField(max_length=64, unique=True, db_index=True, verbose_name="ID сессии импорта")
+    filename = models.CharField(max_length=255, verbose_name="Имя файла архива")
+    zip_path = models.CharField(max_length=500, verbose_name="Путь к сохранённому архиву")
+    filesize_bytes = models.BigIntegerField(default=0, verbose_name="Размер архива (байт)")
+    total_items = models.IntegerField(default=0, verbose_name="Всего предметов в архиве")
+    new_items_count = models.IntegerField(default=0, verbose_name="Количество новых (NEW)")
+    existing_items_count = models.IntegerField(default=0, verbose_name="Количество существующих (EXISTING)")
+    error_items_count = models.IntegerField(default=0, verbose_name="Количество ошибок валидации")
+    total_images = models.IntegerField(default=0, verbose_name="Количество изображений")
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='preview', db_index=True, verbose_name="Статус")
+    mode = models.CharField(max_length=30, default='add_only', verbose_name="Режим импорта")
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, verbose_name="Администратор")
+    summary_data = models.JSONField(default=dict, blank=True, verbose_name="Итоговая статистика")
+    error_message = models.TextField(blank=True, null=True, verbose_name="Сообщение об ошибке")
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True, verbose_name="Дата создания")
+    updated_at = models.DateTimeField(auto_now=True, verbose_name="Дата обновления")
+
+    class Meta:
+        verbose_name = "Сессия импорта PUBG"
+        verbose_name_plural = "Сессии импорта PUBG"
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"Импорт PUBG {self.session_id[:8]} ({self.filename}) — {self.get_status_display()}"
+
+    def clean_storage(self):
+        """Safely removes temporary zip file if it exists."""
+        try:
+            from pathlib import Path
+            p = Path(self.zip_path)
+            if p.exists():
+                p.unlink(missing_ok=True)
+        except Exception:
+            pass
+

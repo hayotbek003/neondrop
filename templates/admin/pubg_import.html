@@ -338,7 +338,7 @@
   <!-- STEP 2: PREVIEW SCREEN -->
   <!-- ============================================================= -->
   {% if step == 'preview' %}
-  <div class="pubg-card">
+  <div class="pubg-card" id="preview-card">
     <div class="pubg-card-header">
       <div>
         <h2 class="pubg-card-title">
@@ -417,21 +417,37 @@
       </div>
 
       <!-- LIVE PROGRESS BAR CONTAINER -->
-      <div class="progress-wrap" id="progress-container">
+      <div class="progress-wrap" id="progress-container" style="display: none;">
         <div style="display: flex; justify-content: space-between; align-items: center;">
           <div style="font-weight: 800; color: #fbbf24; font-size: 15px;" id="progress-label">
             ⚡ Выполняется импорт...
           </div>
           <div style="font-weight: 900; color: #f8fafc; font-size: 15px;" id="progress-counter">
-            Импортировано 0 / {{ inspection.total_items }}
+            Импортировано <span id="progress-current">0</span> / <span id="progress-total">{{ inspection.total_items }}</span>
           </div>
         </div>
-        <div class="progress-bar-bg">
-          <div class="progress-bar-fill" id="progress-fill"></div>
+        <div class="progress-bar-bg" style="margin: 12px 0 8px 0;">
+          <div class="progress-bar-fill" id="progress-fill" style="width: 0%;"></div>
         </div>
-        <div style="display: flex; justify-content: space-between; font-size: 12px; color: #94a3b8;">
-          <span id="progress-current-item">Обработка...</span>
-          <span id="progress-percent">0%</span>
+        <div style="display: flex; justify-content: space-between; font-size: 12px; color: #94a3b8; margin-bottom: 12px;">
+          <span id="progress-current-item">Подготовка к импорту...</span>
+          <span id="progress-percent" style="font-weight: 700; color: #f8fafc;">0%</span>
+        </div>
+
+        <!-- Live Sub-counters -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 8px; margin-top: 10px; background: rgba(15, 23, 42, 0.6); padding: 12px 16px; border-radius: 8px; border: 1px solid #334155; font-size: 13px;">
+          <div style="color: #cbd5e1;">
+            Создано: <strong id="progress-created" style="color: #34d399; font-size: 15px;">0</strong>
+          </div>
+          <div style="color: #cbd5e1;">
+            Обновлено: <strong id="progress-updated" style="color: #fbbf24; font-size: 15px;">0</strong>
+          </div>
+          <div style="color: #cbd5e1;">
+            Пропущено: <strong id="progress-skipped" style="color: #94a3b8; font-size: 15px;">0</strong>
+          </div>
+          <div style="color: #cbd5e1;">
+            Ошибок: <strong id="progress-errors" style="color: #f87171; font-size: 15px;">0</strong>
+          </div>
         </div>
       </div>
 
@@ -555,8 +571,10 @@
   <!-- ============================================================= -->
   <!-- STEP 3: COMPLETED REPORT -->
   <!-- ============================================================= -->
-  {% if step == 'completed' %}
-  <div class="pubg-card" style="text-align: center; padding: 40px 24px;">
+  <!-- ============================================================= -->
+  <!-- STEP 3: COMPLETED REPORT -->
+  <!-- ============================================================= -->
+  <div class="pubg-card" id="completed-card" style="{% if step != 'completed' %}display: none;{% endif %} text-align: center; padding: 40px 24px;">
     <div style="font-size: 56px; margin-bottom: 12px;">✅</div>
     <h2 style="font-size: 26px; font-weight: 900; color: #34d399; margin: 0 0 10px 0;">
       ИМПОРТ ЗАВЕРШЁН
@@ -567,24 +585,24 @@
 
     <div style="max-width: 600px; margin: 0 auto 30px auto; background: rgba(15, 23, 42, 0.8); border: 1px solid #334155; border-radius: 12px; padding: 24px; text-align: left;">
       <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #1e293b;">
-        <span style="color: #cbd5e1; font-weight: 700;">Новых:</span>
-        <strong style="color: #34d399; font-size: 16px;">{{ summary.created }}</strong>
+        <span style="color: #cbd5e1; font-weight: 700;">Новых предметов:</span>
+        <strong id="summary-created" style="color: #34d399; font-size: 16px;">{{ summary.created|default:0 }}</strong>
       </div>
       <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #1e293b;">
         <span style="color: #cbd5e1; font-weight: 700;">Обновлено:</span>
-        <strong style="color: #fbbf24; font-size: 16px;">{{ summary.updated }}</strong>
+        <strong id="summary-updated" style="color: #fbbf24; font-size: 16px;">{{ summary.updated|default:0 }}</strong>
       </div>
       <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #1e293b;">
         <span style="color: #cbd5e1; font-weight: 700;">Пропущено:</span>
-        <strong style="color: #94a3b8; font-size: 16px;">{{ summary.skipped }}</strong>
+        <strong id="summary-skipped" style="color: #94a3b8; font-size: 16px;">{{ summary.skipped|default:0 }}</strong>
       </div>
       <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #1e293b;">
         <span style="color: #cbd5e1; font-weight: 700;">Ошибок:</span>
-        <strong style="color: {% if summary.errors > 0 %}#f87171{% else %}#94a3b8{% endif %}; font-size: 16px;">{{ summary.errors }}</strong>
+        <strong id="summary-errors" style="color: {% if summary.errors > 0 %}#f87171{% else %}#94a3b8{% endif %}; font-size: 16px;">{{ summary.errors|default:0 }}</strong>
       </div>
       <div style="display: flex; justify-content: space-between; padding: 8px 0;">
         <span style="color: #cbd5e1; font-weight: 700;">Изображений:</span>
-        <strong style="color: #c084fc; font-size: 16px;">{{ summary.images_saved }}</strong>
+        <strong id="summary-images" style="color: #c084fc; font-size: 16px;">{{ summary.images_saved|default:0 }}</strong>
       </div>
     </div>
 
@@ -597,7 +615,6 @@
       </a>
     </div>
   </div>
-  {% endif %}
 
 </div>
 
@@ -677,7 +694,7 @@
           'Content-Type': 'application/json',
           'X-CSRFToken': csrfToken,
         },
-        body: JSON.stringify({ token: token, mode: mode }),
+        body: JSON.stringify({ token: token, session_id: token, mode: mode }),
       });
 
       if (!response.ok) {
@@ -701,7 +718,24 @@
           try {
             const msg = JSON.parse(line);
             if (msg.event === 'progress') {
-              progressCounter.textContent = `Импортировано ${msg.current} / ${msg.total}`;
+              if (document.getElementById('progress-current')) {
+                document.getElementById('progress-current').textContent = msg.current;
+              }
+              if (document.getElementById('progress-total')) {
+                document.getElementById('progress-total').textContent = msg.total;
+              }
+              if (document.getElementById('progress-created') && msg.created !== undefined) {
+                document.getElementById('progress-created').textContent = msg.created;
+              }
+              if (document.getElementById('progress-updated') && msg.updated !== undefined) {
+                document.getElementById('progress-updated').textContent = msg.updated;
+              }
+              if (document.getElementById('progress-skipped') && msg.skipped !== undefined) {
+                document.getElementById('progress-skipped').textContent = msg.skipped;
+              }
+              if (document.getElementById('progress-errors') && msg.errors !== undefined) {
+                document.getElementById('progress-errors').textContent = msg.errors;
+              }
               progressFill.style.width = `${msg.percent}%`;
               progressPercent.textContent = `${msg.percent}%`;
               progressItem.textContent = msg.item;
@@ -710,15 +744,40 @@
               progressPercent.textContent = '100%';
               progressCounter.textContent = `Завершено: ${msg.summary.total} предметов`;
 
-              // Smoothly transition to summary screen
-              setTimeout(() => {
-                document.getElementById('execute-import-form').submit();
-              }, 600);
+              const completedCard = document.getElementById('completed-card');
+              const previewCard = document.getElementById('preview-card');
+              if (completedCard) {
+                if (document.getElementById('summary-created')) {
+                  document.getElementById('summary-created').textContent = msg.summary.created;
+                }
+                if (document.getElementById('summary-updated')) {
+                  document.getElementById('summary-updated').textContent = msg.summary.updated;
+                }
+                if (document.getElementById('summary-skipped')) {
+                  document.getElementById('summary-skipped').textContent = msg.summary.skipped;
+                }
+                if (document.getElementById('summary-errors')) {
+                  const errElem = document.getElementById('summary-errors');
+                  errElem.textContent = msg.summary.errors;
+                  errElem.style.color = msg.summary.errors > 0 ? '#f87171' : '#94a3b8';
+                }
+                if (document.getElementById('summary-images')) {
+                  document.getElementById('summary-images').textContent = msg.summary.images_saved;
+                }
+                if (previewCard) previewCard.style.display = 'none';
+                completedCard.style.display = 'block';
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              } else {
+                setTimeout(() => {
+                  document.getElementById('execute-import-form').submit();
+                }, 400);
+              }
               return;
             } else if (msg.event === 'error') {
               alert('Ошибка импорта: ' + msg.message);
               btn.disabled = false;
               btn.style.opacity = '1';
+              btn.innerHTML = '<span>⚡</span> Начать импорт предметов';
               return;
             }
           } catch (err) {
@@ -727,7 +786,7 @@
         }
       }
 
-      // Fallback submit if stream ended cleanly
+      // Fallback submit if stream ended cleanly without complete event
       document.getElementById('execute-import-form').submit();
 
     } catch (err) {

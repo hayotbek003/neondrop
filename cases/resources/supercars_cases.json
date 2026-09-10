@@ -1,0 +1,650 @@
+[
+  {
+    "name": "Porsche 911 GT3 RS",
+    "price_uc": 20000,
+    "target_rtp_percent": 80,
+    "image": "images/case_01.jpg",
+    "items": [
+      {
+        "name": "Porsche 911 GT3 RS — Item 01",
+        "price_uc": 5,
+        "rarity": "Common",
+        "chance_percent": 21.742344,
+        "image": null
+      },
+      {
+        "name": "Porsche 911 GT3 RS — Item 02",
+        "price_uc": 10,
+        "rarity": "Common",
+        "chance_percent": 16.306758,
+        "image": null
+      },
+      {
+        "name": "Porsche 911 GT3 RS — Item 03",
+        "price_uc": 20,
+        "rarity": "Common",
+        "chance_percent": 10.871172,
+        "image": null
+      },
+      {
+        "name": "Porsche 911 GT3 RS — Item 04",
+        "price_uc": 50,
+        "rarity": "Common",
+        "chance_percent": 6.794482,
+        "image": null
+      },
+      {
+        "name": "Porsche 911 GT3 RS — Item 05",
+        "price_uc": 100,
+        "rarity": "Uncommon",
+        "chance_percent": 4.076689,
+        "image": null
+      },
+      {
+        "name": "Porsche 911 GT3 RS — Item 06",
+        "price_uc": 200,
+        "rarity": "Uncommon",
+        "chance_percent": 2.717793,
+        "image": null
+      },
+      {
+        "name": "Porsche 911 GT3 RS — Item 07",
+        "price_uc": 400,
+        "rarity": "Uncommon",
+        "chance_percent": 1.698621,
+        "image": null
+      },
+      {
+        "name": "Porsche 911 GT3 RS — Item 08",
+        "price_uc": 800,
+        "rarity": "Rare",
+        "chance_percent": 1.223007,
+        "image": null
+      },
+      {
+        "name": "Porsche 911 GT3 RS — Item 09",
+        "price_uc": 1500,
+        "rarity": "Rare",
+        "chance_percent": 0.815338,
+        "image": null
+      },
+      {
+        "name": "Porsche 911 GT3 RS — Item 10",
+        "price_uc": 3000,
+        "rarity": "Rare",
+        "chance_percent": 0.543559,
+        "image": null
+      },
+      {
+        "name": "Porsche 911 GT3 RS — Item 11",
+        "price_uc": 6000,
+        "rarity": "Epic",
+        "chance_percent": 0.305752,
+        "image": null
+      },
+      {
+        "name": "Porsche 911 GT3 RS — Item 12",
+        "price_uc": 12000,
+        "rarity": "Epic",
+        "chance_percent": 0.169862,
+        "image": null
+      },
+      {
+        "name": "Porsche 911 GT3 RS — Item 13",
+        "price_uc": 25000,
+        "rarity": "Legendary",
+        "chance_percent": 0.0,
+        "image": null
+      },
+      {
+        "name": "Porsche 911 GT3 RS — Item 14",
+        "price_uc": 45000,
+        "rarity": "Legendary",
+        "chance_percent": 0.0,
+        "image": null
+      }
+    ],
+    "calculated_expected_payout_uc": 101.6455,
+    "note": "Item names are generated placeholders because individual item photos/names were not supplied."
+  },
+  {
+    "name": "Rolls-Royce",
+    "price_uc": 16000,
+    "target_rtp_percent": 75,
+    "image": "images/case_02.jpg",
+    "items": [
+      {
+        "name": "Rolls-Royce — Item 01",
+        "price_uc": 5,
+        "rarity": "Common",
+        "chance_percent": 23.78357,
+        "image": null
+      },
+      {
+        "name": "Rolls-Royce — Item 02",
+        "price_uc": 10,
+        "rarity": "Common",
+        "chance_percent": 17.837677,
+        "image": null
+      },
+      {
+        "name": "Rolls-Royce — Item 03",
+        "price_uc": 20,
+        "rarity": "Common",
+        "chance_percent": 11.891785,
+        "image": null
+      },
+      {
+        "name": "Rolls-Royce — Item 04",
+        "price_uc": 50,
+        "rarity": "Common",
+        "chance_percent": 7.432365,
+        "image": null
+      },
+      {
+        "name": "Rolls-Royce — Item 05",
+        "price_uc": 100,
+        "rarity": "Uncommon",
+        "chance_percent": 4.459419,
+        "image": null
+      },
+      {
+        "name": "Rolls-Royce — Item 06",
+        "price_uc": 200,
+        "rarity": "Uncommon",
+        "chance_percent": 2.972946,
+        "image": null
+      },
+      {
+        "name": "Rolls-Royce — Item 07",
+        "price_uc": 400,
+        "rarity": "Uncommon",
+        "chance_percent": 1.858091,
+        "image": null
+      },
+      {
+        "name": "Rolls-Royce — Item 08",
+        "price_uc": 800,
+        "rarity": "Rare",
+        "chance_percent": 1.337826,
+        "image": null
+      },
+      {
+        "name": "Rolls-Royce — Item 09",
+        "price_uc": 1500,
+        "rarity": "Rare",
+        "chance_percent": 0.891884,
+        "image": null
+      },
+      {
+        "name": "Rolls-Royce — Item 10",
+        "price_uc": 3000,
+        "rarity": "Rare",
+        "chance_percent": 0.594589,
+        "image": null
+      },
+      {
+        "name": "Rolls-Royce — Item 11",
+        "price_uc": 6000,
+        "rarity": "Epic",
+        "chance_percent": 0.334456,
+        "image": null
+      },
+      {
+        "name": "Rolls-Royce — Item 12",
+        "price_uc": 12000,
+        "rarity": "Epic",
+        "chance_percent": 0.185809,
+        "image": null
+      },
+      {
+        "name": "Rolls-Royce — Item 13",
+        "price_uc": 25000,
+        "rarity": "Legendary",
+        "chance_percent": 0.0,
+        "image": null
+      },
+      {
+        "name": "Rolls-Royce — Item 14",
+        "price_uc": 45000,
+        "rarity": "Legendary",
+        "chance_percent": 0.0,
+        "image": null
+      }
+    ],
+    "calculated_expected_payout_uc": 111.1882,
+    "note": "Item names are generated placeholders because individual item photos/names were not supplied."
+  },
+  {
+    "name": "McLaren",
+    "price_uc": 13000,
+    "target_rtp_percent": 80,
+    "image": "images/case_03.jpg",
+    "items": [
+      {
+        "name": "McLaren — Item 01",
+        "price_uc": 5,
+        "rarity": "Common",
+        "chance_percent": 24.711563,
+        "image": null
+      },
+      {
+        "name": "McLaren — Item 02",
+        "price_uc": 10,
+        "rarity": "Common",
+        "chance_percent": 18.533672,
+        "image": null
+      },
+      {
+        "name": "McLaren — Item 03",
+        "price_uc": 20,
+        "rarity": "Common",
+        "chance_percent": 12.355781,
+        "image": null
+      },
+      {
+        "name": "McLaren — Item 04",
+        "price_uc": 50,
+        "rarity": "Common",
+        "chance_percent": 7.722363,
+        "image": null
+      },
+      {
+        "name": "McLaren — Item 05",
+        "price_uc": 100,
+        "rarity": "Uncommon",
+        "chance_percent": 4.633418,
+        "image": null
+      },
+      {
+        "name": "McLaren — Item 06",
+        "price_uc": 200,
+        "rarity": "Uncommon",
+        "chance_percent": 3.088945,
+        "image": null
+      },
+      {
+        "name": "McLaren — Item 07",
+        "price_uc": 400,
+        "rarity": "Uncommon",
+        "chance_percent": 1.930591,
+        "image": null
+      },
+      {
+        "name": "McLaren — Item 08",
+        "price_uc": 800,
+        "rarity": "Rare",
+        "chance_percent": 1.390025,
+        "image": null
+      },
+      {
+        "name": "McLaren — Item 09",
+        "price_uc": 1500,
+        "rarity": "Rare",
+        "chance_percent": 0.926684,
+        "image": null
+      },
+      {
+        "name": "McLaren — Item 10",
+        "price_uc": 3000,
+        "rarity": "Rare",
+        "chance_percent": 0.617789,
+        "image": null
+      },
+      {
+        "name": "McLaren — Item 11",
+        "price_uc": 6000,
+        "rarity": "Epic",
+        "chance_percent": 0.347506,
+        "image": null
+      },
+      {
+        "name": "McLaren — Item 12",
+        "price_uc": 12000,
+        "rarity": "Epic",
+        "chance_percent": 0.193059,
+        "image": null
+      },
+      {
+        "name": "McLaren — Item 13",
+        "price_uc": 25000,
+        "rarity": "Legendary",
+        "chance_percent": 0.0,
+        "image": null
+      },
+      {
+        "name": "McLaren — Item 14",
+        "price_uc": 45000,
+        "rarity": "Legendary",
+        "chance_percent": 0.0,
+        "image": null
+      }
+    ],
+    "calculated_expected_payout_uc": 115.5266,
+    "note": "Item names are generated placeholders because individual item photos/names were not supplied."
+  },
+  {
+    "name": "Ferrari",
+    "price_uc": 10000,
+    "target_rtp_percent": 71,
+    "image": "images/case_04.jpg",
+    "items": [
+      {
+        "name": "Ferrari — Item 01",
+        "price_uc": 5,
+        "rarity": "Common",
+        "chance_percent": 26.874274,
+        "image": null
+      },
+      {
+        "name": "Ferrari — Item 02",
+        "price_uc": 10,
+        "rarity": "Common",
+        "chance_percent": 20.155706,
+        "image": null
+      },
+      {
+        "name": "Ferrari — Item 03",
+        "price_uc": 20,
+        "rarity": "Common",
+        "chance_percent": 13.437137,
+        "image": null
+      },
+      {
+        "name": "Ferrari — Item 04",
+        "price_uc": 50,
+        "rarity": "Common",
+        "chance_percent": 8.398211,
+        "image": null
+      },
+      {
+        "name": "Ferrari — Item 05",
+        "price_uc": 100,
+        "rarity": "Uncommon",
+        "chance_percent": 5.038926,
+        "image": null
+      },
+      {
+        "name": "Ferrari — Item 06",
+        "price_uc": 200,
+        "rarity": "Uncommon",
+        "chance_percent": 3.359284,
+        "image": null
+      },
+      {
+        "name": "Ferrari — Item 07",
+        "price_uc": 400,
+        "rarity": "Uncommon",
+        "chance_percent": 2.099553,
+        "image": null
+      },
+      {
+        "name": "Ferrari — Item 08",
+        "price_uc": 800,
+        "rarity": "Rare",
+        "chance_percent": 1.511678,
+        "image": null
+      },
+      {
+        "name": "Ferrari — Item 09",
+        "price_uc": 1500,
+        "rarity": "Rare",
+        "chance_percent": 1.007785,
+        "image": null
+      },
+      {
+        "name": "Ferrari — Item 10",
+        "price_uc": 3000,
+        "rarity": "Rare",
+        "chance_percent": 0.671857,
+        "image": null
+      },
+      {
+        "name": "Ferrari — Item 11",
+        "price_uc": 6000,
+        "rarity": "Epic",
+        "chance_percent": 0.377919,
+        "image": null
+      },
+      {
+        "name": "Ferrari — Item 12",
+        "price_uc": 12000,
+        "rarity": "Epic",
+        "chance_percent": 0.209955,
+        "image": null
+      },
+      {
+        "name": "Ferrari — Item 13",
+        "price_uc": 25000,
+        "rarity": "Legendary",
+        "chance_percent": 0.0,
+        "image": null
+      },
+      {
+        "name": "Ferrari — Item 14",
+        "price_uc": 45000,
+        "rarity": "Legendary",
+        "chance_percent": 0.0,
+        "image": null
+      }
+    ],
+    "calculated_expected_payout_uc": 125.6372,
+    "note": "Item names are generated placeholders because individual item photos/names were not supplied."
+  },
+  {
+    "name": "Bugatti",
+    "price_uc": 7500,
+    "target_rtp_percent": 68,
+    "image": "images/case_05.jpg",
+    "items": [
+      {
+        "name": "Bugatti — Item 01",
+        "price_uc": 5,
+        "rarity": "Common",
+        "chance_percent": 28.379564,
+        "image": null
+      },
+      {
+        "name": "Bugatti — Item 02",
+        "price_uc": 10,
+        "rarity": "Common",
+        "chance_percent": 21.284673,
+        "image": null
+      },
+      {
+        "name": "Bugatti — Item 03",
+        "price_uc": 20,
+        "rarity": "Common",
+        "chance_percent": 14.189782,
+        "image": null
+      },
+      {
+        "name": "Bugatti — Item 04",
+        "price_uc": 50,
+        "rarity": "Common",
+        "chance_percent": 8.868614,
+        "image": null
+      },
+      {
+        "name": "Bugatti — Item 05",
+        "price_uc": 100,
+        "rarity": "Uncommon",
+        "chance_percent": 5.321168,
+        "image": null
+      },
+      {
+        "name": "Bugatti — Item 06",
+        "price_uc": 200,
+        "rarity": "Uncommon",
+        "chance_percent": 3.547446,
+        "image": null
+      },
+      {
+        "name": "Bugatti — Item 07",
+        "price_uc": 400,
+        "rarity": "Uncommon",
+        "chance_percent": 2.217153,
+        "image": null
+      },
+      {
+        "name": "Bugatti — Item 08",
+        "price_uc": 800,
+        "rarity": "Rare",
+        "chance_percent": 1.59635,
+        "image": null
+      },
+      {
+        "name": "Bugatti — Item 09",
+        "price_uc": 1500,
+        "rarity": "Rare",
+        "chance_percent": 1.064234,
+        "image": null
+      },
+      {
+        "name": "Bugatti — Item 10",
+        "price_uc": 3000,
+        "rarity": "Rare",
+        "chance_percent": 0.709489,
+        "image": null
+      },
+      {
+        "name": "Bugatti — Item 11",
+        "price_uc": 6000,
+        "rarity": "Epic",
+        "chance_percent": 0.399088,
+        "image": null
+      },
+      {
+        "name": "Bugatti — Item 12",
+        "price_uc": 12000,
+        "rarity": "Epic",
+        "chance_percent": 0.221715,
+        "image": null
+      },
+      {
+        "name": "Bugatti — Item 13",
+        "price_uc": 25000,
+        "rarity": "Legendary",
+        "chance_percent": 0.0,
+        "image": null
+      },
+      {
+        "name": "Bugatti — Item 14",
+        "price_uc": 45000,
+        "rarity": "Legendary",
+        "chance_percent": 0.0,
+        "image": null
+      }
+    ],
+    "calculated_expected_payout_uc": 132.6745,
+    "note": "Item names are generated placeholders because individual item photos/names were not supplied."
+  },
+  {
+    "name": "Cars / Supercars",
+    "price_uc": 5000,
+    "target_rtp_percent": 74,
+    "image": "images/case_06.jpg",
+    "items": [
+      {
+        "name": "Cars / Supercars — Item 01",
+        "price_uc": 5,
+        "rarity": "Common",
+        "chance_percent": 29.537696,
+        "image": null
+      },
+      {
+        "name": "Cars / Supercars — Item 02",
+        "price_uc": 10,
+        "rarity": "Common",
+        "chance_percent": 22.153272,
+        "image": null
+      },
+      {
+        "name": "Cars / Supercars — Item 03",
+        "price_uc": 20,
+        "rarity": "Common",
+        "chance_percent": 14.768848,
+        "image": null
+      },
+      {
+        "name": "Cars / Supercars — Item 04",
+        "price_uc": 50,
+        "rarity": "Common",
+        "chance_percent": 9.23053,
+        "image": null
+      },
+      {
+        "name": "Cars / Supercars — Item 05",
+        "price_uc": 100,
+        "rarity": "Uncommon",
+        "chance_percent": 5.538318,
+        "image": null
+      },
+      {
+        "name": "Cars / Supercars — Item 06",
+        "price_uc": 200,
+        "rarity": "Uncommon",
+        "chance_percent": 3.692212,
+        "image": null
+      },
+      {
+        "name": "Cars / Supercars — Item 07",
+        "price_uc": 400,
+        "rarity": "Uncommon",
+        "chance_percent": 2.307633,
+        "image": null
+      },
+      {
+        "name": "Cars / Supercars — Item 08",
+        "price_uc": 800,
+        "rarity": "Rare",
+        "chance_percent": 1.661495,
+        "image": null
+      },
+      {
+        "name": "Cars / Supercars — Item 09",
+        "price_uc": 1500,
+        "rarity": "Rare",
+        "chance_percent": 1.107664,
+        "image": null
+      },
+      {
+        "name": "Cars / Supercars — Item 10",
+        "price_uc": 3000,
+        "rarity": "Rare",
+        "chance_percent": 0.738442,
+        "image": null
+      },
+      {
+        "name": "Cars / Supercars — Item 11",
+        "price_uc": 6000,
+        "rarity": "Epic",
+        "chance_percent": 0.415374,
+        "image": null
+      },
+      {
+        "name": "Cars / Supercars — Item 12",
+        "price_uc": 12000,
+        "rarity": "Epic",
+        "chance_percent": 0.230763,
+        "image": null
+      },
+      {
+        "name": "Cars / Supercars — Item 13",
+        "price_uc": 25000,
+        "rarity": "Legendary",
+        "chance_percent": 0.0,
+        "image": null
+      },
+      {
+        "name": "Cars / Supercars — Item 14",
+        "price_uc": 45000,
+        "rarity": "Legendary",
+        "chance_percent": 0.0,
+        "image": null
+      }
+    ],
+    "calculated_expected_payout_uc": 138.0887,
+    "note": "Item names are generated placeholders because individual item photos/names were not supplied."
+  }
+]

@@ -5,18 +5,20 @@ import tempfile
 from decimal import Decimal
 from pathlib import Path
 
+from unittest.mock import patch
 from django.test import TestCase, Client
 from django.contrib.auth.models import User
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.urls import reverse
 
-from cases.models import Item
+from cases.models import Item, PubgImportSession
 from users.models import AdminPermissionProfile
 from cases.pubg_importer_service import (
     PubgZipImporter,
     PubgImportValidationError,
     normalize_url,
     map_pubg_rarity,
+    get_pubg_import_storage_dir,
 )
 
 
@@ -368,7 +370,7 @@ class PubgImportAdminViewsTestCase(TestCase):
         self.assertEqual(exec_response.status_code, 200)
         exec_content = exec_response.content.decode('utf-8')
         self.assertIn('ИМПОРТ ЗАВЕРШЁН', exec_content)
-        self.assertIn('Новых:', exec_content)
+        self.assertIn('Новых', exec_content)
 
         # Check DB
         self.assertTrue(Item.objects.filter(source_id="pan_neon_99").exists())
@@ -464,6 +466,199 @@ class PubgImportAdminViewsTestCase(TestCase):
             self.assertIn("Импорт PUBG предметов", str(cm.exception))
         finally:
             Path(temp_path).unlink(missing_ok=True)
+
+    def test_session_lifecycle_and_clean_storage(self):
+        """Verify PubgImportSession lifecycle: created on preview, cleaned on success, idempotent."""
+        items = [{
+            "game": "PUBG",
+            "name": "M249 | Jungle Camo",
+            "price": 120.00,
+            "rarity": "Rare",
+            "image": "images/m249.webp",
+            "source_id": "m249_lifecycle_01"
+        }]
+        zip_buf = create_test_zip(items, ["images/m249.webp"])
+        uploaded = SimpleUploadedFile("m249_import.zip", zip_buf.getvalue(), content_type="application/zip")
+
+        url = reverse('admin_pubg_import')
+
+        # 1. Preview step
+        resp = self.client.post(url, {'action': 'preview', 'zip_file': uploaded})
+        self.assertEqual(resp.status_code, 200)
+        token = resp.context['token']
+
+        session = PubgImportSession.objects.filter(session_id=token).first()
+        self.assertIsNotNone(session)
+        self.assertEqual(session.status, 'preview')
+        self.assertEqual(session.total_items, 1)
+        self.assertEqual(session.new_items_count, 1)
+        self.assertTrue(Path(session.zip_path).exists())
+
+        # 2. Confirm / Execute step
+        exec_resp = self.client.post(url, {'action': 'execute', 'token': token, 'mode': 'add_only'})
+        self.assertEqual(exec_resp.status_code, 200)
+
+        session.refresh_from_db()
+        self.assertEqual(session.status, 'completed')
+        self.assertEqual(session.summary_data.get('created'), 1)
+        # Storage file must be deleted on success
+        self.assertFalse(Path(session.zip_path).exists(), "ZIP must be cleaned up on successful completion!")
+
+        # 3. Idempotency test: submitting again must not fail
+        repeat_resp = self.client.post(url, {'action': 'execute', 'token': token, 'mode': 'add_only'})
+        self.assertEqual(repeat_resp.status_code, 200)
+        self.assertIn('ИМПОРТ ЗАВЕРШЁН', repeat_resp.content.decode('utf-8'))
+
+    def test_missing_image_does_not_abort_transaction(self):
+        """Verify that an item with missing/corrupted image during extraction does not rollback valid items."""
+        items = [
+            {
+                "game": "PUBG",
+                "name": "Item With Corrupted Image",
+                "price": 50.00,
+                "rarity": "Common",
+                "image": "images/corrupted_img.webp",
+                "source_id": "corrupted_img_item_01"
+            },
+            {
+                "game": "PUBG",
+                "name": "Item With Valid Image",
+                "price": 80.00,
+                "rarity": "Rare",
+                "image": "images/valid_img.webp",
+                "source_id": "valid_img_item_02"
+            }
+        ]
+        # Both images exist in archive namelist
+        zip_buf = create_test_zip(items, ["images/corrupted_img.webp", "images/valid_img.webp"])
+
+        with tempfile.NamedTemporaryFile(suffix='.zip', delete=False) as tf:
+            tf.write(zip_buf.getvalue())
+            temp_path = tf.name
+
+        try:
+            importer = PubgZipImporter(temp_path)
+
+            orig_read = zipfile.ZipFile.read
+
+            def mock_read(self_zf, name, *args, **kwargs):
+                if "corrupted_img" in str(name):
+                    raise zipfile.BadZipFile("CRC error or corrupted compressed data in image")
+                return orig_read(self_zf, name, *args, **kwargs)
+
+            with patch.object(zipfile.ZipFile, 'read', side_effect=mock_read, autospec=True):
+                res = importer.execute_import(mode='add_only')
+
+            # Both items should be created in DB despite extraction error on item 1!
+            self.assertEqual(res['created'], 2)
+            self.assertEqual(res['errors'], 1)  # 1 image error tracked
+            self.assertEqual(res['images_saved'], 1)
+
+            it1 = Item.objects.filter(source_id="corrupted_img_item_01").first()
+            it2 = Item.objects.filter(source_id="valid_img_item_02").first()
+            self.assertIsNotNone(it1, "Item 1 must be created even with image error!")
+            self.assertIsNotNone(it2, "Item 2 must be created with image!")
+            self.assertTrue(bool(it2.image))
+        finally:
+            Path(temp_path).unlink(missing_ok=True)
+
+    def test_reimport_same_zip_prevents_duplicates(self):
+        """Verify re-importing the exact same ZIP in add_only mode creates 0 duplicates."""
+        items = [
+            {"game": "PUBG", "name": "Item Alpha", "price": 10.0, "source_id": "alpha_01", "image": "images/a.webp"},
+            {"game": "PUBG", "name": "Item Beta", "price": 20.0, "source_id": "beta_02", "image": "images/b.webp"},
+        ]
+        zip_buf = create_test_zip(items, ["images/a.webp", "images/b.webp"])
+        with tempfile.NamedTemporaryFile(suffix='.zip', delete=False) as tf:
+            tf.write(zip_buf.getvalue())
+            temp_path = tf.name
+
+        try:
+            importer1 = PubgZipImporter(temp_path)
+            res1 = importer1.execute_import(mode='add_only')
+            self.assertEqual(res1['created'], 2)
+            self.assertEqual(res1['skipped'], 0)
+
+            # Second import with same archive
+            importer2 = PubgZipImporter(temp_path)
+            res2 = importer2.execute_import(mode='add_only')
+            self.assertEqual(res2['created'], 0, "No duplicate items should be created on re-import!")
+            self.assertEqual(res2['skipped'], 2, "Both items should be skipped as existing!")
+            self.assertEqual(Item.objects.filter(source_id__in=["alpha_01", "beta_02"]).count(), 2)
+        finally:
+            Path(temp_path).unlink(missing_ok=True)
+
+    def test_zip_with_mix_of_new_and_existing(self):
+        """Verify archive with both new and existing items handles them according to mode."""
+        # Pre-create 1 item in DB
+        Item.objects.create(
+            name="Existing Kar98k",
+            game="PUBG",
+            value=Decimal("150.00"),
+            source_id="kar98_exist_01"
+        )
+
+        items = [
+            {"game": "PUBG", "name": "Existing Kar98k", "price": 199.00, "source_id": "kar98_exist_01", "image": "images/k.webp"},
+            {"game": "PUBG", "name": "New AWM", "price": 300.00, "source_id": "awm_new_02", "image": "images/awm.webp"},
+        ]
+        zip_buf = create_test_zip(items, ["images/k.webp", "images/awm.webp"])
+        with tempfile.NamedTemporaryFile(suffix='.zip', delete=False) as tf:
+            tf.write(zip_buf.getvalue())
+            temp_path = tf.name
+
+        try:
+            # Mode: update_existing
+            importer = PubgZipImporter(temp_path)
+            res = importer.execute_import(mode='update_existing')
+            self.assertEqual(res['created'], 1)
+            self.assertEqual(res['updated'], 1)
+
+            updated_kar = Item.objects.get(source_id="kar98_exist_01")
+            self.assertEqual(updated_kar.value, Decimal("199.00"))
+            self.assertTrue(Item.objects.filter(source_id="awm_new_02").exists())
+        finally:
+            Path(temp_path).unlink(missing_ok=True)
+
+    def test_damaged_zip_handled_gracefully(self):
+        """Verify corrupted ZIP file returns validation error and doesn't crash the server."""
+        corrupted_bytes = b"NOT_A_VALID_ZIP_CONTENT_CORRUPTED"
+        uploaded = SimpleUploadedFile("broken.zip", corrupted_bytes, content_type="application/zip")
+        url = reverse('admin_pubg_import')
+
+        resp = self.client.post(url, {'action': 'preview', 'zip_file': uploaded})
+        self.assertEqual(resp.status_code, 200)
+        self.assertIn('Ошибка валидации', resp.content.decode('utf-8'))
+
+    def test_streaming_live_subcounters(self):
+        """Verify NDJSON streaming returns detailed subcounters in progress events."""
+        items = [
+            {"game": "PUBG", "name": "Stream Item 1", "price": 10.0, "source_id": "str_01", "image": "images/s1.webp"},
+            {"game": "PUBG", "name": "Stream Item 2", "price": 20.0, "source_id": "str_02", "image": "images/s2.webp"},
+        ]
+        zip_buf = create_test_zip(items, ["images/s1.webp", "images/s2.webp"])
+        uploaded = SimpleUploadedFile("stream_subcounters.zip", zip_buf.getvalue(), content_type="application/zip")
+
+        preview_resp = self.client.post(reverse('admin_pubg_import'), {'action': 'preview', 'zip_file': uploaded})
+        token = preview_resp.context['token']
+
+        stream_url = reverse('admin_pubg_import_stream')
+        stream_resp = self.client.post(
+            stream_url,
+            data=json.dumps({'token': token, 'mode': 'add_only'}),
+            content_type='application/json'
+        )
+        self.assertEqual(stream_resp.status_code, 200)
+
+        lines = [line.strip() for line in b"".join(stream_resp.streaming_content).decode('utf-8').split('\n') if line.strip()]
+        progress_events = [json.loads(line) for line in lines if '"event": "progress"' in line]
+        self.assertTrue(len(progress_events) >= 2)
+        # Check subcounters are present in progress events
+        for p in progress_events:
+            self.assertIn('created', p)
+            self.assertIn('updated', p)
+            self.assertIn('skipped', p)
+            self.assertIn('errors', p)
 
 
 class PubgExistingItemLogicTestCase(TestCase):

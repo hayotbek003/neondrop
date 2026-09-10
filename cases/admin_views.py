@@ -26,7 +26,7 @@ from django.views.decorators.http import require_http_methods
 from django.conf import settings
 from django.contrib.auth.models import User
 
-from cases.models import Case, Item, CaseItem, Opening, PromoCode, Category
+from cases.models import Case, Item, CaseItem, Opening, PromoCode, Category, PubgImportSession
 from inventory.models import InventoryItem
 from payments.models import Transaction
 from .backup_restore_service import (
@@ -819,20 +819,17 @@ def ajax_get_rng_simulation_run_view(request, run_id):
 # =========================================================================
 # DEDICATED PUBG ITEM ZIP IMPORTER (Validation, Preview, Atomic Import)
 # =========================================================================
-from .pubg_importer_service import PubgZipImporter, PubgImportValidationError
+from .pubg_importer_service import PubgZipImporter, PubgImportValidationError, get_pubg_import_storage_dir
 
 
-def _get_pubg_import_temp_dir() -> Path:
-    d = Path(tempfile.gettempdir()) / 'neondrop_pubg_imports'
-    d.mkdir(parents=True, exist_ok=True)
-    return d
-
-
-def _clean_old_pubg_temp_files(max_age_seconds: int = 3600):
+def _clean_old_pubg_sessions(max_age_seconds: int = 86400):
+    """
+    Cleans up old temporary ZIP files for cancelled or orphaned sessions older than max_age_seconds.
+    """
     try:
-        temp_dir = _get_pubg_import_temp_dir()
+        storage_dir = get_pubg_import_storage_dir()
         now = time.time()
-        for f in temp_dir.glob('*.zip'):
+        for f in storage_dir.glob('*.zip'):
             if now - f.stat().st_mtime > max_age_seconds:
                 try:
                     f.unlink()
@@ -847,11 +844,12 @@ def _clean_old_pubg_temp_files(max_age_seconds: int = 3600):
 def admin_pubg_import_view(request):
     """
     Main Django Admin GUI for uploading, validating, previewing, and importing PUBG items from ZIP.
+    Uses persistent PubgImportSession records to support multi-worker environments (Render/Gunicorn).
     """
     if not (request.user.is_superuser or has_admin_perm(request.user, 'can_add_items')):
         return HttpResponseForbidden("⛔ Ошибка доступа: у вас нет прав на добавление предметов (can_add_items).")
 
-    _clean_old_pubg_temp_files()
+    _clean_old_pubg_sessions()
 
     context = {
         'title': 'Импорт PUBG предметов (ZIP)',
@@ -861,14 +859,27 @@ def admin_pubg_import_view(request):
         'step': 'upload',
     }
 
-    # Reset preview
+    # Reset preview / cancel session
     if request.method == 'GET' and request.GET.get('reset'):
-        token = request.session.pop('pubg_import_token', None)
-        if token:
-            temp_file = _get_pubg_import_temp_dir() / f"{token}.zip"
-            if temp_file.exists():
-                temp_file.unlink(missing_ok=True)
+        session_id = request.session.pop('pubg_import_session_id', None) or request.session.pop('pubg_import_token', None)
+        if session_id:
+            session = PubgImportSession.objects.filter(session_id=session_id).first()
+            if session:
+                if session.status in ['preview', 'failed', 'cancelled']:
+                    session.status = 'cancelled'
+                    session.save(update_fields=['status', 'updated_at'])
+                    session.clean_storage()
         return redirect('admin_pubg_import')
+
+    # Direct view of completed session via GET ?session_id=...
+    if request.method == 'GET' and request.GET.get('session_id'):
+        session_id = request.GET.get('session_id')
+        session = PubgImportSession.objects.filter(session_id=session_id).first()
+        if session and session.status == 'completed':
+            context['step'] = 'completed'
+            context['summary'] = session.summary_data
+            context['mode'] = session.mode
+            return render(request, 'admin/pubg_import.html', context)
 
     # STEP 1: Upload & Inspect
     if request.method == 'POST' and request.POST.get('action') == 'preview':
@@ -882,19 +893,20 @@ def admin_pubg_import_view(request):
             messages.error(request, "Неверный формат файла. Разрешены только архивы .zip.")
             return render(request, 'admin/pubg_import.html', context)
 
-        token = uuid.uuid4().hex
-        temp_path = _get_pubg_import_temp_dir() / f"{token}.zip"
+        session_id = uuid.uuid4().hex
+        storage_dir = get_pubg_import_storage_dir()
+        dest_path = storage_dir / f"{session_id}.zip"
 
         try:
-            with open(temp_path, 'wb') as dest:
+            with open(dest_path, 'wb') as dest:
                 for chunk in uploaded_file.chunks():
                     dest.write(chunk)
 
-            importer = PubgZipImporter(str(temp_path))
+            importer = PubgZipImporter(str(dest_path))
             inspection = importer.validate_and_inspect()
 
             if not inspection['is_valid']:
-                temp_path.unlink(missing_ok=True)
+                dest_path.unlink(missing_ok=True)
                 context['inspection_errors'] = inspection['errors_list']
                 context['error_items_count'] = inspection['error_items']
                 messages.error(
@@ -904,43 +916,106 @@ def admin_pubg_import_view(request):
                 )
                 return render(request, 'admin/pubg_import.html', context)
 
-            request.session['pubg_import_token'] = token
+            # Create persistent session record in database
+            import_session = PubgImportSession.objects.create(
+                session_id=session_id,
+                filename=uploaded_file.name,
+                zip_path=str(dest_path),
+                filesize_bytes=uploaded_file.size,
+                total_items=inspection['total_items'],
+                new_items_count=inspection['new_items'],
+                existing_items_count=inspection['existing_items'],
+                error_items_count=inspection['error_items'],
+                total_images=inspection.get('images_count', 0),
+                status='preview',
+                user=request.user if request.user.is_authenticated else None,
+            )
+
+            request.session['pubg_import_session_id'] = session_id
+            request.session['pubg_import_token'] = session_id  # backwards compatibility
+
             context['step'] = 'preview'
-            context['token'] = token
+            context['token'] = session_id
+            context['session_id'] = session_id
             context['inspection'] = inspection
             context['filename'] = uploaded_file.name
             context['filesize_mb'] = round(uploaded_file.size / (1024 * 1024), 2)
             return render(request, 'admin/pubg_import.html', context)
 
         except PubgImportValidationError as e:
-            temp_path.unlink(missing_ok=True)
+            dest_path.unlink(missing_ok=True)
             messages.error(request, f"Ошибка валидации: {e}")
             return render(request, 'admin/pubg_import.html', context)
         except Exception as e:
-            temp_path.unlink(missing_ok=True)
+            dest_path.unlink(missing_ok=True)
             messages.error(request, f"Непредвиденная ошибка при обработке архива: {e}")
             return render(request, 'admin/pubg_import.html', context)
 
-    # STEP 2: Synchronous execution fallback
+    # STEP 2: Synchronous execution fallback or confirm
     if request.method == 'POST' and request.POST.get('action') == 'execute':
-        token = request.POST.get('token') or request.session.get('pubg_import_token')
+        session_id = (
+            request.POST.get('token')
+            or request.POST.get('session_id')
+            or request.session.get('pubg_import_session_id')
+            or request.session.get('pubg_import_token')
+        )
         mode = request.POST.get('mode', 'add_only')
         if mode not in ['add_only', 'update_existing']:
             mode = 'add_only'
 
-        if not token:
-            messages.error(request, "Сессия импорта устарела. Загрузите файл заново.")
+        if not session_id:
+            messages.error(request, "Сессия импорта устарела или не найдена. Загрузите файл заново.")
             return redirect('admin_pubg_import')
 
-        temp_path = _get_pubg_import_temp_dir() / f"{token}.zip"
-        if not temp_path.exists():
-            messages.error(request, "Временный файл импорта не найден или истёк срок действия. Загрузите файл заново.")
+        session = PubgImportSession.objects.filter(session_id=session_id).first()
+
+        # Idempotency check: if already completed (e.g. via streaming), display summary directly
+        if session and session.status == 'completed':
+            request.session.pop('pubg_import_session_id', None)
+            request.session.pop('pubg_import_token', None)
+            context['step'] = 'completed'
+            context['summary'] = session.summary_data
+            context['mode'] = session.mode
+            messages.success(request, "✅ Импорт PUBG-предметов уже успешно завершён!")
+            return render(request, 'admin/pubg_import.html', context)
+
+        # Look for the ZIP file either via session model or storage dir
+        zip_file_path = None
+        if session and session.zip_path:
+            p = Path(session.zip_path)
+            if p.exists():
+                zip_file_path = p
+
+        if not zip_file_path:
+            p = get_pubg_import_storage_dir() / f"{session_id}.zip"
+            if p.exists():
+                zip_file_path = p
+
+        if not zip_file_path:
+            messages.error(
+                request,
+                "Временный файл импорта недоступен на сервере или истёк срок действия. Загрузите файл заново."
+            )
             return redirect('admin_pubg_import')
+
+        if session:
+            session.status = 'importing'
+            session.mode = mode
+            session.save(update_fields=['status', 'mode', 'updated_at'])
 
         try:
-            importer = PubgZipImporter(str(temp_path))
+            importer = PubgZipImporter(str(zip_file_path))
             summary = importer.execute_import(mode=mode)
-            temp_path.unlink(missing_ok=True)
+
+            if session:
+                session.status = 'completed'
+                session.summary_data = summary
+                session.save(update_fields=['status', 'summary_data', 'updated_at'])
+                session.clean_storage()  # Delete ZIP file strictly on success
+            else:
+                zip_file_path.unlink(missing_ok=True)
+
+            request.session.pop('pubg_import_session_id', None)
             request.session.pop('pubg_import_token', None)
 
             context['step'] = 'completed'
@@ -950,9 +1025,17 @@ def admin_pubg_import_view(request):
             return render(request, 'admin/pubg_import.html', context)
 
         except PubgImportValidationError as e:
+            if session:
+                session.status = 'failed'
+                session.error_message = str(e)
+                session.save(update_fields=['status', 'error_message', 'updated_at'])
             messages.error(request, f"Ошибка валидации при импорте: {e}")
             return redirect('admin_pubg_import')
         except Exception as e:
+            if session:
+                session.status = 'failed'
+                session.error_message = str(e)
+                session.save(update_fields=['status', 'error_message', 'updated_at'])
             messages.error(request, f"Ошибка импорта: {e}")
             return redirect('admin_pubg_import')
 
@@ -965,7 +1048,7 @@ def admin_pubg_import_stream_view(request):
     """
     NDJSON streaming endpoint for real-time progress reporting during PUBG import.
     Emits lines of JSON:
-      {"event": "progress", "current": 125, "total": 1000, "item": "..."}
+      {"event": "progress", "current": 12, "total": 100, "item": "...", "created": 10, "updated": 0, "skipped": 2, "errors": 0, "percent": 12}
       {"event": "complete", "summary": {...}}
       {"event": "error", "message": "..."}
     """
@@ -977,7 +1060,7 @@ def admin_pubg_import_stream_view(request):
     except Exception:
         data = request.POST
 
-    token = data.get('token')
+    token = data.get('token') or data.get('session_id')
     mode = data.get('mode', 'add_only')
     if mode not in ['add_only', 'update_existing']:
         mode = 'add_only'
@@ -985,24 +1068,47 @@ def admin_pubg_import_stream_view(request):
     if not token or not re.match(r'^[a-f0-9]{32}$', token):
         return JsonResponse({'status': 'error', 'message': 'Недействительный токен импорта.'}, status=400)
 
-    temp_path = _get_pubg_import_temp_dir() / f"{token}.zip"
-    if not temp_path.exists():
-        return JsonResponse({'status': 'error', 'message': 'Файл импорта не найден или истёк срок сессии.'}, status=404)
+    session = PubgImportSession.objects.filter(session_id=token).first()
+    if session and session.status == 'completed':
+        return JsonResponse({'event': 'complete', 'summary': session.summary_data})
+
+    zip_file_path = None
+    if session and session.zip_path:
+        p = Path(session.zip_path)
+        if p.exists():
+            zip_file_path = p
+
+    if not zip_file_path:
+        p = get_pubg_import_storage_dir() / f"{token}.zip"
+        if p.exists():
+            zip_file_path = p
+
+    if not zip_file_path:
+        return JsonResponse({'status': 'error', 'message': 'Временный файл импорта недоступен на сервере.'}, status=404)
 
     def event_stream():
+        if session:
+            session.status = 'importing'
+            session.mode = mode
+            session.save(update_fields=['status', 'mode', 'updated_at'])
+
         try:
-            importer = PubgZipImporter(str(temp_path))
+            importer = PubgZipImporter(str(zip_file_path))
 
             class ProgressEmitter:
                 def __init__(self):
                     self.buffer = []
 
-                def callback(self, current, total, item_name):
+                def callback(self, current, total, item_name, created=0, updated=0, skipped=0, errors=0):
                     msg = json.dumps({
                         'event': 'progress',
                         'current': current,
                         'total': total,
                         'item': item_name,
+                        'created': created,
+                        'updated': updated,
+                        'skipped': skipped,
+                        'errors': errors,
                         'percent': int((current / total) * 100) if total else 100,
                     })
                     self.buffer.append(msg + "\n")
@@ -1013,6 +1119,14 @@ def admin_pubg_import_stream_view(request):
             for line in emitter.buffer:
                 yield line
 
+            if session:
+                session.status = 'completed'
+                session.summary_data = summary
+                session.save(update_fields=['status', 'summary_data', 'updated_at'])
+                session.clean_storage()  # Delete ZIP file strictly on success
+            else:
+                zip_file_path.unlink(missing_ok=True)
+
             complete_msg = json.dumps({
                 'event': 'complete',
                 'summary': summary,
@@ -1020,13 +1134,17 @@ def admin_pubg_import_stream_view(request):
             yield f"{complete_msg}\n"
 
         except Exception as e:
+            if session:
+                session.status = 'failed'
+                session.error_message = str(e)
+                session.save(update_fields=['status', 'error_message', 'updated_at'])
+                # File preserved for administrator diagnosis
+
             err_msg = json.dumps({
                 'event': 'error',
                 'message': str(e),
             })
             yield f"{err_msg}\n"
-        finally:
-            temp_path.unlink(missing_ok=True)
 
     response = StreamingHttpResponse(event_stream(), content_type='application/x-ndjson')
     response['Cache-Control'] = 'no-cache'
@@ -1038,7 +1156,7 @@ def admin_pubg_import_stream_view(request):
 @require_http_methods(["GET"])
 def admin_pubg_import_thumb_view(request, token, image_path):
     """
-    Lightweight endpoint to serve thumbnail images from the temporary uploaded ZIP for preview.
+    Lightweight endpoint to serve thumbnail images from the persistent uploaded ZIP for preview.
     """
     if not (request.user.is_superuser or has_admin_perm(request.user, 'can_add_items')):
         return HttpResponseForbidden("Forbidden")
@@ -1046,12 +1164,23 @@ def admin_pubg_import_thumb_view(request, token, image_path):
     if not re.match(r'^[a-f0-9]{32}$', token):
         raise Http404("Invalid token")
 
-    temp_path = _get_pubg_import_temp_dir() / f"{token}.zip"
-    if not temp_path.exists():
+    session = PubgImportSession.objects.filter(session_id=token).first()
+    zip_file_path = None
+    if session and session.zip_path:
+        p = Path(session.zip_path)
+        if p.exists():
+            zip_file_path = p
+
+    if not zip_file_path:
+        p = get_pubg_import_storage_dir() / f"{token}.zip"
+        if p.exists():
+            zip_file_path = p
+
+    if not zip_file_path:
         raise Http404("Zip not found")
 
     try:
-        with zipfile.ZipFile(temp_path, 'r') as zf:
+        with zipfile.ZipFile(zip_file_path, 'r') as zf:
             norm_map = {n.replace('\\', '/').strip('/'): n for n in zf.namelist()}
             clean_path = image_path.replace('\\', '/').strip('/')
             actual_name = norm_map.get(clean_path)
@@ -1065,10 +1194,10 @@ def admin_pubg_import_thumb_view(request, token, image_path):
 
             data = zf.read(actual_name)
             ext = Path(actual_name).suffix.lower()
-            ct = 'image/webp' if ext == '.webp' else ('image/png' if ext == '.png' else 'image/jpeg')
-            return HttpResponse(data, content_type=ct)
+            content_type = 'image/webp' if ext == '.webp' else ('image/png' if ext == '.png' else 'image/jpeg')
+            return HttpResponse(data, content_type=content_type)
     except Exception:
-        raise Http404("Error reading image")
+        raise Http404("Cannot read thumbnail")
 
 
 @staff_member_required
