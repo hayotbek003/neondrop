@@ -1,0 +1,11 @@
+{% extends "admin/change_list.html" %}
+{% load i18n %}
+
+{% block object-tools-items %}
+  <li>
+    <a href="{% url 'admin_supercars_import' %}" style="background: linear-gradient(135deg, #06b6d4, #3b82f6); color: #ffffff !important; font-weight: 800; border-radius: 4px; padding: 6px 14px; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 2px 8px rgba(6, 182, 212, 0.4);">
+      <span>🏎️</span> {% trans "Импорт суперкар-кейсов" %}
+    </a>
+  </li>
+  {{ block.super }}
+{% endblock %}

@@ -59,6 +59,10 @@ urlpatterns = [
     # Dedicated Admin Database Schema Integrity & Migration Sync Dashboard
     path('admin/schema-status/', admin_views.admin_database_schema_view, name='admin_schema_status'),
 
+    # Dedicated Admin Supercar Cases Importer & Production Monitoring API
+    path('admin/cases/supercars-import/', admin_views.admin_supercars_import_view, name='admin_supercars_import'),
+    path('cases/supercars-status/', admin_views.supercars_status_api_view, name='supercars_status_api'),
+
     # SEO & Search Engine Indexation Endpoints
     path('robots.txt', robots_txt_view, name='robots_txt'),
     path('sitemap.xml', sitemap, {'sitemaps': sitemaps}, name='django.contrib.sitemaps.views.sitemap'),

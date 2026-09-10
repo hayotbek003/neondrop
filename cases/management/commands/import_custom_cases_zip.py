@@ -23,7 +23,7 @@ class Command(BaseCommand):
             'zip_path',
             nargs='?',
             type=str,
-            default=r'C:\Users\User\Downloads\neondrop_cases_import.zip',
+            default=None,
             help='Path to the cases ZIP archive'
         )
         parser.add_argument(
@@ -186,6 +186,15 @@ class Command(BaseCommand):
 
                         stats['images_saved'] += 1
                         self.stdout.write(self.style.SUCCESS(f"  -> Изображение кейса сохранено: cases/{filename}"))
+                    elif (static_cases_dir / f"{case_slug}.jpg").exists():
+                        filename = f"{case_slug}.jpg"
+                        img_bytes = (static_cases_dir / filename).read_bytes()
+                        case_obj.image.save(filename, ContentFile(img_bytes), save=True)
+                        stats['images_saved'] += 1
+                        self.stdout.write(self.style.SUCCESS(f"  -> Изображение кейса скопировано из static: cases/{filename}"))
+                    elif not case_obj.image:
+                        case_obj.image = f"cases/{case_slug}.jpg"
+                        case_obj.save(update_fields=['image'])
                     else:
                         self.stdout.write(self.style.WARNING(f"  -> Изображение '{img_path_in_zip}' не найдено в архиве."))
 

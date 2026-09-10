@@ -61,6 +61,10 @@ python manage.py promote_admin Smoke
 echo "==> Ensuring admin superuser (via ADMIN_PASSWORD env var)..."
 python manage.py promote_admin admin --update-existing
 
+# Step 3: Ensure 6 supercar cases are imported in persistent PostgreSQL (idempotent, safe)
+echo "==> Ensuring 6 supercar cases in persistent PostgreSQL database..."
+python manage.py import_custom_cases_zip --chances-mode=as_is || echo "==> Supercar cases verification finished."
+
 
 # Start Gunicorn server
 PORT="${PORT:-8000}"

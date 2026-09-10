@@ -1293,3 +1293,110 @@ button:hover {{ background: #38bdf8; }}
 </html>"""
     return HttpResponse(html)
 
+
+SUPERCARS_DEF = [
+    {"name": "Porsche 911 GT3 RS", "slug": "porsche-911-gt3-rs", "price": "20000.00", "target_rtp": 80},
+    {"name": "Rolls-Royce", "slug": "rolls-royce", "price": "16000.00", "target_rtp": 75},
+    {"name": "McLaren", "slug": "mclaren", "price": "13000.00", "target_rtp": 80},
+    {"name": "Ferrari", "slug": "ferrari", "price": "10000.00", "target_rtp": 71},
+    {"name": "Bugatti", "slug": "bugatti", "price": "7500.00", "target_rtp": 68},
+    {"name": "Cars / Supercars", "slug": "cars-supercars", "price": "5000.00", "target_rtp": 74},
+]
+
+
+@staff_member_required
+def admin_supercars_import_view(request):
+    """
+    Dedicated admin web UI to inspect and execute the import of the 6 supercar cases.
+    Safe and idempotent — never drops tables or wipes user data.
+    """
+    action_output = None
+
+    if request.method == 'POST':
+        chances_mode = request.POST.get('chances_mode', 'as_is')
+        uploaded_zip = request.FILES.get('zip_file')
+        
+        from io import StringIO
+        from django.core.management import call_command
+        import tempfile
+
+        out = StringIO()
+        temp_zip_path = None
+        try:
+            cmd_args = [f'--chances-mode={chances_mode}']
+            if uploaded_zip:
+                temp_dir = tempfile.mkdtemp()
+                temp_zip_path = Path(temp_dir) / uploaded_zip.name
+                with open(temp_zip_path, 'wb') as tf:
+                    for chunk in uploaded_zip.chunks():
+                        tf.write(chunk)
+                cmd_args.insert(0, str(temp_zip_path))
+
+            call_command('import_custom_cases_zip', *cmd_args, stdout=out, stderr=out)
+            action_output = out.getvalue()
+        except Exception as e:
+            action_output = f"Ошибка выполнения импорта: {str(e)}\n\nЛог:\n{out.getvalue()}"
+        finally:
+            if temp_zip_path and temp_zip_path.exists():
+                try:
+                    temp_zip_path.unlink()
+                except Exception:
+                    pass
+
+    # Gather real-time status of the 6 cases in active database
+    cases_status = []
+    for c_def in SUPERCARS_DEF:
+        case = Case.objects.filter(slug=c_def['slug']).first()
+        if not case:
+            case = Case.objects.filter(name__iexact=c_def['name']).first()
+
+        cases_status.append({
+            'id': case.id if case else None,
+            'name': case.name if case else c_def['name'],
+            'slug': case.slug if case else c_def['slug'],
+            'price': case.price if case else c_def['price'],
+            'target_rtp': c_def['target_rtp'],
+            'exists': bool(case),
+            'visible_in_admin': bool(case and case.active),
+            'items_count': case.case_items.count() if case else 0,
+            'image_url': case.display_image if case else None,
+        })
+
+    context = {
+        'title': 'Импорт 6 суперкар-кейсов',
+        'cases_status': cases_status,
+        'action_output': action_output,
+        'db_engine': getattr(settings, 'DATABASE_ENGINE_NAME', 'PostgreSQL'),
+        'db_host': getattr(settings, 'DATABASE_HOST_DISPLAY', 'default'),
+    }
+    return render(request, 'admin/supercars_import.html', context)
+
+
+def supercars_status_api_view(request):
+    """
+    Public/monitoring JSON endpoint showing exact status of the 6 supercar cases in active database.
+    """
+    data = []
+    for c_def in SUPERCARS_DEF:
+        case = Case.objects.filter(slug=c_def['slug']).first()
+        if not case:
+            case = Case.objects.filter(name__iexact=c_def['name']).first()
+        data.append({
+            'id': case.id if case else None,
+            'name': case.name if case else c_def['name'],
+            'slug': case.slug if case else c_def['slug'],
+            'price': str(case.price) if case else c_def['price'],
+            'target_rtp': c_def['target_rtp'],
+            'exists': bool(case),
+            'visible_in_admin': bool(case and case.active),
+            'items_count': case.case_items.count() if case else 0,
+            'image': case.display_image if case else None,
+        })
+    return JsonResponse({
+        'database_engine': getattr(settings, 'DATABASE_ENGINE_NAME', 'PostgreSQL'),
+        'database_host': getattr(settings, 'DATABASE_HOST_DISPLAY', 'default'),
+        'is_persistent': getattr(settings, 'IS_PERSISTENT_DATABASE', False),
+        'cases': data
+    })
+
+

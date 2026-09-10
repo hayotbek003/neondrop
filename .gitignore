@@ -30,6 +30,7 @@ backup/
 *.sql
 *.tar.gz
 *.zip
+!cases/resources/*.zip
 media_backup/
 
 # IDE & OS
