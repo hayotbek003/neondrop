@@ -1381,16 +1381,61 @@ def supercars_status_api_view(request):
         case = Case.objects.filter(slug=c_def['slug']).first()
         if not case:
             case = Case.objects.filter(name__iexact=c_def['name']).first()
+        
+        items_data = []
+        ev = 0.0
+        sum_chances = 0.0
+        min_price = None
+        max_price = None
+        broken_images = 0
+
+        if case:
+            for ci in case.case_items.select_related('item').all():
+                val = float(ci.item.value)
+                w = float(ci.weight)
+                ev += val * (w / 100.0)
+                sum_chances += w
+                if min_price is None or val < min_price:
+                    min_price = val
+                if max_price is None or val > max_price:
+                    max_price = val
+                
+                img_str = str(ci.item.image or '')
+                has_img = bool(img_str and not ('placeholder' in img_str.lower()))
+                if not has_img:
+                    broken_images += 1
+
+                items_data.append({
+                    'name': ci.item.name,
+                    'weapon_type': ci.item.weapon_type,
+                    'skin_name': ci.item.skin_name,
+                    'price_uc': val,
+                    'rarity': ci.item.rarity,
+                    'rarity_color': ci.item.rarity_color,
+                    'chance_percent': round(w, 3),
+                    'image': img_str,
+                    'image_ok': has_img
+                })
+
+        actual_rtp = round((ev / float(case.price)) * 100.0, 2) if (case and case.price) else 0.0
+
         data.append({
             'id': case.id if case else None,
             'name': case.name if case else c_def['name'],
             'slug': case.slug if case else c_def['slug'],
             'price': str(case.price) if case else c_def['price'],
             'target_rtp': c_def['target_rtp'],
+            'actual_rtp': actual_rtp,
+            'ev': round(ev, 2),
+            'sum_chances': round(sum_chances, 3),
+            'min_price': min_price,
+            'max_price': max_price,
+            'broken_images_count': broken_images,
             'exists': bool(case),
             'visible_in_admin': bool(case and case.active),
-            'items_count': case.case_items.count() if case else 0,
+            'items_count': len(items_data),
             'image': case.display_image if case else None,
+            'items': items_data
         })
     return JsonResponse({
         'database_engine': getattr(settings, 'DATABASE_ENGINE_NAME', 'PostgreSQL'),
@@ -1398,5 +1443,6 @@ def supercars_status_api_view(request):
         'is_persistent': getattr(settings, 'IS_PERSISTENT_DATABASE', False),
         'cases': data
     })
+
 
 

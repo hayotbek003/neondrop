@@ -1,8 +1,11 @@
 [
   {
     "name": "Porsche 911 GT3 RS",
+    "slug": "porsche-911-gt3-rs",
     "price_uc": 20000,
     "target_rtp_percent": 80,
+    "actual_rtp_percent": 80.0,
+    "calculated_expected_payout_uc": 16000.0,
     "image": "images/case_01.jpg",
     "items": [
       {
@@ -11,7 +14,8 @@
         "skin_name": "911 GT3 RS",
         "price_uc": 45000,
         "rarity": "knife",
-        "chance_percent": 5.961,
+        "rarity_color": "#ffd700",
+        "chance_percent": 5.615,
         "image": "items/porsche-911-gt3-rs.png"
       },
       {
@@ -20,7 +24,8 @@
         "skin_name": "La Voiture Noire (Warrior)",
         "price_uc": 30000,
         "rarity": "covert",
-        "chance_percent": 6.553,
+        "rarity_color": "#eb4b4b",
+        "chance_percent": 6.157,
         "image": "items/bugatti-la-voiture-noire-warrior.png"
       },
       {
@@ -29,7 +34,8 @@
         "skin_name": "Jesko (Dawn)",
         "price_uc": 25000,
         "rarity": "covert",
-        "chance_percent": 6.763,
+        "rarity_color": "#eb4b4b",
+        "chance_percent": 6.415,
         "image": "items/koenigsegg-jesko-dawn.png"
       },
       {
@@ -38,7 +44,8 @@
         "skin_name": "One:1 Phoenix",
         "price_uc": 22000,
         "rarity": "covert",
-        "chance_percent": 6.893,
+        "rarity_color": "#eb4b4b",
+        "chance_percent": 6.601,
         "image": "items/koenigsegg-one-1-phoenix.png"
       },
       {
@@ -47,7 +54,8 @@
         "skin_name": "Aventador SVJ Blue",
         "price_uc": 20000,
         "rarity": "covert",
-        "chance_percent": 6.98,
+        "rarity_color": "#eb4b4b",
+        "chance_percent": 6.738,
         "image": "items/lamborghini-aventador-svj-blue.png"
       },
       {
@@ -56,7 +64,8 @@
         "skin_name": "Gemera (Rainbow)",
         "price_uc": 18000,
         "rarity": "covert",
-        "chance_percent": 7.069,
+        "rarity_color": "#eb4b4b",
+        "chance_percent": 6.891,
         "image": "items/koenigsegg-gemera-rainbow.png"
       },
       {
@@ -65,61 +74,68 @@
         "skin_name": "Estoque Oro",
         "price_uc": 15000,
         "rarity": "covert",
-        "chance_percent": 7.204,
+        "rarity_color": "#eb4b4b",
+        "chance_percent": 7.156,
         "image": "items/lamborghini-estoque-oro.png"
       },
       {
         "name": "Bentley Flying Spur Mulliner",
         "weapon_type": "Vehicle",
         "skin_name": "Flying Spur Mulliner",
-        "price_uc": 13500,
+        "price_uc": 13694,
         "rarity": "covert",
-        "chance_percent": 7.273,
+        "rarity_color": "#eb4b4b",
+        "chance_percent": 7.286,
         "image": "items/bentley-flying-spur-mulliner.png"
       },
       {
         "name": "Bugatti Veyron 16.4 (Gold)",
         "weapon_type": "Vehicle",
         "skin_name": "Veyron 16.4 (Gold)",
-        "price_uc": 12000,
+        "price_uc": 13200,
         "rarity": "covert",
-        "chance_percent": 7.342,
+        "rarity_color": "#eb4b4b",
+        "chance_percent": 7.338,
         "image": "items/bugatti-veyron-16-4-gold.png"
       },
       {
         "name": "Aston Martin Valkyrie (Racing Green)",
         "weapon_type": "Vehicle",
         "skin_name": "Valkyrie (Racing Green)",
-        "price_uc": 10000,
+        "price_uc": 11500,
         "rarity": "covert",
-        "chance_percent": 7.435,
+        "rarity_color": "#eb4b4b",
+        "chance_percent": 7.528,
         "image": "items/aston-martin-valkyrie-racing-green.png"
       },
       {
         "name": "Tesla Cybertruck (Dystopia Blue)",
         "weapon_type": "Vehicle",
         "skin_name": "Cybertruck (Dystopia Blue)",
-        "price_uc": 8000,
+        "price_uc": 9800,
         "rarity": "covert",
-        "chance_percent": 7.53,
+        "rarity_color": "#eb4b4b",
+        "chance_percent": 7.734,
         "image": "items/tesla-cybertruck-dystopia-blue.png"
       },
       {
         "name": "Serene Lumina Dacia",
         "weapon_type": "Vehicle",
         "skin_name": "Lumina Dacia",
-        "price_uc": 6500,
+        "price_uc": 7800,
         "rarity": "covert",
-        "chance_percent": 7.601,
+        "rarity_color": "#eb4b4b",
+        "chance_percent": 8.0,
         "image": "items/serene-lumina-dacia.png"
       },
       {
         "name": "Enchanted Carpet Glider",
         "weapon_type": "Vehicle",
         "skin_name": "Carpet Glider",
-        "price_uc": 5000,
+        "price_uc": 4400,
         "rarity": "classified",
-        "chance_percent": 7.672,
+        "rarity_color": "#d32ce6",
+        "chance_percent": 8.287,
         "image": "items/enchanted-carpet-glider.png"
       },
       {
@@ -128,551 +144,645 @@
         "skin_name": "Prism Glider",
         "price_uc": 4000,
         "rarity": "classified",
-        "chance_percent": 7.724,
+        "rarity_color": "#d32ce6",
+        "chance_percent": 8.254,
         "image": "items/myriad-prism-glider.png"
       }
-    ],
-    "calculated_expected_payout_uc": 16000.0,
-    "note": "Item names are generated placeholders because individual item photos/names were not supplied."
+    ]
   },
   {
     "name": "Rolls-Royce",
+    "slug": "rolls-royce",
     "price_uc": 16000,
     "target_rtp_percent": 75,
+    "actual_rtp_percent": 75.0,
+    "calculated_expected_payout_uc": 12000.0,
     "image": "images/case_02.jpg",
     "items": [
       {
-        "name": "Rolls-Royce — Item 01",
-        "price_uc": 5,
-        "rarity": "Common",
-        "chance_percent": 23.78357,
-        "image": null
-      },
-      {
-        "name": "Rolls-Royce — Item 02",
-        "price_uc": 10,
-        "rarity": "Common",
-        "chance_percent": 17.837677,
-        "image": null
-      },
-      {
-        "name": "Rolls-Royce — Item 03",
-        "price_uc": 20,
-        "rarity": "Common",
-        "chance_percent": 11.891785,
-        "image": null
-      },
-      {
-        "name": "Rolls-Royce — Item 04",
-        "price_uc": 50,
-        "rarity": "Common",
-        "chance_percent": 7.432365,
-        "image": null
-      },
-      {
-        "name": "Rolls-Royce — Item 05",
-        "price_uc": 100,
-        "rarity": "Uncommon",
-        "chance_percent": 4.459419,
-        "image": null
-      },
-      {
-        "name": "Rolls-Royce — Item 06",
-        "price_uc": 200,
-        "rarity": "Uncommon",
-        "chance_percent": 2.972946,
-        "image": null
-      },
-      {
-        "name": "Rolls-Royce — Item 07",
-        "price_uc": 400,
-        "rarity": "Uncommon",
-        "chance_percent": 1.858091,
-        "image": null
-      },
-      {
-        "name": "Rolls-Royce — Item 08",
-        "price_uc": 800,
-        "rarity": "Rare",
-        "chance_percent": 1.337826,
-        "image": null
-      },
-      {
-        "name": "Rolls-Royce — Item 09",
-        "price_uc": 1500,
-        "rarity": "Rare",
-        "chance_percent": 0.891884,
-        "image": null
-      },
-      {
-        "name": "Rolls-Royce — Item 10",
-        "price_uc": 3000,
-        "rarity": "Rare",
-        "chance_percent": 0.594589,
-        "image": null
-      },
-      {
-        "name": "Rolls-Royce — Item 11",
-        "price_uc": 6000,
-        "rarity": "Epic",
-        "chance_percent": 0.334456,
-        "image": null
-      },
-      {
-        "name": "Rolls-Royce — Item 12",
-        "price_uc": 12000,
-        "rarity": "Epic",
-        "chance_percent": 0.185809,
-        "image": null
-      },
-      {
-        "name": "Rolls-Royce — Item 13",
-        "price_uc": 25000,
-        "rarity": "Legendary",
-        "chance_percent": 0.0,
-        "image": null
-      },
-      {
-        "name": "Rolls-Royce — Item 14",
+        "name": "Rolls-Royce Phantom",
+        "weapon_type": "Vehicle",
+        "skin_name": "Phantom",
         "price_uc": 45000,
-        "rarity": "Legendary",
-        "chance_percent": 0.0,
-        "image": null
+        "rarity": "knife",
+        "rarity_color": "#ffd700",
+        "chance_percent": 3.765,
+        "image": "items/rolls-royce-phantom.png"
+      },
+      {
+        "name": "Pagani Imola (Nebula Dream)",
+        "weapon_type": "Vehicle",
+        "skin_name": "Imola (Nebula Dream)",
+        "price_uc": 38000,
+        "rarity": "covert",
+        "rarity_color": "#eb4b4b",
+        "chance_percent": 4.089,
+        "image": "items/pagani-imola-nebula-dream.png"
+      },
+      {
+        "name": "Maserati MC20 (Bianco Audace)",
+        "weapon_type": "Vehicle",
+        "skin_name": "MC20 (Bianco Audace)",
+        "price_uc": 24000,
+        "rarity": "covert",
+        "rarity_color": "#eb4b4b",
+        "chance_percent": 5.123,
+        "image": "items/maserati-mc20-bianco-audace.png"
+      },
+      {
+        "name": "Lamborghini Estoque Oro",
+        "weapon_type": "Vehicle",
+        "skin_name": "Estoque Oro",
+        "price_uc": 15000,
+        "rarity": "covert",
+        "rarity_color": "#eb4b4b",
+        "chance_percent": 6.455,
+        "image": "items/lamborghini-estoque-oro.png"
+      },
+      {
+        "name": "Tesla Roadster (Amethyst)",
+        "weapon_type": "Vehicle",
+        "skin_name": "Roadster (Amethyst)",
+        "price_uc": 14000,
+        "rarity": "covert",
+        "rarity_color": "#eb4b4b",
+        "chance_percent": 6.677,
+        "image": "items/tesla-roadster-amethyst.png"
+      },
+      {
+        "name": "Bentley Flying Spur Mulliner",
+        "weapon_type": "Vehicle",
+        "skin_name": "Flying Spur Mulliner",
+        "price_uc": 13694,
+        "rarity": "covert",
+        "rarity_color": "#eb4b4b",
+        "chance_percent": 6.75,
+        "image": "items/bentley-flying-spur-mulliner.png"
+      },
+      {
+        "name": "Aston Martin Valkyrie (Racing Green)",
+        "weapon_type": "Vehicle",
+        "skin_name": "Valkyrie (Racing Green)",
+        "price_uc": 11500,
+        "rarity": "covert",
+        "rarity_color": "#eb4b4b",
+        "chance_percent": 7.356,
+        "image": "items/aston-martin-valkyrie-racing-green.png"
+      },
+      {
+        "name": "Maserati Luce (Arancione)",
+        "weapon_type": "Vehicle",
+        "skin_name": "Luce (Arancione)",
+        "price_uc": 10500,
+        "rarity": "covert",
+        "rarity_color": "#eb4b4b",
+        "chance_percent": 7.692,
+        "image": "items/maserati-luce-arancione.png"
+      },
+      {
+        "name": "Tesla Cybertruck (Dystopia Blue)",
+        "weapon_type": "Vehicle",
+        "skin_name": "Cybertruck (Dystopia Blue)",
+        "price_uc": 9800,
+        "rarity": "covert",
+        "rarity_color": "#eb4b4b",
+        "chance_percent": 7.957,
+        "image": "items/tesla-cybertruck-dystopia-blue.png"
+      },
+      {
+        "name": "Serene Lumina Dacia",
+        "weapon_type": "Vehicle",
+        "skin_name": "Lumina Dacia",
+        "price_uc": 7800,
+        "rarity": "covert",
+        "rarity_color": "#eb4b4b",
+        "chance_percent": 8.901,
+        "image": "items/serene-lumina-dacia.png"
+      },
+      {
+        "name": "Blueyonder Glider",
+        "weapon_type": "Vehicle",
+        "skin_name": "Blueyonder Glider",
+        "price_uc": 5000,
+        "rarity": "classified",
+        "rarity_color": "#d32ce6",
+        "chance_percent": 11.079,
+        "image": "items/blueyonder-glider.png"
+      },
+      {
+        "name": "Enchanted Carpet Glider",
+        "weapon_type": "Vehicle",
+        "skin_name": "Carpet Glider",
+        "price_uc": 4400,
+        "rarity": "classified",
+        "rarity_color": "#d32ce6",
+        "chance_percent": 11.795,
+        "image": "items/enchanted-carpet-glider.png"
+      },
+      {
+        "name": "Myriad Prism Glider",
+        "weapon_type": "Vehicle",
+        "skin_name": "Prism Glider",
+        "price_uc": 4000,
+        "rarity": "classified",
+        "rarity_color": "#d32ce6",
+        "chance_percent": 12.361,
+        "image": "items/myriad-prism-glider.png"
       }
-    ],
-    "calculated_expected_payout_uc": 111.1882,
-    "note": "Item names are generated placeholders because individual item photos/names were not supplied."
+    ]
   },
   {
     "name": "McLaren",
+    "slug": "mclaren",
     "price_uc": 13000,
     "target_rtp_percent": 80,
+    "actual_rtp_percent": 80.0,
+    "calculated_expected_payout_uc": 10400.02,
     "image": "images/case_03.jpg",
     "items": [
       {
-        "name": "McLaren — Item 01",
-        "price_uc": 5,
-        "rarity": "Common",
-        "chance_percent": 24.711563,
-        "image": null
-      },
-      {
-        "name": "McLaren — Item 02",
-        "price_uc": 10,
-        "rarity": "Common",
-        "chance_percent": 18.533672,
-        "image": null
-      },
-      {
-        "name": "McLaren — Item 03",
-        "price_uc": 20,
-        "rarity": "Common",
-        "chance_percent": 12.355781,
-        "image": null
-      },
-      {
-        "name": "McLaren — Item 04",
-        "price_uc": 50,
-        "rarity": "Common",
-        "chance_percent": 7.722363,
-        "image": null
-      },
-      {
-        "name": "McLaren — Item 05",
-        "price_uc": 100,
-        "rarity": "Uncommon",
-        "chance_percent": 4.633418,
-        "image": null
-      },
-      {
-        "name": "McLaren — Item 06",
-        "price_uc": 200,
-        "rarity": "Uncommon",
-        "chance_percent": 3.088945,
-        "image": null
-      },
-      {
-        "name": "McLaren — Item 07",
-        "price_uc": 400,
-        "rarity": "Uncommon",
-        "chance_percent": 1.930591,
-        "image": null
-      },
-      {
-        "name": "McLaren — Item 08",
-        "price_uc": 800,
-        "rarity": "Rare",
-        "chance_percent": 1.390025,
-        "image": null
-      },
-      {
-        "name": "McLaren — Item 09",
-        "price_uc": 1500,
-        "rarity": "Rare",
-        "chance_percent": 0.926684,
-        "image": null
-      },
-      {
-        "name": "McLaren — Item 10",
-        "price_uc": 3000,
-        "rarity": "Rare",
-        "chance_percent": 0.617789,
-        "image": null
-      },
-      {
-        "name": "McLaren — Item 11",
-        "price_uc": 6000,
-        "rarity": "Epic",
-        "chance_percent": 0.347506,
-        "image": null
-      },
-      {
-        "name": "McLaren — Item 12",
-        "price_uc": 12000,
-        "rarity": "Epic",
-        "chance_percent": 0.193059,
-        "image": null
-      },
-      {
-        "name": "McLaren — Item 13",
-        "price_uc": 25000,
-        "rarity": "Legendary",
-        "chance_percent": 0.0,
-        "image": null
-      },
-      {
-        "name": "McLaren — Item 14",
+        "name": "McLaren P1",
+        "weapon_type": "Vehicle",
+        "skin_name": "P1",
         "price_uc": 45000,
-        "rarity": "Legendary",
-        "chance_percent": 0.0,
-        "image": null
+        "rarity": "knife",
+        "rarity_color": "#ffd700",
+        "chance_percent": 1.484,
+        "image": "items/mclaren-p1.png"
+      },
+      {
+        "name": "Lamborghini Invencible Nebula Drift",
+        "weapon_type": "Vehicle",
+        "skin_name": "Invencible Nebula Drift",
+        "price_uc": 32000,
+        "rarity": "covert",
+        "rarity_color": "#eb4b4b",
+        "chance_percent": 2.606,
+        "image": "items/lamborghini-invencible-nebula-drift.png"
+      },
+      {
+        "name": "Koenigsegg Jesko (Dawn)",
+        "weapon_type": "Vehicle",
+        "skin_name": "Jesko (Dawn)",
+        "price_uc": 25000,
+        "rarity": "covert",
+        "rarity_color": "#eb4b4b",
+        "chance_percent": 3.592,
+        "image": "items/koenigsegg-jesko-dawn.png"
+      },
+      {
+        "name": "Maserati MC20 (Rosso Vincente)",
+        "weapon_type": "Vehicle",
+        "skin_name": "MC20 (Rosso Vincente)",
+        "price_uc": 21000,
+        "rarity": "covert",
+        "rarity_color": "#eb4b4b",
+        "chance_percent": 4.39,
+        "image": "items/maserati-mc20-rosso-vincente.png"
+      },
+      {
+        "name": "Lamborghini Aventador SVJ Blue",
+        "weapon_type": "Vehicle",
+        "skin_name": "Aventador SVJ Blue",
+        "price_uc": 20000,
+        "rarity": "covert",
+        "rarity_color": "#eb4b4b",
+        "chance_percent": 4.632,
+        "image": "items/lamborghini-aventador-svj-blue.png"
+      },
+      {
+        "name": "Koenigsegg Gemera (Silver Gray)",
+        "weapon_type": "Vehicle",
+        "skin_name": "Gemera (Silver Gray)",
+        "price_uc": 16000,
+        "rarity": "covert",
+        "rarity_color": "#eb4b4b",
+        "chance_percent": 5.844,
+        "image": "items/koenigsegg-gemera-silver-gray.png"
+      },
+      {
+        "name": "Aston Martin Valkyrie (Racing Green)",
+        "weapon_type": "Vehicle",
+        "skin_name": "Valkyrie (Racing Green)",
+        "price_uc": 11500,
+        "rarity": "covert",
+        "rarity_color": "#eb4b4b",
+        "chance_percent": 8.026,
+        "image": "items/aston-martin-valkyrie-racing-green.png"
+      },
+      {
+        "name": "Tesla Cybertruck (Dystopia Blue)",
+        "weapon_type": "Vehicle",
+        "skin_name": "Cybertruck (Dystopia Blue)",
+        "price_uc": 9800,
+        "rarity": "covert",
+        "rarity_color": "#eb4b4b",
+        "chance_percent": 9.282,
+        "image": "items/tesla-cybertruck-dystopia-blue.png"
+      },
+      {
+        "name": "Lamborghini Urus Giallo Inti",
+        "weapon_type": "Vehicle",
+        "skin_name": "Urus Giallo Inti",
+        "price_uc": 8500,
+        "rarity": "covert",
+        "rarity_color": "#eb4b4b",
+        "chance_percent": 10.53,
+        "image": "items/lamborghini-urus-giallo-inti.png"
+      },
+      {
+        "name": "Serene Lumina Dacia",
+        "weapon_type": "Vehicle",
+        "skin_name": "Lumina Dacia",
+        "price_uc": 7800,
+        "rarity": "covert",
+        "rarity_color": "#eb4b4b",
+        "chance_percent": 11.347,
+        "image": "items/serene-lumina-dacia.png"
+      },
+      {
+        "name": "Enchanted Carpet Glider",
+        "weapon_type": "Vehicle",
+        "skin_name": "Carpet Glider",
+        "price_uc": 4400,
+        "rarity": "classified",
+        "rarity_color": "#d32ce6",
+        "chance_percent": 18.384,
+        "image": "items/enchanted-carpet-glider.png"
+      },
+      {
+        "name": "Myriad Prism Glider",
+        "weapon_type": "Vehicle",
+        "skin_name": "Prism Glider",
+        "price_uc": 4000,
+        "rarity": "classified",
+        "rarity_color": "#d32ce6",
+        "chance_percent": 19.883,
+        "image": "items/myriad-prism-glider.png"
       }
-    ],
-    "calculated_expected_payout_uc": 115.5266,
-    "note": "Item names are generated placeholders because individual item photos/names were not supplied."
+    ]
   },
   {
     "name": "Ferrari",
+    "slug": "ferrari",
     "price_uc": 10000,
     "target_rtp_percent": 71,
+    "actual_rtp_percent": 71.0,
+    "calculated_expected_payout_uc": 7100.0,
     "image": "images/case_04.jpg",
     "items": [
       {
-        "name": "Ferrari — Item 01",
-        "price_uc": 5,
-        "rarity": "Common",
-        "chance_percent": 26.874274,
-        "image": null
-      },
-      {
-        "name": "Ferrari — Item 02",
-        "price_uc": 10,
-        "rarity": "Common",
-        "chance_percent": 20.155706,
-        "image": null
-      },
-      {
-        "name": "Ferrari — Item 03",
-        "price_uc": 20,
-        "rarity": "Common",
-        "chance_percent": 13.437137,
-        "image": null
-      },
-      {
-        "name": "Ferrari — Item 04",
-        "price_uc": 50,
-        "rarity": "Common",
-        "chance_percent": 8.398211,
-        "image": null
-      },
-      {
-        "name": "Ferrari — Item 05",
-        "price_uc": 100,
-        "rarity": "Uncommon",
-        "chance_percent": 5.038926,
-        "image": null
-      },
-      {
-        "name": "Ferrari — Item 06",
-        "price_uc": 200,
-        "rarity": "Uncommon",
-        "chance_percent": 3.359284,
-        "image": null
-      },
-      {
-        "name": "Ferrari — Item 07",
-        "price_uc": 400,
-        "rarity": "Uncommon",
-        "chance_percent": 2.099553,
-        "image": null
-      },
-      {
-        "name": "Ferrari — Item 08",
-        "price_uc": 800,
-        "rarity": "Rare",
-        "chance_percent": 1.511678,
-        "image": null
-      },
-      {
-        "name": "Ferrari — Item 09",
-        "price_uc": 1500,
-        "rarity": "Rare",
-        "chance_percent": 1.007785,
-        "image": null
-      },
-      {
-        "name": "Ferrari — Item 10",
-        "price_uc": 3000,
-        "rarity": "Rare",
-        "chance_percent": 0.671857,
-        "image": null
-      },
-      {
-        "name": "Ferrari — Item 11",
-        "price_uc": 6000,
-        "rarity": "Epic",
-        "chance_percent": 0.377919,
-        "image": null
-      },
-      {
-        "name": "Ferrari — Item 12",
-        "price_uc": 12000,
-        "rarity": "Epic",
-        "chance_percent": 0.209955,
-        "image": null
-      },
-      {
-        "name": "Ferrari — Item 13",
-        "price_uc": 25000,
-        "rarity": "Legendary",
-        "chance_percent": 0.0,
-        "image": null
-      },
-      {
-        "name": "Ferrari — Item 14",
+        "name": "Ferrari LaFerrari",
+        "weapon_type": "Vehicle",
+        "skin_name": "LaFerrari",
         "price_uc": 45000,
-        "rarity": "Legendary",
-        "chance_percent": 0.0,
-        "image": null
+        "rarity": "knife",
+        "rarity_color": "#ffd700",
+        "chance_percent": 0.1,
+        "image": "items/ferrari-laferrari.png"
+      },
+      {
+        "name": "Maserati MC20 (Rosso Vincente)",
+        "weapon_type": "Vehicle",
+        "skin_name": "MC20 (Rosso Vincente)",
+        "price_uc": 21000,
+        "rarity": "covert",
+        "rarity_color": "#eb4b4b",
+        "chance_percent": 0.725,
+        "image": "items/maserati-mc20-rosso-vincente.png"
+      },
+      {
+        "name": "Koenigsegg Gemera (Silver Gray)",
+        "weapon_type": "Vehicle",
+        "skin_name": "Gemera (Silver Gray)",
+        "price_uc": 16000,
+        "rarity": "covert",
+        "rarity_color": "#eb4b4b",
+        "chance_percent": 2.844,
+        "image": "items/koenigsegg-gemera-silver-gray.png"
+      },
+      {
+        "name": "Lamborghini Estoque Oro",
+        "weapon_type": "Vehicle",
+        "skin_name": "Estoque Oro",
+        "price_uc": 15000,
+        "rarity": "covert",
+        "rarity_color": "#eb4b4b",
+        "chance_percent": 3.417,
+        "image": "items/lamborghini-estoque-oro.png"
+      },
+      {
+        "name": "Tesla Roadster (Amethyst)",
+        "weapon_type": "Vehicle",
+        "skin_name": "Roadster (Amethyst)",
+        "price_uc": 14000,
+        "rarity": "covert",
+        "rarity_color": "#eb4b4b",
+        "chance_percent": 4.065,
+        "image": "items/tesla-roadster-amethyst.png"
+      },
+      {
+        "name": "Maserati Luce (Arancione)",
+        "weapon_type": "Vehicle",
+        "skin_name": "Luce (Arancione)",
+        "price_uc": 10500,
+        "rarity": "covert",
+        "rarity_color": "#eb4b4b",
+        "chance_percent": 7.185,
+        "image": "items/maserati-luce-arancione.png"
+      },
+      {
+        "name": "Tesla Cybertruck (Dystopia Blue)",
+        "weapon_type": "Vehicle",
+        "skin_name": "Cybertruck (Dystopia Blue)",
+        "price_uc": 9800,
+        "rarity": "covert",
+        "rarity_color": "#eb4b4b",
+        "chance_percent": 8.048,
+        "image": "items/tesla-cybertruck-dystopia-blue.png"
+      },
+      {
+        "name": "Serene Lumina Dacia",
+        "weapon_type": "Vehicle",
+        "skin_name": "Lumina Dacia",
+        "price_uc": 7800,
+        "rarity": "covert",
+        "rarity_color": "#eb4b4b",
+        "chance_percent": 11.282,
+        "image": "items/serene-lumina-dacia.png"
+      },
+      {
+        "name": "Lamborghini Urus Pink",
+        "weapon_type": "Vehicle",
+        "skin_name": "Urus Pink",
+        "price_uc": 6500,
+        "rarity": "covert",
+        "rarity_color": "#eb4b4b",
+        "chance_percent": 14.345,
+        "image": "items/lamborghini-urus-pink.png"
+      },
+      {
+        "name": "Enchanted Carpet Glider",
+        "weapon_type": "Vehicle",
+        "skin_name": "Carpet Glider",
+        "price_uc": 4400,
+        "rarity": "classified",
+        "rarity_color": "#d32ce6",
+        "chance_percent": 22.738,
+        "image": "items/enchanted-carpet-glider.png"
+      },
+      {
+        "name": "Myriad Prism Glider",
+        "weapon_type": "Vehicle",
+        "skin_name": "Prism Glider",
+        "price_uc": 4000,
+        "rarity": "classified",
+        "rarity_color": "#d32ce6",
+        "chance_percent": 25.251,
+        "image": "items/myriad-prism-glider.png"
       }
-    ],
-    "calculated_expected_payout_uc": 125.6372,
-    "note": "Item names are generated placeholders because individual item photos/names were not supplied."
+    ]
   },
   {
     "name": "Bugatti",
+    "slug": "bugatti",
     "price_uc": 7500,
     "target_rtp_percent": 68,
+    "actual_rtp_percent": 68.0,
+    "calculated_expected_payout_uc": 5100.02,
     "image": "images/case_05.jpg",
     "items": [
       {
-        "name": "Bugatti — Item 01",
-        "price_uc": 5,
-        "rarity": "Common",
-        "chance_percent": 28.379564,
-        "image": null
-      },
-      {
-        "name": "Bugatti — Item 02",
-        "price_uc": 10,
-        "rarity": "Common",
-        "chance_percent": 21.284673,
-        "image": null
-      },
-      {
-        "name": "Bugatti — Item 03",
-        "price_uc": 20,
-        "rarity": "Common",
-        "chance_percent": 14.189782,
-        "image": null
-      },
-      {
-        "name": "Bugatti — Item 04",
-        "price_uc": 50,
-        "rarity": "Common",
-        "chance_percent": 8.868614,
-        "image": null
-      },
-      {
-        "name": "Bugatti — Item 05",
-        "price_uc": 100,
-        "rarity": "Uncommon",
-        "chance_percent": 5.321168,
-        "image": null
-      },
-      {
-        "name": "Bugatti — Item 06",
-        "price_uc": 200,
-        "rarity": "Uncommon",
-        "chance_percent": 3.547446,
-        "image": null
-      },
-      {
-        "name": "Bugatti — Item 07",
-        "price_uc": 400,
-        "rarity": "Uncommon",
-        "chance_percent": 2.217153,
-        "image": null
-      },
-      {
-        "name": "Bugatti — Item 08",
-        "price_uc": 800,
-        "rarity": "Rare",
-        "chance_percent": 1.59635,
-        "image": null
-      },
-      {
-        "name": "Bugatti — Item 09",
-        "price_uc": 1500,
-        "rarity": "Rare",
-        "chance_percent": 1.064234,
-        "image": null
-      },
-      {
-        "name": "Bugatti — Item 10",
-        "price_uc": 3000,
-        "rarity": "Rare",
-        "chance_percent": 0.709489,
-        "image": null
-      },
-      {
-        "name": "Bugatti — Item 11",
-        "price_uc": 6000,
-        "rarity": "Epic",
-        "chance_percent": 0.399088,
-        "image": null
-      },
-      {
-        "name": "Bugatti — Item 12",
-        "price_uc": 12000,
-        "rarity": "Epic",
-        "chance_percent": 0.221715,
-        "image": null
-      },
-      {
-        "name": "Bugatti — Item 13",
-        "price_uc": 25000,
-        "rarity": "Legendary",
-        "chance_percent": 0.0,
-        "image": null
-      },
-      {
-        "name": "Bugatti — Item 14",
+        "name": "Bugatti Chiron",
+        "weapon_type": "Vehicle",
+        "skin_name": "Chiron",
         "price_uc": 45000,
-        "rarity": "Legendary",
-        "chance_percent": 0.0,
-        "image": null
+        "rarity": "knife",
+        "rarity_color": "#ffd700",
+        "chance_percent": 0.1,
+        "image": "items/bugatti-chiron.png"
+      },
+      {
+        "name": "Bugatti La Voiture Noire (Warrior)",
+        "weapon_type": "Vehicle",
+        "skin_name": "La Voiture Noire (Warrior)",
+        "price_uc": 30000,
+        "rarity": "covert",
+        "rarity_color": "#eb4b4b",
+        "chance_percent": 0.1,
+        "image": "items/bugatti-la-voiture-noire-warrior.png"
+      },
+      {
+        "name": "Bugatti La Voiture Noire",
+        "weapon_type": "Vehicle",
+        "skin_name": "La Voiture Noire",
+        "price_uc": 28000,
+        "rarity": "covert",
+        "rarity_color": "#eb4b4b",
+        "chance_percent": 0.1,
+        "image": "items/bugatti-la-voiture-noire.png"
+      },
+      {
+        "name": "Bugatti Veyron 16.4 (Gold)",
+        "weapon_type": "Vehicle",
+        "skin_name": "Veyron 16.4 (Gold)",
+        "price_uc": 13200,
+        "rarity": "covert",
+        "rarity_color": "#eb4b4b",
+        "chance_percent": 0.1,
+        "image": "items/bugatti-veyron-16-4-gold.png"
+      },
+      {
+        "name": "Bugatti Veyron 16.4",
+        "weapon_type": "Vehicle",
+        "skin_name": "Veyron 16.4",
+        "price_uc": 12500,
+        "rarity": "covert",
+        "rarity_color": "#eb4b4b",
+        "chance_percent": 0.1,
+        "image": "items/bugatti-veyron-16-4.png"
+      },
+      {
+        "name": "Tesla Cybertruck (Dystopia Blue)",
+        "weapon_type": "Vehicle",
+        "skin_name": "Cybertruck (Dystopia Blue)",
+        "price_uc": 9800,
+        "rarity": "covert",
+        "rarity_color": "#eb4b4b",
+        "chance_percent": 0.267,
+        "image": "items/tesla-cybertruck-dystopia-blue.png"
+      },
+      {
+        "name": "Lamborghini Urus Giallo Inti",
+        "weapon_type": "Vehicle",
+        "skin_name": "Urus Giallo Inti",
+        "price_uc": 8500,
+        "rarity": "covert",
+        "rarity_color": "#eb4b4b",
+        "chance_percent": 4.532,
+        "image": "items/lamborghini-urus-giallo-inti.png"
+      },
+      {
+        "name": "Serene Lumina Dacia",
+        "weapon_type": "Vehicle",
+        "skin_name": "Lumina Dacia",
+        "price_uc": 7800,
+        "rarity": "covert",
+        "rarity_color": "#eb4b4b",
+        "chance_percent": 7.392,
+        "image": "items/serene-lumina-dacia.png"
+      },
+      {
+        "name": "Lamborghini Urus Pink",
+        "weapon_type": "Vehicle",
+        "skin_name": "Urus Pink",
+        "price_uc": 6500,
+        "rarity": "covert",
+        "rarity_color": "#eb4b4b",
+        "chance_percent": 14.268,
+        "image": "items/lamborghini-urus-pink.png"
+      },
+      {
+        "name": "Enchanted Carpet Glider",
+        "weapon_type": "Vehicle",
+        "skin_name": "Carpet Glider",
+        "price_uc": 4400,
+        "rarity": "classified",
+        "rarity_color": "#d32ce6",
+        "chance_percent": 33.574,
+        "image": "items/enchanted-carpet-glider.png"
+      },
+      {
+        "name": "Myriad Prism Glider",
+        "weapon_type": "Vehicle",
+        "skin_name": "Prism Glider",
+        "price_uc": 4000,
+        "rarity": "classified",
+        "rarity_color": "#d32ce6",
+        "chance_percent": 39.467,
+        "image": "items/myriad-prism-glider.png"
       }
-    ],
-    "calculated_expected_payout_uc": 132.6745,
-    "note": "Item names are generated placeholders because individual item photos/names were not supplied."
+    ]
   },
   {
     "name": "Cars / Supercars",
+    "slug": "cars-supercars",
     "price_uc": 5000,
-    "target_rtp_percent": 74,
+    "target_rtp_percent": 81,
+    "actual_rtp_percent": 81.0,
+    "calculated_expected_payout_uc": 4050.0,
     "image": "images/case_06.jpg",
     "items": [
       {
-        "name": "Cars / Supercars — Item 01",
-        "price_uc": 5,
-        "rarity": "Common",
-        "chance_percent": 29.537696,
-        "image": null
-      },
-      {
-        "name": "Cars / Supercars — Item 02",
-        "price_uc": 10,
-        "rarity": "Common",
-        "chance_percent": 22.153272,
-        "image": null
-      },
-      {
-        "name": "Cars / Supercars — Item 03",
-        "price_uc": 20,
-        "rarity": "Common",
-        "chance_percent": 14.768848,
-        "image": null
-      },
-      {
-        "name": "Cars / Supercars — Item 04",
-        "price_uc": 50,
-        "rarity": "Common",
-        "chance_percent": 9.23053,
-        "image": null
-      },
-      {
-        "name": "Cars / Supercars — Item 05",
-        "price_uc": 100,
-        "rarity": "Uncommon",
-        "chance_percent": 5.538318,
-        "image": null
-      },
-      {
-        "name": "Cars / Supercars — Item 06",
-        "price_uc": 200,
-        "rarity": "Uncommon",
-        "chance_percent": 3.692212,
-        "image": null
-      },
-      {
-        "name": "Cars / Supercars — Item 07",
-        "price_uc": 400,
-        "rarity": "Uncommon",
-        "chance_percent": 2.307633,
-        "image": null
-      },
-      {
-        "name": "Cars / Supercars — Item 08",
-        "price_uc": 800,
-        "rarity": "Rare",
-        "chance_percent": 1.661495,
-        "image": null
-      },
-      {
-        "name": "Cars / Supercars — Item 09",
-        "price_uc": 1500,
-        "rarity": "Rare",
-        "chance_percent": 1.107664,
-        "image": null
-      },
-      {
-        "name": "Cars / Supercars — Item 10",
-        "price_uc": 3000,
-        "rarity": "Rare",
-        "chance_percent": 0.738442,
-        "image": null
-      },
-      {
-        "name": "Cars / Supercars — Item 11",
-        "price_uc": 6000,
-        "rarity": "Epic",
-        "chance_percent": 0.415374,
-        "image": null
-      },
-      {
-        "name": "Cars / Supercars — Item 12",
-        "price_uc": 12000,
-        "rarity": "Epic",
-        "chance_percent": 0.230763,
-        "image": null
-      },
-      {
-        "name": "Cars / Supercars — Item 13",
-        "price_uc": 25000,
-        "rarity": "Legendary",
-        "chance_percent": 0.0,
-        "image": null
-      },
-      {
-        "name": "Cars / Supercars — Item 14",
+        "name": "Hypercar Showcase",
+        "weapon_type": "Vehicle",
+        "skin_name": "Showcase Edition",
         "price_uc": 45000,
-        "rarity": "Legendary",
-        "chance_percent": 0.0,
-        "image": null
+        "rarity": "knife",
+        "rarity_color": "#ffd700",
+        "chance_percent": 0.001,
+        "image": "items/hypercar-showcase.png"
+      },
+      {
+        "name": "Lamborghini Invencible Nebula Drift",
+        "weapon_type": "Vehicle",
+        "skin_name": "Invencible Nebula Drift",
+        "price_uc": 32000,
+        "rarity": "covert",
+        "rarity_color": "#eb4b4b",
+        "chance_percent": 0.001,
+        "image": "items/lamborghini-invencible-nebula-drift.png"
+      },
+      {
+        "name": "Koenigsegg Gemera (Silver Gray)",
+        "weapon_type": "Vehicle",
+        "skin_name": "Gemera (Silver Gray)",
+        "price_uc": 16000,
+        "rarity": "covert",
+        "rarity_color": "#eb4b4b",
+        "chance_percent": 0.028,
+        "image": "items/koenigsegg-gemera-silver-gray.png"
+      },
+      {
+        "name": "Tesla Roadster (Amethyst)",
+        "weapon_type": "Vehicle",
+        "skin_name": "Roadster (Amethyst)",
+        "price_uc": 14000,
+        "rarity": "covert",
+        "rarity_color": "#eb4b4b",
+        "chance_percent": 0.1,
+        "image": "items/tesla-roadster-amethyst.png"
+      },
+      {
+        "name": "Maserati Luce (Arancione)",
+        "weapon_type": "Vehicle",
+        "skin_name": "Luce (Arancione)",
+        "price_uc": 10500,
+        "rarity": "covert",
+        "rarity_color": "#eb4b4b",
+        "chance_percent": 0.1,
+        "image": "items/maserati-luce-arancione.png"
+      },
+      {
+        "name": "Tesla Cybertruck (Dystopia Blue)",
+        "weapon_type": "Vehicle",
+        "skin_name": "Cybertruck (Dystopia Blue)",
+        "price_uc": 9800,
+        "rarity": "covert",
+        "rarity_color": "#eb4b4b",
+        "chance_percent": 0.099,
+        "image": "items/tesla-cybertruck-dystopia-blue.png"
+      },
+      {
+        "name": "Serene Lumina Dacia",
+        "weapon_type": "Vehicle",
+        "skin_name": "Lumina Dacia",
+        "price_uc": 7800,
+        "rarity": "covert",
+        "rarity_color": "#eb4b4b",
+        "chance_percent": 0.1,
+        "image": "items/serene-lumina-dacia.png"
+      },
+      {
+        "name": "Lamborghini Urus Pink",
+        "weapon_type": "Vehicle",
+        "skin_name": "Urus Pink",
+        "price_uc": 6500,
+        "rarity": "covert",
+        "rarity_color": "#eb4b4b",
+        "chance_percent": 0.1,
+        "image": "items/lamborghini-urus-pink.png"
+      },
+      {
+        "name": "Blueyonder Glider",
+        "weapon_type": "Vehicle",
+        "skin_name": "Blueyonder Glider",
+        "price_uc": 5000,
+        "rarity": "classified",
+        "rarity_color": "#d32ce6",
+        "chance_percent": 0.101,
+        "image": "items/blueyonder-glider.png"
+      },
+      {
+        "name": "Enchanted Carpet Glider",
+        "weapon_type": "Vehicle",
+        "skin_name": "Carpet Glider",
+        "price_uc": 4400,
+        "rarity": "classified",
+        "rarity_color": "#d32ce6",
+        "chance_percent": 4.1,
+        "image": "items/enchanted-carpet-glider.png"
+      },
+      {
+        "name": "Myriad Prism Glider",
+        "weapon_type": "Vehicle",
+        "skin_name": "Prism Glider",
+        "price_uc": 4000,
+        "rarity": "classified",
+        "rarity_color": "#d32ce6",
+        "chance_percent": 95.27,
+        "image": "items/myriad-prism-glider.png"
       }
-    ],
-    "calculated_expected_payout_uc": 138.0887,
-    "note": "Item names are generated placeholders because individual item photos/names were not supplied."
+    ]
   }
 ]
