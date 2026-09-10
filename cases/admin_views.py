@@ -1,15 +1,26 @@
 import os
+import re
 import csv
+import time
+import uuid
+import zipfile
 import tempfile
 from pathlib import Path
 from datetime import datetime
 from decimal import Decimal
 
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib import messages
 import json
-from django.http import HttpResponse, FileResponse, Http404, HttpResponseForbidden, JsonResponse
+from django.http import (
+    HttpResponse,
+    FileResponse,
+    Http404,
+    HttpResponseForbidden,
+    JsonResponse,
+    StreamingHttpResponse,
+)
 
 from django.views.decorators.http import require_http_methods
 from django.conf import settings
@@ -803,3 +814,257 @@ def ajax_get_rng_simulation_run_view(request, run_id):
             'created_at': run_record.created_at.strftime('%d.%m.%Y %H:%M:%S'),
         }
     })
+
+
+# =========================================================================
+# DEDICATED PUBG ITEM ZIP IMPORTER (Validation, Preview, Atomic Import)
+# =========================================================================
+from .pubg_importer_service import PubgZipImporter, PubgImportValidationError
+
+
+def _get_pubg_import_temp_dir() -> Path:
+    d = Path(tempfile.gettempdir()) / 'neondrop_pubg_imports'
+    d.mkdir(parents=True, exist_ok=True)
+    return d
+
+
+def _clean_old_pubg_temp_files(max_age_seconds: int = 3600):
+    try:
+        temp_dir = _get_pubg_import_temp_dir()
+        now = time.time()
+        for f in temp_dir.glob('*.zip'):
+            if now - f.stat().st_mtime > max_age_seconds:
+                try:
+                    f.unlink()
+                except Exception:
+                    pass
+    except Exception:
+        pass
+
+
+@staff_member_required
+@require_http_methods(["GET", "POST"])
+def admin_pubg_import_view(request):
+    """
+    Main Django Admin GUI for uploading, validating, previewing, and importing PUBG items from ZIP.
+    """
+    if not (request.user.is_superuser or has_admin_perm(request.user, 'can_add_items')):
+        return HttpResponseForbidden("⛔ Ошибка доступа: у вас нет прав на добавление предметов (can_add_items).")
+
+    _clean_old_pubg_temp_files()
+
+    context = {
+        'title': 'Импорт PUBG предметов (ZIP)',
+        'app_label': 'cases',
+        'is_nav_sidebar_enabled': True,
+        'has_permission': True,
+        'step': 'upload',
+    }
+
+    # Reset preview
+    if request.method == 'GET' and request.GET.get('reset'):
+        token = request.session.pop('pubg_import_token', None)
+        if token:
+            temp_file = _get_pubg_import_temp_dir() / f"{token}.zip"
+            if temp_file.exists():
+                temp_file.unlink(missing_ok=True)
+        return redirect('admin_pubg_import')
+
+    # STEP 1: Upload & Inspect
+    if request.method == 'POST' and request.POST.get('action') == 'preview':
+        uploaded_file = request.FILES.get('zip_file')
+        if not uploaded_file:
+            messages.error(request, "Пожалуйста, выберите .zip файл для импорта.")
+            return render(request, 'admin/pubg_import.html', context)
+
+        if not uploaded_file.name.lower().endswith('.zip'):
+            messages.error(request, "Неверный формат файла. Разрешены только архивы .zip.")
+            return render(request, 'admin/pubg_import.html', context)
+
+        token = uuid.uuid4().hex
+        temp_path = _get_pubg_import_temp_dir() / f"{token}.zip"
+
+        try:
+            with open(temp_path, 'wb') as dest:
+                for chunk in uploaded_file.chunks():
+                    dest.write(chunk)
+
+            importer = PubgZipImporter(str(temp_path))
+            inspection = importer.validate_and_inspect()
+
+            if not inspection['is_valid']:
+                temp_path.unlink(missing_ok=True)
+                context['inspection_errors'] = inspection['errors_list']
+                context['error_items_count'] = inspection['error_items']
+                messages.error(
+                    request,
+                    f"⚠️ Валидация ZIP не пройдена: обнаружено ошибок: {inspection['error_items']}. "
+                    "Частичный импорт отменён. Исправьте ошибки в архиве и загрузите снова."
+                )
+                return render(request, 'admin/pubg_import.html', context)
+
+            request.session['pubg_import_token'] = token
+            context['step'] = 'preview'
+            context['token'] = token
+            context['inspection'] = inspection
+            context['filename'] = uploaded_file.name
+            context['filesize_mb'] = round(uploaded_file.size / (1024 * 1024), 2)
+            return render(request, 'admin/pubg_import.html', context)
+
+        except PubgImportValidationError as e:
+            temp_path.unlink(missing_ok=True)
+            messages.error(request, f"Ошибка валидации: {e}")
+            return render(request, 'admin/pubg_import.html', context)
+        except Exception as e:
+            temp_path.unlink(missing_ok=True)
+            messages.error(request, f"Непредвиденная ошибка при обработке архива: {e}")
+            return render(request, 'admin/pubg_import.html', context)
+
+    # STEP 2: Synchronous execution fallback
+    if request.method == 'POST' and request.POST.get('action') == 'execute':
+        token = request.POST.get('token') or request.session.get('pubg_import_token')
+        mode = request.POST.get('mode', 'add_only')
+        if mode not in ['add_only', 'update_existing']:
+            mode = 'add_only'
+
+        if not token:
+            messages.error(request, "Сессия импорта устарела. Загрузите файл заново.")
+            return redirect('admin_pubg_import')
+
+        temp_path = _get_pubg_import_temp_dir() / f"{token}.zip"
+        if not temp_path.exists():
+            messages.error(request, "Временный файл импорта не найден или истёк срок действия. Загрузите файл заново.")
+            return redirect('admin_pubg_import')
+
+        try:
+            importer = PubgZipImporter(str(temp_path))
+            summary = importer.execute_import(mode=mode)
+            temp_path.unlink(missing_ok=True)
+            request.session.pop('pubg_import_token', None)
+
+            context['step'] = 'completed'
+            context['summary'] = summary
+            context['mode'] = mode
+            messages.success(request, "✅ Импорт PUBG-предметов успешно завершён!")
+            return render(request, 'admin/pubg_import.html', context)
+
+        except PubgImportValidationError as e:
+            messages.error(request, f"Ошибка валидации при импорте: {e}")
+            return redirect('admin_pubg_import')
+        except Exception as e:
+            messages.error(request, f"Ошибка импорта: {e}")
+            return redirect('admin_pubg_import')
+
+    return render(request, 'admin/pubg_import.html', context)
+
+
+@staff_member_required
+@require_http_methods(["POST"])
+def admin_pubg_import_stream_view(request):
+    """
+    NDJSON streaming endpoint for real-time progress reporting during PUBG import.
+    Emits lines of JSON:
+      {"event": "progress", "current": 125, "total": 1000, "item": "..."}
+      {"event": "complete", "summary": {...}}
+      {"event": "error", "message": "..."}
+    """
+    if not (request.user.is_superuser or has_admin_perm(request.user, 'can_add_items')):
+        return JsonResponse({'status': 'error', 'message': 'Forbidden'}, status=403)
+
+    try:
+        data = json.loads(request.body.decode('utf-8'))
+    except Exception:
+        data = request.POST
+
+    token = data.get('token')
+    mode = data.get('mode', 'add_only')
+    if mode not in ['add_only', 'update_existing']:
+        mode = 'add_only'
+
+    if not token or not re.match(r'^[a-f0-9]{32}$', token):
+        return JsonResponse({'status': 'error', 'message': 'Недействительный токен импорта.'}, status=400)
+
+    temp_path = _get_pubg_import_temp_dir() / f"{token}.zip"
+    if not temp_path.exists():
+        return JsonResponse({'status': 'error', 'message': 'Файл импорта не найден или истёк срок сессии.'}, status=404)
+
+    def event_stream():
+        try:
+            importer = PubgZipImporter(str(temp_path))
+
+            class ProgressEmitter:
+                def __init__(self):
+                    self.buffer = []
+
+                def callback(self, current, total, item_name):
+                    msg = json.dumps({
+                        'event': 'progress',
+                        'current': current,
+                        'total': total,
+                        'item': item_name,
+                        'percent': int((current / total) * 100) if total else 100,
+                    })
+                    self.buffer.append(msg + "\n")
+
+            emitter = ProgressEmitter()
+            summary = importer.execute_import(mode=mode, progress_callback=emitter.callback)
+
+            for line in emitter.buffer:
+                yield line
+
+            complete_msg = json.dumps({
+                'event': 'complete',
+                'summary': summary,
+            })
+            yield f"{complete_msg}\n"
+
+        except Exception as e:
+            err_msg = json.dumps({
+                'event': 'error',
+                'message': str(e),
+            })
+            yield f"{err_msg}\n"
+        finally:
+            temp_path.unlink(missing_ok=True)
+
+    response = StreamingHttpResponse(event_stream(), content_type='application/x-ndjson')
+    response['Cache-Control'] = 'no-cache'
+    response['X-Accel-Buffering'] = 'no'
+    return response
+
+
+@staff_member_required
+@require_http_methods(["GET"])
+def admin_pubg_import_thumb_view(request, token, image_path):
+    """
+    Lightweight endpoint to serve thumbnail images from the temporary uploaded ZIP for preview.
+    """
+    if not (request.user.is_superuser or has_admin_perm(request.user, 'can_add_items')):
+        return HttpResponseForbidden("Forbidden")
+
+    if not re.match(r'^[a-f0-9]{32}$', token):
+        raise Http404("Invalid token")
+
+    temp_path = _get_pubg_import_temp_dir() / f"{token}.zip"
+    if not temp_path.exists():
+        raise Http404("Zip not found")
+
+    try:
+        with zipfile.ZipFile(temp_path, 'r') as zf:
+            norm_map = {n.replace('\\', '/').strip('/'): n for n in zf.namelist()}
+            clean_path = image_path.replace('\\', '/').strip('/')
+            actual_name = norm_map.get(clean_path)
+            if not actual_name:
+                matches = [v for k, v in norm_map.items() if k.endswith(clean_path)]
+                if matches:
+                    actual_name = matches[0]
+
+            if not actual_name:
+                raise Http404("Image not in zip")
+
+            data = zf.read(actual_name)
+            ext = Path(actual_name).suffix.lower()
+            ct = 'image/webp' if ext == '.webp' else ('image/png' if ext == '.png' else 'image/jpeg')
+            return HttpResponse(data, content_type=ct)
+    except Exception:
+        raise Http404("Error reading image")

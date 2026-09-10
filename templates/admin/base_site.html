@@ -43,6 +43,9 @@
 <a href="{% url 'admin_image_import' %}" style="color: #34d399; font-weight: 700; margin-right: 14px; text-decoration: none; display: inline-flex; align-items: center; gap: 4px;">
     <span>📦</span> Импорт предметов
 </a>
+<a href="{% url 'admin_pubg_import' %}" style="color: #f59e0b; font-weight: 700; margin-right: 14px; text-decoration: none; display: inline-flex; align-items: center; gap: 4px;">
+    <span>🎮</span> Импорт PUBG (ZIP)
+</a>
 {% if request.user.is_superuser %}
 <a href="{% url 'admin_administrators' %}" style="color: #fbbf24; font-weight: 700; margin-right: 14px; text-decoration: none; display: inline-flex; align-items: center; gap: 4px;">
     <span>👑</span> Администраторы

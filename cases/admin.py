@@ -79,12 +79,16 @@ class CategoryAdmin(admin.ModelAdmin):
 
 @admin.register(Item)
 class ItemAdmin(admin.ModelAdmin):
-    list_display = ('image_preview', 'name', 'weapon_type', 'skin_name', 'value_display', 'rarity_badge', 'related_cases_display', 'created_at')
+    list_display = ('image_preview', 'name', 'game_badge', 'item_type', 'weapon_type', 'value_display', 'rarity_badge', 'related_cases_display', 'created_at')
     list_editable = ('value_display_edit',) if False else ()
-    list_filter = ('rarity', 'weapon_type', 'created_at')
-    search_fields = ('name', 'weapon_type', 'skin_name')
+    list_filter = ('game', 'rarity', 'item_type', 'weapon_type', 'created_at')
+    search_fields = ('name', 'weapon_type', 'skin_name', 'source_id', 'source_url')
     ordering = ('-value',)
     readonly_fields = ('image_preview', 'created_at', 'containing_cases_display')
+
+    def game_badge(self, obj):
+        return format_html('<span style="background: rgba(245, 158, 11, 0.15); border: 1px solid #f59e0b; color: #fbbf24; padding: 2px 6px; border-radius: 4px; font-weight: 800; font-size: 10px;">{}</span>', obj.game or 'PUBG')
+    game_badge.short_description = "Игра"
 
     def has_view_permission(self, request, obj=None):
         return has_admin_perm(request.user, 'can_view_cases') or request.user.is_staff

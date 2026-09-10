@@ -31,6 +31,13 @@ class Item(models.Model):
         ('mil_spec', 'Армейское качество (Синее)'),
         ('industrial', 'Промышленное качество (Голубое)'),
         ('consumer', 'Ширпотреб (Серое)'),
+        # PUBG Rarity Tiers
+        ('mythic', 'Мифический (Золотой)'),
+        ('legendary', 'Легендарный (Красный)'),
+        ('epic', 'Эпический (Розовый)'),
+        ('rare', 'Редкий (Синий)'),
+        ('uncommon', 'Необычный (Зеленый)'),
+        ('common', 'Обычный (Серый)'),
     ]
 
     RARITY_COLORS = {
@@ -41,6 +48,13 @@ class Item(models.Model):
         'mil_spec': '#4B69FF',
         'industrial': '#5E98D9',
         'consumer': '#B0C3D9',
+        # PUBG
+        'mythic': '#FFD700',
+        'legendary': '#EB4B4B',
+        'epic': '#D32CE6',
+        'rare': '#4B69FF',
+        'uncommon': '#5E98D9',
+        'common': '#B0C3D9',
     }
 
     RARITY_NAMES_RU = {
@@ -51,14 +65,27 @@ class Item(models.Model):
         'mil_spec': 'АРМЕЙСКОЕ КАЧЕСТВО',
         'industrial': 'ПРОМЫШЛЕННОЕ',
         'consumer': 'ШИРПОТРЕБ',
+        # PUBG
+        'mythic': 'МИФИЧЕСКИЙ',
+        'legendary': 'ЛЕГЕНДАРНЫЙ',
+        'epic': 'ЭПИЧЕСКИЙ',
+        'rare': 'РЕДКИЙ',
+        'uncommon': 'НЕОБЫЧНЫЙ',
+        'common': 'ОБЫЧНЫЙ',
     }
 
+    game = models.CharField(max_length=50, default="PUBG", db_index=True, verbose_name="Игра")
     weapon_type = models.CharField(max_length=100, verbose_name="Тип оружия", default="AK-47")
     skin_name = models.CharField(max_length=100, verbose_name="Название скина", default="Asiimov")
     name = models.CharField(max_length=200, verbose_name="Полное название", blank=True)
     value = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="Стоимость (UC)")
     rarity = models.CharField(max_length=30, choices=RARITY_CHOICES, default='mil_spec', verbose_name="Редкость")
     rarity_color = models.CharField(max_length=20, default='#4B69FF', verbose_name="Цвет редкости (HEX)")
+    quality = models.CharField(max_length=100, blank=True, default="", verbose_name="Качество")
+    item_type = models.CharField(max_length=100, blank=True, default="skin", verbose_name="Тип предмета")
+    source_id = models.CharField(max_length=150, blank=True, null=True, db_index=True, verbose_name="Source ID")
+    source_url = models.CharField(max_length=500, blank=True, null=True, db_index=True, verbose_name="Source URL")
+    source_image_url = models.CharField(max_length=500, blank=True, null=True, verbose_name="Source Image URL")
     image = models.ImageField(upload_to='items/', blank=True, null=True, verbose_name="Изображение предмета")
     image_url = models.CharField(max_length=500, blank=True, null=True, verbose_name="URL Изображения / SVG ID")
     created_at = models.DateTimeField(auto_now_add=True)

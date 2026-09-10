@@ -46,6 +46,11 @@ urlpatterns = [
     path('admin/cases/image-import/create-case/', admin_views.ajax_create_case_from_import_view, name='admin_ajax_create_case'),
     path('admin/cases/image-import/upload-grid/', admin_views.ajax_upload_grid_image_view, name='admin_ajax_upload_grid'),
 
+    # Dedicated Admin PUBG ZIP Items Importer
+    path('admin/cases/pubg-import/', admin_views.admin_pubg_import_view, name='admin_pubg_import'),
+    path('admin/cases/pubg-import/stream/', admin_views.admin_pubg_import_stream_view, name='admin_pubg_import_stream'),
+    path('admin/cases/pubg-import/thumb/<str:token>/<path:image_path>', admin_views.admin_pubg_import_thumb_view, name='admin_pubg_import_thumb'),
+
     # Dedicated Admin Provably Fair Server RNG Monte Carlo Simulator
     path('admin/cases/rng-simulation/', admin_views.admin_rng_simulation_view, name='admin_rng_simulation'),
     path('admin/cases/rng-simulation/run/', admin_views.ajax_run_rng_simulation_view, name='admin_ajax_run_rng_simulation'),

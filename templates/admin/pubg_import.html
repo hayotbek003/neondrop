@@ -1,0 +1,726 @@
+{% extends "admin/base_site.html" %}
+{% load i18n static humanize %}
+
+{% block title %}Импорт PUBG предметов (ZIP) | {{ site_title|default:_('Django site admin') }}{% endblock %}
+
+{% block extrastyle %}
+{{ block.super }}
+<style>
+  .pubg-import-container {
+    max-width: 1400px;
+    margin: 0 auto 50px auto;
+    color: #f1f5f9;
+  }
+  .pubg-card {
+    background: linear-gradient(135deg, #0b0f19 0%, #111827 100%);
+    border: 1px solid #1e293b;
+    border-radius: 12px;
+    padding: 24px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+    margin-bottom: 24px;
+  }
+  .pubg-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #1e293b;
+    padding-bottom: 16px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .pubg-card-title {
+    font-size: 20px;
+    font-weight: 800;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: #f8fafc;
+    letter-spacing: 0.5px;
+  }
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+  .stat-card {
+    background: rgba(15, 23, 42, 0.7);
+    border: 1px solid #334155;
+    border-radius: 10px;
+    padding: 18px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    position: relative;
+    overflow: hidden;
+  }
+  .stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: var(--stat-accent, #64748b);
+  }
+  .stat-label {
+    font-size: 12px;
+    text-transform: uppercase;
+    color: #94a3b8;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+  }
+  .stat-val {
+    font-size: 26px;
+    font-weight: 900;
+    color: #f8fafc;
+  }
+  .dropzone {
+    border: 2px dashed #475569;
+    border-radius: 12px;
+    padding: 50px 24px;
+    text-align: center;
+    background: rgba(15, 23, 42, 0.4);
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  .dropzone:hover, .dropzone.dragover {
+    border-color: #f59e0b;
+    background: rgba(245, 158, 11, 0.05);
+  }
+  .btn-pubg {
+    background: linear-gradient(135deg, #d97706 0%, #f59e0b 100%);
+    color: #000000 !important;
+    font-weight: 800;
+    border: none;
+    padding: 12px 28px;
+    border-radius: 8px;
+    font-size: 14px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3);
+    transition: all 0.2s ease;
+    text-decoration: none;
+  }
+  .btn-pubg:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(245, 158, 11, 0.5);
+  }
+  .btn-secondary {
+    background: #1e293b;
+    border: 1px solid #334155;
+    color: #cbd5e1 !important;
+    font-weight: 700;
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-size: 14px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    text-decoration: none;
+    transition: all 0.2s ease;
+  }
+  .btn-secondary:hover {
+    background: #334155;
+    color: #f8fafc !important;
+  }
+  .mode-selection {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin: 20px 0;
+  }
+  @media (max-width: 768px) {
+    .mode-selection {
+      grid-template-columns: 1fr;
+    }
+  }
+  .mode-box {
+    background: rgba(15, 23, 42, 0.6);
+    border: 2px solid #334155;
+    border-radius: 10px;
+    padding: 16px;
+    cursor: pointer;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    transition: all 0.2s ease;
+  }
+  .mode-box:hover, .mode-box.selected {
+    border-color: #f59e0b;
+    background: rgba(245, 158, 11, 0.08);
+  }
+  .table-responsive {
+    overflow-x: auto;
+    border-radius: 8px;
+    border: 1px solid #1e293b;
+  }
+  .pubg-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    text-align: left;
+  }
+  .pubg-table th {
+    background: #0f172a;
+    padding: 12px 14px;
+    color: #94a3b8;
+    font-weight: 700;
+    border-bottom: 1px solid #334155;
+  }
+  .pubg-table td {
+    padding: 10px 14px;
+    border-bottom: 1px solid #1e293b;
+    vertical-align: middle;
+  }
+  .pubg-table tr:hover {
+    background: rgba(255, 255, 255, 0.02);
+  }
+  .badge-status {
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 800;
+    text-transform: uppercase;
+    display: inline-block;
+  }
+  .badge-new {
+    background: rgba(16, 185, 129, 0.2);
+    border: 1px solid #10b981;
+    color: #34d399;
+  }
+  .badge-exists {
+    background: rgba(245, 158, 11, 0.2);
+    border: 1px solid #f59e0b;
+    color: #fbbf24;
+  }
+  .badge-error {
+    background: rgba(239, 68, 68, 0.2);
+    border: 1px solid #ef4444;
+    color: #f87171;
+  }
+  .progress-wrap {
+    background: rgba(15, 23, 42, 0.9);
+    border: 1px solid #f59e0b;
+    border-radius: 12px;
+    padding: 24px;
+    margin: 20px 0;
+    display: none;
+  }
+  .progress-bar-bg {
+    width: 100%;
+    height: 18px;
+    background: #1e293b;
+    border-radius: 9px;
+    overflow: hidden;
+    margin: 12px 0 8px 0;
+    position: relative;
+  }
+  .progress-bar-fill {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, #d97706, #fbbf24);
+    border-radius: 9px;
+    transition: width 0.15s ease;
+    box-shadow: 0 0 12px rgba(245, 158, 11, 0.6);
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="pubg-import-container">
+
+  <!-- BREADCRUMB & HEADER -->
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; flex-wrap: wrap; gap: 12px;">
+    <div>
+      <div style="font-size: 12px; color: #94a3b8; margin-bottom: 4px;">
+        <a href="{% url 'admin:index' %}" style="color: #c084fc; text-decoration: none;">Главная</a> &rsaquo;
+        <a href="{% url 'admin:cases_item_changelist' %}" style="color: #c084fc; text-decoration: none;">Предметы</a> &rsaquo;
+        <span>Импорт PUBG (ZIP)</span>
+      </div>
+      <h1 style="font-size: 24px; font-weight: 900; margin: 0; color: #f8fafc; display: flex; align-items: center; gap: 10px;">
+        <span>🎮</span> ИМПОРТ PUBG ПРЕДМЕТОВ ИЗ ZIP
+      </h1>
+    </div>
+    <div style="display: flex; gap: 10px;">
+      <a href="{% url 'admin:cases_item_changelist' %}" class="btn-secondary">
+        <span>🔙</span> К списку предметов
+      </a>
+      {% if step == 'preview' %}
+      <a href="{% url 'admin_pubg_import' %}?reset=1" class="btn-secondary">
+        <span>🔄</span> Загрузить другой ZIP
+      </a>
+      {% endif %}
+    </div>
+  </div>
+
+  {% if messages %}
+    {% for message in messages %}
+      <div style="padding: 14px 18px; border-radius: 8px; margin-bottom: 20px; font-size: 14px; font-weight: 600;
+        {% if message.tags == 'error' %}background: rgba(239, 68, 68, 0.15); border: 1px solid #ef4444; color: #fca5a5;
+        {% elif message.tags == 'success' %}background: rgba(16, 185, 129, 0.15); border: 1px solid #10b981; color: #6ee7b7;
+        {% else %}background: rgba(56, 189, 248, 0.15); border: 1px solid #38bdf8; color: #bae6fd;{% endif %}">
+        {{ message }}
+      </div>
+    {% endfor %}
+  {% endif %}
+
+  <!-- ============================================================= -->
+  <!-- STEP 1: UPLOAD FORM -->
+  <!-- ============================================================= -->
+  {% if step == 'upload' %}
+  <div class="pubg-card">
+    <div class="pubg-card-header">
+      <h2 class="pubg-card-title">
+        <span>📥</span> Загрузка архива с предметами
+      </h2>
+      <span style="font-size: 12px; color: #94a3b8;">
+        Поддерживается только игра <strong>PUBG</strong>
+      </span>
+    </div>
+
+    <!-- Requirements Infobox -->
+    <div style="background: rgba(245, 158, 11, 0.08); border: 1px solid rgba(245, 158, 11, 0.3); border-radius: 10px; padding: 16px 20px; margin-bottom: 24px;">
+      <div style="color: #fbbf24; font-weight: 800; font-size: 14px; margin-bottom: 6px; display: flex; align-items: center; gap: 8px;">
+        <span>ℹ️</span> Структура архива ZIP:
+      </div>
+      <div style="color: #cbd5e1; font-size: 13px; line-height: 1.6;">
+        Архив должен содержать файл <code>items.json</code> и папку <code>images/</code> с картинками предметов.<br>
+        Обязательные поля в JSON: <code>game</code> (строго "PUBG"), <code>name</code>, <code>price</code>, <code>image</code>. Опционально: <code>rarity</code>, <code>quality</code>, <code>type</code>, <code>source_id</code>, <code>source_url</code>.<br>
+        <em>Все изображения автоматически валидируются и при импорте сохраняются в хранилище media с привязкой к модели Item.</em>
+      </div>
+    </div>
+
+    {% if inspection_errors %}
+    <div style="background: rgba(239, 68, 68, 0.1); border: 1px solid #ef4444; border-radius: 10px; padding: 16px 20px; margin-bottom: 24px;">
+      <strong style="color: #f87171; font-size: 14px; display: block; margin-bottom: 8px;">
+        ⚠️ Ошибки валидации архива (исправьте перед импортом):
+      </strong>
+      <ul style="margin: 0; padding-left: 20px; color: #fca5a5; font-size: 13px; line-height: 1.5;">
+        {% for err in inspection_errors|slice:":10" %}
+          <li>{{ err }}</li>
+        {% endfor %}
+        {% if inspection_errors|length > 10 %}
+          <li><em>... и ещё {{ inspection_errors|length|add:"-10" }} ошибок</em></li>
+        {% endif %}
+      </ul>
+    </div>
+    {% endif %}
+
+    <form method="post" enctype="multipart/form-data" id="upload-form">
+      {% csrf_token %}
+      <input type="hidden" name="action" value="preview">
+
+      <div class="dropzone" id="dropzone" onclick="document.getElementById('file-input').click();">
+        <div style="font-size: 48px; margin-bottom: 12px;">📦</div>
+        <h3 style="margin: 0 0 8px 0; color: #f8fafc; font-size: 18px; font-weight: 700;">
+          Нажмите или перетащите сюда ZIP-файл с PUBG-предметами
+        </h3>
+        <p style="margin: 0; color: #94a3b8; font-size: 13px;" id="file-chosen-text">
+          Файл items_import.zip (макс. 100 МБ)
+        </p>
+        <input type="file" name="zip_file" id="file-input" accept=".zip" style="display: none;" onchange="handleFileSelected(this)">
+      </div>
+
+      <div style="margin-top: 24px; display: flex; justify-content: flex-end; gap: 12px;">
+        <button type="submit" class="btn-pubg" id="btn-inspect" disabled style="opacity: 0.6;">
+          <span>🔍</span> Проверить и предпросмотреть
+        </button>
+      </div>
+    </form>
+  </div>
+  {% endif %}
+
+  <!-- ============================================================= -->
+  <!-- STEP 2: PREVIEW SCREEN -->
+  <!-- ============================================================= -->
+  {% if step == 'preview' %}
+  <div class="pubg-card">
+    <div class="pubg-card-header">
+      <div>
+        <h2 class="pubg-card-title">
+          <span>🔍</span> Результаты проверки архива: {{ filename }}
+        </h2>
+        <div style="color: #94a3b8; font-size: 12px; margin-top: 4px;">
+          Размер: {{ filesize_mb }} МБ • Всего объектов в JSON: {{ inspection.total_items }}
+        </div>
+      </div>
+      <div>
+        <span style="background: rgba(16, 185, 129, 0.15); border: 1px solid #10b981; color: #34d399; padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 800;">
+          ✓ ВАЛИДАЦИЯ ПРОЙДЕНА
+        </span>
+      </div>
+    </div>
+
+    <!-- STATS COUNTERS -->
+    <div class="stats-grid">
+      <div class="stat-card" style="--stat-accent: #38bdf8;">
+        <span class="stat-label">📦 Найдено предметов</span>
+        <span class="stat-val" style="color: #38bdf8;">{{ inspection.total_items }}</span>
+      </div>
+      <div class="stat-card" style="--stat-accent: #10b981;">
+        <span class="stat-label">➕ Новых предметов</span>
+        <span class="stat-val" style="color: #34d399;">{{ inspection.new_items }}</span>
+      </div>
+      <div class="stat-card" style="--stat-accent: #f59e0b;">
+        <span class="stat-label">🔁 Уже существующих</span>
+        <span class="stat-val" style="color: #fbbf24;">{{ inspection.existing_items }}</span>
+      </div>
+      <div class="stat-card" style="--stat-accent: #ef4444;">
+        <span class="stat-label">⚠️ Предметов с ошибками</span>
+        <span class="stat-val" style="color: {% if inspection.error_items > 0 %}#f87171{% else %}#94a3b8{% endif %};">
+          {{ inspection.error_items }}
+        </span>
+      </div>
+      <div class="stat-card" style="--stat-accent: #a855f7;">
+        <span class="stat-label">🖼️ Найдено изображений</span>
+        <span class="stat-val" style="color: #c084fc;">{{ inspection.total_images }}</span>
+      </div>
+    </div>
+
+    <!-- MODE SELECTION -->
+    <h3 style="font-size: 15px; font-weight: 800; color: #f8fafc; margin: 20px 0 10px 0;">
+      Выберите режим импорта:
+    </h3>
+    <form id="execute-import-form" method="post">
+      {% csrf_token %}
+      <input type="hidden" name="action" value="execute">
+      <input type="hidden" name="token" id="import-token" value="{{ token }}">
+
+      <div class="mode-selection">
+        <label class="mode-box selected" id="mode-box-add" onclick="selectMode('add_only')">
+          <input type="radio" name="mode" value="add_only" checked style="margin-top: 3px;" onchange="syncModeSelection()">
+          <div>
+            <strong style="color: #f8fafc; font-size: 14px; display: block;">
+              ✨ Добавить только новые
+            </strong>
+            <span style="color: #94a3b8; font-size: 12px; line-height: 1.4; display: block; margin-top: 4px;">
+              Создаёт только те предметы, которых ещё нет в базе. Существующие предметы ({{ inspection.existing_items }} шт.) не изменяются и пропускаются без дублирования.
+            </span>
+          </div>
+        </label>
+
+        <label class="mode-box" id="mode-box-update" onclick="selectMode('update_existing')">
+          <input type="radio" name="mode" value="update_existing" style="margin-top: 3px;" onchange="syncModeSelection()">
+          <div>
+            <strong style="color: #f8fafc; font-size: 14px; display: block;">
+              🔄 Обновить существующие
+            </strong>
+            <span style="color: #94a3b8; font-size: 12px; line-height: 1.4; display: block; margin-top: 4px;">
+              Создаёт новые предметы и обновляет уже существующие (цену, редкость, качество, тип, фото). Не изменяет балансы и кейсы.
+            </span>
+          </div>
+        </label>
+      </div>
+
+      <!-- LIVE PROGRESS BAR CONTAINER -->
+      <div class="progress-wrap" id="progress-container">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <div style="font-weight: 800; color: #fbbf24; font-size: 15px;" id="progress-label">
+            ⚡ Выполняется импорт...
+          </div>
+          <div style="font-weight: 900; color: #f8fafc; font-size: 15px;" id="progress-counter">
+            Импортировано 0 / {{ inspection.total_items }}
+          </div>
+        </div>
+        <div class="progress-bar-bg">
+          <div class="progress-bar-fill" id="progress-fill"></div>
+        </div>
+        <div style="display: flex; justify-content: space-between; font-size: 12px; color: #94a3b8;">
+          <span id="progress-current-item">Обработка...</span>
+          <span id="progress-percent">0%</span>
+        </div>
+      </div>
+
+      <!-- IMPORT BUTTON BAR -->
+      <div style="display: flex; justify-content: space-between; align-items: center; margin: 24px 0; flex-wrap: wrap; gap: 12px;">
+        <a href="{% url 'admin_pubg_import' %}?reset=1" class="btn-secondary">
+          <span>❌</span> Отменить
+        </a>
+        <button type="button" class="btn-pubg" id="btn-start-import" onclick="startStreamingImport()">
+          <span>⚡</span> Начать импорт предметов
+        </button>
+      </div>
+    </form>
+
+    <!-- PREVIEW TABLE -->
+    <div style="margin-top: 32px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+        <h3 style="font-size: 16px; font-weight: 800; color: #f8fafc; margin: 0;">
+          Предпросмотр предметов (показано {{ inspection.preview_items|length }})
+        </h3>
+        <span style="font-size: 12px; color: #94a3b8;">
+          Приоритет поиска: source_id &rsaquo; source_url &rsaquo; name + game
+        </span>
+      </div>
+
+      <div class="table-responsive">
+        <table class="pubg-table">
+          <thead>
+            <tr>
+              <th style="width: 40px;">#</th>
+              <th style="width: 50px;">Фото</th>
+              <th>Название предмета</th>
+              <th>Цена (UC)</th>
+              <th>Редкость</th>
+              <th>Качество / Тип</th>
+              <th>Source ID</th>
+              <th>Статус</th>
+              <th>Совпадение</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for it in inspection.preview_items|slice:":100" %}
+            <tr>
+              <td style="color: #64748b;">{{ it.index }}</td>
+              <td>
+                {% if it.image %}
+                <img src="{% url 'admin_pubg_import_thumb' token=token image_path=it.image %}"
+                     style="width: 44px; height: 36px; object-fit: contain; border-radius: 4px; background: #0f172a; border: 1px solid #334155;"
+                     alt="{{ it.name }}"
+                     onerror="this.onerror=null; this.src='/static/images/favicon.png';">
+                {% else %}
+                <span style="color: #64748b;">—</span>
+                {% endif %}
+              </td>
+              <td>
+                <strong style="color: #f8fafc;">{{ it.name }}</strong>
+              </td>
+              <td>
+                <span style="color: #fbbf24; font-weight: 800;">{{ it.price }} UC</span>
+              </td>
+              <td>
+                <span style="border: 1px solid {{ it.rarity_hex }}; color: {{ it.rarity_hex }}; padding: 2px 6px; border-radius: 4px; font-weight: 700; font-size: 11px;">
+                  {{ it.rarity|default:it.rarity_code }}
+                </span>
+              </td>
+              <td style="color: #cbd5e1;">
+                {{ it.quality|default:"—" }} / <span style="color: #94a3b8;">{{ it.type|default:"skin" }}</span>
+              </td>
+              <td>
+                <code style="color: #38bdf8; font-size: 11px;">{{ it.source_id|default:"—" }}</code>
+              </td>
+              <td>
+                {% if it.status == 'new' %}
+                  <span class="badge-status badge-new">Новый</span>
+                {% elif it.status == 'exists' %}
+                  <span class="badge-status badge-exists">Существует</span>
+                {% else %}
+                  <span class="badge-status badge-error">Ошибка</span>
+                {% endif %}
+              </td>
+              <td style="font-size: 11px; color: #94a3b8;">
+                {% if it.matched_by == 'source_id' %}
+                  По source_id (#{{ it.existing_id }})
+                {% elif it.matched_by == 'source_url' %}
+                  По source_url (#{{ it.existing_id }})
+                {% elif it.matched_by == 'name_game' %}
+                  По названию (#{{ it.existing_id }})
+                {% elif it.matched_by == 'batch_duplicate' %}
+                  Дубликат в архиве
+                {% else %}
+                  —
+                {% endif %}
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% if inspection.preview_items|length > 100 %}
+      <div style="text-align: center; color: #94a3b8; font-size: 12px; margin-top: 10px;">
+        <em>Показано первые 100 предметов из {{ inspection.preview_items|length }}. Все предметы будут обработаны при импорте.</em>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- ============================================================= -->
+  <!-- STEP 3: COMPLETED REPORT -->
+  <!-- ============================================================= -->
+  {% if step == 'completed' %}
+  <div class="pubg-card" style="text-align: center; padding: 40px 24px;">
+    <div style="font-size: 56px; margin-bottom: 12px;">✅</div>
+    <h2 style="font-size: 26px; font-weight: 900; color: #34d399; margin: 0 0 10px 0;">
+      ИМПОРТ ЗАВЕРШЁН
+    </h2>
+    <p style="color: #94a3b8; font-size: 14px; margin-bottom: 30px;">
+      Все операции выполнены транзакционно через <code>transaction.atomic()</code>.
+    </p>
+
+    <div style="max-width: 600px; margin: 0 auto 30px auto; background: rgba(15, 23, 42, 0.8); border: 1px solid #334155; border-radius: 12px; padding: 24px; text-align: left;">
+      <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #1e293b;">
+        <span style="color: #cbd5e1;">➕ Новых предметов:</span>
+        <strong style="color: #34d399; font-size: 16px;">{{ summary.created }}</strong>
+      </div>
+      <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #1e293b;">
+        <span style="color: #cbd5e1;">🔄 Обновлено:</span>
+        <strong style="color: #fbbf24; font-size: 16px;">{{ summary.updated }}</strong>
+      </div>
+      <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #1e293b;">
+        <span style="color: #cbd5e1;">⏭️ Пропущено (уже в базе):</span>
+        <strong style="color: #94a3b8; font-size: 16px;">{{ summary.skipped }}</strong>
+      </div>
+      <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #1e293b;">
+        <span style="color: #cbd5e1;">⚠️ Ошибок:</span>
+        <strong style="color: {% if summary.errors > 0 %}#f87171{% else %}#94a3b8{% endif %}; font-size: 16px;">{{ summary.errors }}</strong>
+      </div>
+      <div style="display: flex; justify-content: space-between; padding: 8px 0;">
+        <span style="color: #cbd5e1;">🖼️ Изображений сохранено:</span>
+        <strong style="color: #c084fc; font-size: 16px;">{{ summary.images_saved }}</strong>
+      </div>
+    </div>
+
+    <div style="display: flex; justify-content: center; gap: 14px; flex-wrap: wrap;">
+      <a href="{% url 'admin:cases_item_changelist' %}" class="btn-pubg">
+        <span>🔫</span> Перейти к предметам в базе
+      </a>
+      <a href="{% url 'admin_pubg_import' %}?reset=1" class="btn-secondary">
+        <span>📦</span> Импортировать ещё один архив
+      </a>
+    </div>
+  </div>
+  {% endif %}
+
+</div>
+
+<script>
+  function handleFileSelected(input) {
+    const btn = document.getElementById('btn-inspect');
+    const label = document.getElementById('file-chosen-text');
+    if (input.files && input.files[0]) {
+      const f = input.files[0];
+      label.innerHTML = `<strong>Выбран файл:</strong> ${f.name} (${(f.size / (1024*1024)).toFixed(2)} МБ)`;
+      btn.disabled = false;
+      btn.style.opacity = '1';
+    }
+  }
+
+  // Drag and drop events
+  const dropzone = document.getElementById('dropzone');
+  if (dropzone) {
+    ['dragenter', 'dragover'].forEach(eventName => {
+      dropzone.addEventListener(eventName, (e) => {
+        e.preventDefault();
+        dropzone.classList.add('dragover');
+      }, false);
+    });
+    ['dragleave', 'drop'].forEach(eventName => {
+      dropzone.addEventListener(eventName, (e) => {
+        e.preventDefault();
+        dropzone.classList.remove('dragover');
+      }, false);
+    });
+    dropzone.addEventListener('drop', (e) => {
+      const dt = e.dataTransfer;
+      const files = dt.files;
+      if (files && files[0]) {
+        document.getElementById('file-input').files = files;
+        handleFileSelected(document.getElementById('file-input'));
+      }
+    });
+  }
+
+  function selectMode(mode) {
+    const radio = document.querySelector(`input[name="mode"][value="${mode}"]`);
+    if (radio) {
+      radio.checked = true;
+      syncModeSelection();
+    }
+  }
+
+  function syncModeSelection() {
+    const val = document.querySelector('input[name="mode"]:checked')?.value || 'add_only';
+    document.getElementById('mode-box-add')?.classList.toggle('selected', val === 'add_only');
+    document.getElementById('mode-box-update')?.classList.toggle('selected', val === 'update_existing');
+  }
+
+  // Real-time NDJSON streaming import
+  async function startStreamingImport() {
+    const btn = document.getElementById('btn-start-import');
+    const progressContainer = document.getElementById('progress-container');
+    const progressFill = document.getElementById('progress-fill');
+    const progressCounter = document.getElementById('progress-counter');
+    const progressItem = document.getElementById('progress-current-item');
+    const progressPercent = document.getElementById('progress-percent');
+    const token = document.getElementById('import-token').value;
+    const mode = document.querySelector('input[name="mode"]:checked')?.value || 'add_only';
+
+    btn.disabled = true;
+    btn.style.opacity = '0.5';
+    btn.innerHTML = '<span>⏳</span> Импортирование...';
+    progressContainer.style.display = 'block';
+
+    const csrfToken = document.querySelector('input[name="csrfmiddlewaretoken"]').value;
+
+    try {
+      const response = await fetch("{% url 'admin_pubg_import_stream' %}", {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': csrfToken,
+        },
+        body: JSON.stringify({ token: token, mode: mode }),
+      });
+
+      if (!response.ok) {
+        throw new Error('HTTP error ' + response.status);
+      }
+
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder('utf-8');
+      let buffer = '';
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split('\n');
+        buffer = lines.pop(); // keep remainder
+
+        for (const line of lines) {
+          if (!line.trim()) continue;
+          try {
+            const msg = JSON.parse(line);
+            if (msg.event === 'progress') {
+              progressCounter.textContent = `Импортировано ${msg.current} / ${msg.total}`;
+              progressFill.style.width = `${msg.percent}%`;
+              progressPercent.textContent = `${msg.percent}%`;
+              progressItem.textContent = msg.item;
+            } else if (msg.event === 'complete') {
+              progressFill.style.width = '100%';
+              progressPercent.textContent = '100%';
+              progressCounter.textContent = `Завершено: ${msg.summary.total} предметов`;
+
+              // Smoothly transition to summary screen
+              setTimeout(() => {
+                document.getElementById('execute-import-form').submit();
+              }, 600);
+              return;
+            } else if (msg.event === 'error') {
+              alert('Ошибка импорта: ' + msg.message);
+              btn.disabled = false;
+              btn.style.opacity = '1';
+              return;
+            }
+          } catch (err) {
+            console.error('JSON parse error:', err, line);
+          }
+        }
+      }
+
+      // Fallback submit if stream ended cleanly
+      document.getElementById('execute-import-form').submit();
+
+    } catch (err) {
+      console.warn('Streaming failed, falling back to standard submit:', err);
+      document.getElementById('execute-import-form').submit();
+    }
+  }
+</script>
+{% endblock %}
