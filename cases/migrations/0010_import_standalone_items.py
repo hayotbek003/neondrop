@@ -4,7 +4,12 @@ from django.db import migrations
 
 def import_standalone_items(apps, schema_editor):
     Item = apps.get_model('cases', 'Item')
-    from scripts.add_standalone_items import NEW_ITEMS_DATA, RARITY_COLORS
+    try:
+        from scripts.add_standalone_items import NEW_ITEMS_DATA, RARITY_COLORS
+    except Exception as e:
+        import logging
+        logging.getLogger('django').warning(f"[NEONDROP] Notice: add_standalone_items skipped: {e}")
+        return
 
     for item_data in NEW_ITEMS_DATA:
         name = item_data['name']
@@ -30,9 +35,12 @@ def import_standalone_items(apps, schema_editor):
 
 def rollback_standalone_items(apps, schema_editor):
     Item = apps.get_model('cases', 'Item')
-    from scripts.add_standalone_items import NEW_ITEMS_DATA
-    names = [d['name'] for d in NEW_ITEMS_DATA]
-    Item.objects.filter(name__in=names).delete()
+    try:
+        from scripts.add_standalone_items import NEW_ITEMS_DATA
+        names = [d['name'] for d in NEW_ITEMS_DATA]
+        Item.objects.filter(name__in=names).delete()
+    except Exception:
+        pass
 
 
 class Migration(migrations.Migration):

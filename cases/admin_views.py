@@ -1069,3 +1069,98 @@ def admin_pubg_import_thumb_view(request, token, image_path):
             return HttpResponse(data, content_type=ct)
     except Exception:
         raise Http404("Error reading image")
+
+
+@staff_member_required
+def admin_database_schema_view(request):
+    """
+    Diagnostic & schema synchronization dashboard for superusers.
+    Displays applied migrations, current database table columns, and allows triggering live migrate.
+    """
+    if not (request.user.is_superuser or request.user.is_staff):
+        return HttpResponseForbidden("Access denied")
+
+    from django.db import connection
+    from django.db.migrations.recorder import MigrationRecorder
+    from django.db.migrations.executor import MigrationExecutor
+    from django.core.management import call_command
+    import io
+
+    action_result = None
+    if request.method == 'POST' and request.POST.get('action') == 'migrate':
+        buf = io.StringIO()
+        try:
+            call_command('migrate', interactive=False, stdout=buf, stderr=buf)
+            action_result = {'status': 'success', 'output': buf.getvalue()}
+        except Exception as e:
+            action_result = {'status': 'error', 'output': f"{e}\n{buf.getvalue()}"}
+
+    recorder = MigrationRecorder(connection)
+    applied_set = set(recorder.applied_migrations().keys())
+
+    executor = MigrationExecutor(connection)
+    targets = executor.loader.graph.leaf_nodes()
+    plan = executor.migration_plan(targets)
+
+    # Introspect cases_item columns
+    item_cols = []
+    with connection.cursor() as cursor:
+        try:
+            desc = connection.introspection.get_table_description(cursor, 'cases_item')
+            item_cols = [col.name for col in desc]
+        except Exception as ex:
+            item_cols = [f"Error introspecting: {ex}"]
+
+    if request.headers.get('x-requested-with') == 'XMLHttpRequest' or request.GET.get('format') == 'json':
+        return JsonResponse({
+            'pending_migrations_count': len(plan),
+            'pending_migrations': [f"{mig.app_label}.{mig.name}" for mig, _ in plan],
+            'cases_item_columns': item_cols,
+            'action_result': action_result,
+        })
+
+    # Render simple cyberpunk HTML status
+    html = f"""<!DOCTYPE html>
+<html>
+<head>
+<title>Database Schema Status | NEONDROP</title>
+<style>
+body {{ font-family: monospace; background: #0b0f19; color: #e2e8f0; padding: 24px; }}
+h1 {{ color: #00f0ff; }}
+.card {{ background: #161f30; border: 1px solid #1e293b; border-radius: 8px; padding: 16px; margin-bottom: 20px; }}
+.badge-ok {{ color: #10b981; font-weight: bold; }}
+.badge-warn {{ color: #f59e0b; font-weight: bold; }}
+.badge-err {{ color: #ef4444; font-weight: bold; }}
+pre {{ background: #000; padding: 12px; border-radius: 6px; overflow-x: auto; color: #00ff66; }}
+button {{ background: #00f0ff; color: #000; font-weight: bold; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; }}
+button:hover {{ background: #38bdf8; }}
+</style>
+</head>
+<body>
+<h1>NEONDROP // Database Schema Integrity Dashboard</h1>
+
+<div class="card">
+  <h2>Pending Migrations ({len(plan)})</h2>
+  {'<p class="badge-ok">✓ All migrations are applied in database!</p>' if not plan else f'<p class="badge-err">⚠ {len(plan)} pending migration(s) detected!</p>'}
+  <ul>
+    {''.join(f'<li>{mig.app_label}.{mig.name}</li>' for mig, _ in plan) or '<li>None</li>'}
+  </ul>
+  <form method="POST">
+    <input type="hidden" name="action" value="migrate">
+    <button type="submit">Run `manage.py migrate` Now</button>
+  </form>
+</div>
+
+{f'<div class="card"><h2>Migration Action Output</h2><pre>{action_result["output"]}</pre></div>' if action_result else ''}
+
+<div class="card">
+  <h2>`cases_item` Columns ({len(item_cols)})</h2>
+  <p>Status: {'<span class="badge-ok">✓ `game` column exists</span>' if 'game' in item_cols else '<span class="badge-err">✗ `game` column MISSING!</span>'}</p>
+  <pre>{", ".join(item_cols)}</pre>
+</div>
+
+<p><a href="/admin/" style="color: #00f0ff;">&larr; Back to Django Admin</a></p>
+</body>
+</html>"""
+    return HttpResponse(html)
+

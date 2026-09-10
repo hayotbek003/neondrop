@@ -15,19 +15,10 @@ from decimal import Decimal
 BASE_DIR = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(BASE_DIR))
 
-import numpy as np
-from PIL import Image, ImageEnhance, ImageFilter, ImageDraw
-import cv2
+# Note: Heavy image-processing imports (numpy, cv2, PIL) are imported locally inside
+# extract_and_save_item_image() to allow lightweight data importing of NEW_ITEMS_DATA
+# without requiring open-cv or numpy installed on minimal production runtimes.
 
-import django
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings')
-django.setup()
-
-from django.conf import settings
-from django.utils.text import slugify
-from cases.models import Item
-
-UPLOADED_DIR = Path(r"C:\Users\User\.gemini\antigravity\brain\9c5f3916-a635-4e03-934c-0fd82e1bb1c1\.user_uploaded")
 
 IMAGES_LAYOUT = {
     'im1': {
@@ -1061,6 +1052,11 @@ def extract_and_save_item_image(card, slug, is_lock=False):
     Crops item from card, pads properly with aspect ratio intact, enhances sharpness/brightness,
     applies rounded mask, and saves to media/items/ and static/items/.
     """
+    import numpy as np
+    import cv2
+    from PIL import Image, ImageEnhance, ImageFilter, ImageDraw
+    from django.conf import settings
+
     c = card.copy()
     if is_lock:
         c[0:22, 0:75] = c[24, 10]
@@ -1129,6 +1125,14 @@ def extract_and_save_item_image(card, slug, is_lock=False):
 
 
 def main():
+    import cv2
+    import django
+    os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings')
+    django.setup()
+    from cases.models import Item
+
+    uploaded_dir = Path(r"C:\Users\User\.gemini\antigravity\brain\9c5f3916-a635-4e03-934c-0fd82e1bb1c1\.user_uploaded")
+
     print("=" * 60)
     print("ADDING STANDALONE ITEMS (WITHOUT CASE)")
     print("=" * 60)
@@ -1136,7 +1140,7 @@ def main():
     # Load source images
     loaded_images = {}
     for key, info in IMAGES_LAYOUT.items():
-        img_path = UPLOADED_DIR / info['file']
+        img_path = uploaded_dir / info['file']
         if not img_path.exists():
             raise FileNotFoundError(f"Missing source image: {img_path}")
         loaded_images[key] = cv2.imread(str(img_path))

@@ -56,6 +56,9 @@ urlpatterns = [
     path('admin/cases/rng-simulation/run/', admin_views.ajax_run_rng_simulation_view, name='admin_ajax_run_rng_simulation'),
     path('admin/cases/rng-simulation/history/<int:run_id>/', admin_views.ajax_get_rng_simulation_run_view, name='admin_ajax_get_rng_run'),
 
+    # Dedicated Admin Database Schema Integrity & Migration Sync Dashboard
+    path('admin/schema-status/', admin_views.admin_database_schema_view, name='admin_schema_status'),
+
     # SEO & Search Engine Indexation Endpoints
     path('robots.txt', robots_txt_view, name='robots_txt'),
     path('sitemap.xml', sitemap, {'sitemaps': sitemaps}, name='django.contrib.sitemaps.views.sitemap'),

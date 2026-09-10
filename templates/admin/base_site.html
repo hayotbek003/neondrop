@@ -47,6 +47,9 @@
     <span>📦</span> Импорт PUBG предметов
 </a>
 {% if request.user.is_superuser %}
+<a href="{% url 'admin_schema_status' %}" style="color: #06b6d4; font-weight: 700; margin-right: 14px; text-decoration: none; display: inline-flex; align-items: center; gap: 4px;" title="Проверить статус миграций и структуру базы данных">
+    <span>🛡️</span> Схема БД
+</a>
 <a href="{% url 'admin_administrators' %}" style="color: #fbbf24; font-weight: 700; margin-right: 14px; text-decoration: none; display: inline-flex; align-items: center; gap: 4px;">
     <span>👑</span> Администраторы
 </a>

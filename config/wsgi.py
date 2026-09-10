@@ -11,11 +11,12 @@ application = get_wsgi_application()
 try:
     from django.db import connection
     from django.core.management import call_command
+    from cases.schema_middleware import ensure_schema_synchronized
 
     try:
-        call_command('migrate', interactive=False)
+        ensure_schema_synchronized(force=True)
     except Exception as me:
-        logging.getLogger('django').warning(f"[NEONDROP] Startup migration notice: {me}")
+        logging.getLogger('django').error(f"[NEONDROP] Startup migration notice: {me}", exc_info=True)
 
     # Ensure case catalog exists without touching existing data
     try:

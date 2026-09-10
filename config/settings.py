@@ -79,6 +79,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    'cases.schema_middleware.DatabaseSchemaSyncMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
