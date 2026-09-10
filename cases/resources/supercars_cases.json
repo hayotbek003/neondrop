@@ -6,105 +6,133 @@
     "image": "images/case_01.jpg",
     "items": [
       {
-        "name": "Porsche 911 GT3 RS — Item 01",
-        "price_uc": 5,
-        "rarity": "Common",
-        "chance_percent": 21.742344,
-        "image": null
-      },
-      {
-        "name": "Porsche 911 GT3 RS — Item 02",
-        "price_uc": 10,
-        "rarity": "Common",
-        "chance_percent": 16.306758,
-        "image": null
-      },
-      {
-        "name": "Porsche 911 GT3 RS — Item 03",
-        "price_uc": 20,
-        "rarity": "Common",
-        "chance_percent": 10.871172,
-        "image": null
-      },
-      {
-        "name": "Porsche 911 GT3 RS — Item 04",
-        "price_uc": 50,
-        "rarity": "Common",
-        "chance_percent": 6.794482,
-        "image": null
-      },
-      {
-        "name": "Porsche 911 GT3 RS — Item 05",
-        "price_uc": 100,
-        "rarity": "Uncommon",
-        "chance_percent": 4.076689,
-        "image": null
-      },
-      {
-        "name": "Porsche 911 GT3 RS — Item 06",
-        "price_uc": 200,
-        "rarity": "Uncommon",
-        "chance_percent": 2.717793,
-        "image": null
-      },
-      {
-        "name": "Porsche 911 GT3 RS — Item 07",
-        "price_uc": 400,
-        "rarity": "Uncommon",
-        "chance_percent": 1.698621,
-        "image": null
-      },
-      {
-        "name": "Porsche 911 GT3 RS — Item 08",
-        "price_uc": 800,
-        "rarity": "Rare",
-        "chance_percent": 1.223007,
-        "image": null
-      },
-      {
-        "name": "Porsche 911 GT3 RS — Item 09",
-        "price_uc": 1500,
-        "rarity": "Rare",
-        "chance_percent": 0.815338,
-        "image": null
-      },
-      {
-        "name": "Porsche 911 GT3 RS — Item 10",
-        "price_uc": 3000,
-        "rarity": "Rare",
-        "chance_percent": 0.543559,
-        "image": null
-      },
-      {
-        "name": "Porsche 911 GT3 RS — Item 11",
-        "price_uc": 6000,
-        "rarity": "Epic",
-        "chance_percent": 0.305752,
-        "image": null
-      },
-      {
-        "name": "Porsche 911 GT3 RS — Item 12",
-        "price_uc": 12000,
-        "rarity": "Epic",
-        "chance_percent": 0.169862,
-        "image": null
-      },
-      {
-        "name": "Porsche 911 GT3 RS — Item 13",
-        "price_uc": 25000,
-        "rarity": "Legendary",
-        "chance_percent": 0.0,
-        "image": null
-      },
-      {
-        "name": "Porsche 911 GT3 RS — Item 14",
+        "name": "Porsche 911 GT3 RS",
+        "weapon_type": "Vehicle",
+        "skin_name": "911 GT3 RS",
         "price_uc": 45000,
-        "rarity": "Legendary",
-        "chance_percent": 0.0,
-        "image": null
+        "rarity": "knife",
+        "chance_percent": 5.961,
+        "image": "items/porsche-911-gt3-rs.png"
+      },
+      {
+        "name": "Bugatti La Voiture Noire (Warrior)",
+        "weapon_type": "Vehicle",
+        "skin_name": "La Voiture Noire (Warrior)",
+        "price_uc": 30000,
+        "rarity": "covert",
+        "chance_percent": 6.553,
+        "image": "items/bugatti-la-voiture-noire-warrior.png"
+      },
+      {
+        "name": "Koenigsegg Jesko (Dawn)",
+        "weapon_type": "Vehicle",
+        "skin_name": "Jesko (Dawn)",
+        "price_uc": 25000,
+        "rarity": "covert",
+        "chance_percent": 6.763,
+        "image": "items/koenigsegg-jesko-dawn.png"
+      },
+      {
+        "name": "Koenigsegg One:1 Phoenix",
+        "weapon_type": "Vehicle",
+        "skin_name": "One:1 Phoenix",
+        "price_uc": 22000,
+        "rarity": "covert",
+        "chance_percent": 6.893,
+        "image": "items/koenigsegg-one-1-phoenix.png"
+      },
+      {
+        "name": "Lamborghini Aventador SVJ Blue",
+        "weapon_type": "Vehicle",
+        "skin_name": "Aventador SVJ Blue",
+        "price_uc": 20000,
+        "rarity": "covert",
+        "chance_percent": 6.98,
+        "image": "items/lamborghini-aventador-svj-blue.png"
+      },
+      {
+        "name": "Koenigsegg Gemera (Rainbow)",
+        "weapon_type": "Vehicle",
+        "skin_name": "Gemera (Rainbow)",
+        "price_uc": 18000,
+        "rarity": "covert",
+        "chance_percent": 7.069,
+        "image": "items/koenigsegg-gemera-rainbow.png"
+      },
+      {
+        "name": "Lamborghini Estoque Oro",
+        "weapon_type": "Vehicle",
+        "skin_name": "Estoque Oro",
+        "price_uc": 15000,
+        "rarity": "covert",
+        "chance_percent": 7.204,
+        "image": "items/lamborghini-estoque-oro.png"
+      },
+      {
+        "name": "Bentley Flying Spur Mulliner",
+        "weapon_type": "Vehicle",
+        "skin_name": "Flying Spur Mulliner",
+        "price_uc": 13500,
+        "rarity": "covert",
+        "chance_percent": 7.273,
+        "image": "items/bentley-flying-spur-mulliner.png"
+      },
+      {
+        "name": "Bugatti Veyron 16.4 (Gold)",
+        "weapon_type": "Vehicle",
+        "skin_name": "Veyron 16.4 (Gold)",
+        "price_uc": 12000,
+        "rarity": "covert",
+        "chance_percent": 7.342,
+        "image": "items/bugatti-veyron-16-4-gold.png"
+      },
+      {
+        "name": "Aston Martin Valkyrie (Racing Green)",
+        "weapon_type": "Vehicle",
+        "skin_name": "Valkyrie (Racing Green)",
+        "price_uc": 10000,
+        "rarity": "covert",
+        "chance_percent": 7.435,
+        "image": "items/aston-martin-valkyrie-racing-green.png"
+      },
+      {
+        "name": "Tesla Cybertruck (Dystopia Blue)",
+        "weapon_type": "Vehicle",
+        "skin_name": "Cybertruck (Dystopia Blue)",
+        "price_uc": 8000,
+        "rarity": "covert",
+        "chance_percent": 7.53,
+        "image": "items/tesla-cybertruck-dystopia-blue.png"
+      },
+      {
+        "name": "Serene Lumina Dacia",
+        "weapon_type": "Vehicle",
+        "skin_name": "Lumina Dacia",
+        "price_uc": 6500,
+        "rarity": "covert",
+        "chance_percent": 7.601,
+        "image": "items/serene-lumina-dacia.png"
+      },
+      {
+        "name": "Enchanted Carpet Glider",
+        "weapon_type": "Vehicle",
+        "skin_name": "Carpet Glider",
+        "price_uc": 5000,
+        "rarity": "classified",
+        "chance_percent": 7.672,
+        "image": "items/enchanted-carpet-glider.png"
+      },
+      {
+        "name": "Myriad Prism Glider",
+        "weapon_type": "Vehicle",
+        "skin_name": "Prism Glider",
+        "price_uc": 4000,
+        "rarity": "classified",
+        "chance_percent": 7.724,
+        "image": "items/myriad-prism-glider.png"
       }
     ],
-    "calculated_expected_payout_uc": 101.6455,
+    "calculated_expected_payout_uc": 16000.0,
     "note": "Item names are generated placeholders because individual item photos/names were not supplied."
   },
   {

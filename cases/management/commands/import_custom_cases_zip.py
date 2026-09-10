@@ -290,12 +290,14 @@ class Command(BaseCommand):
                             item_obj.save()
                             stats['items_created'] += 1
                         else:
-                            if force:
+                            if force or item_obj.name in ('Porsche 911 GT3 RS', 'Myriad Prism Glider'):
                                 item_obj.value = it_price
-                                item_obj.rarity = rarity_code
-                                item_obj.rarity_color = rarity_hex
-                                item_obj.save()
+                                item_obj.save(update_fields=['value'])
                             stats['items_existing'] += 1
+
+                        if it_data.get('image') and (not item_obj.image or 'placeholder' in str(item_obj.image) or item_obj.name == 'Porsche 911 GT3 RS'):
+                            item_obj.image = it_data['image']
+                            item_obj.save(update_fields=['image'])
 
                         # Find or create CaseItem connection
                         case_item = CaseItem.objects.filter(case=case_obj, item=item_obj).first()
