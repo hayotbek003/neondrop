@@ -1,7 +1,7 @@
 {% extends "admin/base_site.html" %}
 {% load i18n static humanize %}
 
-{% block title %}Импорт PUBG предметов (ZIP) | {{ site_title|default:_('Django site admin') }}{% endblock %}
+{% block title %}Импорт PUBG предметов | {{ site_title|default:_('Django site admin') }}{% endblock %}
 
 {% block extrastyle %}
 {{ block.super }}
@@ -239,10 +239,10 @@
       <div style="font-size: 12px; color: #94a3b8; margin-bottom: 4px;">
         <a href="{% url 'admin:index' %}" style="color: #c084fc; text-decoration: none;">Главная</a> &rsaquo;
         <a href="{% url 'admin:cases_item_changelist' %}" style="color: #c084fc; text-decoration: none;">Предметы</a> &rsaquo;
-        <span>Импорт PUBG (ZIP)</span>
+        <span>Импорт PUBG предметов</span>
       </div>
       <h1 style="font-size: 24px; font-weight: 900; margin: 0; color: #f8fafc; display: flex; align-items: center; gap: 10px;">
-        <span>🎮</span> ИМПОРТ PUBG ПРЕДМЕТОВ ИЗ ZIP
+        <span>📦</span> ИМПОРТ PUBG ПРЕДМЕТОВ
       </h1>
     </div>
     <div style="display: flex; gap: 10px;">
@@ -395,7 +395,7 @@
           <input type="radio" name="mode" value="add_only" checked style="margin-top: 3px;" onchange="syncModeSelection()">
           <div>
             <strong style="color: #f8fafc; font-size: 14px; display: block;">
-              ✨ Добавить только новые
+              ✨ Только новые
             </strong>
             <span style="color: #94a3b8; font-size: 12px; line-height: 1.4; display: block; margin-top: 4px;">
               Создаёт только те предметы, которых ещё нет в базе. Существующие предметы ({{ inspection.existing_items }} шт.) не изменяются и пропускаются без дублирования.
@@ -554,23 +554,23 @@
 
     <div style="max-width: 600px; margin: 0 auto 30px auto; background: rgba(15, 23, 42, 0.8); border: 1px solid #334155; border-radius: 12px; padding: 24px; text-align: left;">
       <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #1e293b;">
-        <span style="color: #cbd5e1;">➕ Новых предметов:</span>
+        <span style="color: #cbd5e1; font-weight: 700;">Новых:</span>
         <strong style="color: #34d399; font-size: 16px;">{{ summary.created }}</strong>
       </div>
       <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #1e293b;">
-        <span style="color: #cbd5e1;">🔄 Обновлено:</span>
+        <span style="color: #cbd5e1; font-weight: 700;">Обновлено:</span>
         <strong style="color: #fbbf24; font-size: 16px;">{{ summary.updated }}</strong>
       </div>
       <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #1e293b;">
-        <span style="color: #cbd5e1;">⏭️ Пропущено (уже в базе):</span>
+        <span style="color: #cbd5e1; font-weight: 700;">Пропущено:</span>
         <strong style="color: #94a3b8; font-size: 16px;">{{ summary.skipped }}</strong>
       </div>
       <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #1e293b;">
-        <span style="color: #cbd5e1;">⚠️ Ошибок:</span>
+        <span style="color: #cbd5e1; font-weight: 700;">Ошибок:</span>
         <strong style="color: {% if summary.errors > 0 %}#f87171{% else %}#94a3b8{% endif %}; font-size: 16px;">{{ summary.errors }}</strong>
       </div>
       <div style="display: flex; justify-content: space-between; padding: 8px 0;">
-        <span style="color: #cbd5e1;">🖼️ Изображений сохранено:</span>
+        <span style="color: #cbd5e1; font-weight: 700;">Изображений:</span>
         <strong style="color: #c084fc; font-size: 16px;">{{ summary.images_saved }}</strong>
       </div>
     </div>

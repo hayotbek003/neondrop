@@ -174,6 +174,11 @@ def inspect_backup_zip(zip_file_input):
     try:
         namelist = zipf.namelist()
         if 'database.json' not in namelist:
+            if 'items.json' in namelist or any(k.endswith('/items.json') for k in namelist):
+                raise BackupRestoreError(
+                    "Вы загрузили архив с предметами PUBG (items.json + images/), а не резервную копию базы данных NEONDROP. "
+                    "Для импорта этих предметов перейдите в раздел «📦 Импорт PUBG предметов»!"
+                )
             raise BackupRestoreError("Некорректный backup: в архиве отсутствует файл 'database.json'.")
 
         metadata = {}

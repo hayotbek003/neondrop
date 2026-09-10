@@ -332,7 +332,7 @@ class PubgImportAdminViewsTestCase(TestCase):
         url = reverse('admin_pubg_import')
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
-        self.assertIn('ИМПОРТ PUBG ПРЕДМЕТОВ ИЗ ZIP', response.content.decode('utf-8'))
+        self.assertIn('ИМПОРТ PUBG ПРЕДМЕТОВ', response.content.decode('utf-8'))
         self.assertIn('Загрузка архива с предметами', response.content.decode('utf-8'))
 
     def test_admin_pubg_import_preview_and_execute_post(self):
@@ -368,7 +368,7 @@ class PubgImportAdminViewsTestCase(TestCase):
         self.assertEqual(exec_response.status_code, 200)
         exec_content = exec_response.content.decode('utf-8')
         self.assertIn('ИМПОРТ ЗАВЕРШЁН', exec_content)
-        self.assertIn('Новых предметов', exec_content)
+        self.assertIn('Новых:', exec_content)
 
         # Check DB
         self.assertTrue(Item.objects.filter(source_id="pan_neon_99").exists())
@@ -412,3 +412,55 @@ class PubgImportAdminViewsTestCase(TestCase):
         response = self.client.get(reverse('admin_pubg_import'))
         # Should redirect to admin login or return 302/403
         self.assertIn(response.status_code, [302, 403])
+
+    def test_import_with_id_field(self):
+        """Verify items.json entries using 'id' field instead of 'source_id' are handled properly."""
+        items = [{
+            "game": "PUBG",
+            "id": "pubg_item_custom_999",
+            "name": "Pan of Justice",
+            "price": 500.00,
+            "rarity": "Mythic",
+            "quality": "Elite",
+            "type": "melee",
+            "image": "images/justice_pan.webp"
+        }]
+        zip_buf = create_test_zip(items, ["images/justice_pan.webp"])
+
+        with tempfile.NamedTemporaryFile(suffix='.zip', delete=False) as tf:
+            tf.write(zip_buf.getvalue())
+            temp_path = tf.name
+
+        try:
+            importer = PubgZipImporter(temp_path)
+            res = importer.execute_import(mode='add_only')
+            self.assertEqual(res['created'], 1)
+
+            item = Item.objects.filter(source_id="pubg_item_custom_999").first()
+            self.assertIsNotNone(item)
+            self.assertEqual(item.name, "Pan of Justice")
+            self.assertEqual(item.rarity, "mythic")
+        finally:
+            Path(temp_path).unlink(missing_ok=True)
+
+    def test_backup_restore_rejection_of_items_zip(self):
+        """Verify that uploading items_import.zip to backup/restore gives clear guidance to use PUBG importer."""
+        from cases.backup_restore_service import inspect_backup_zip, BackupRestoreError
+        items = [{
+            "game": "PUBG",
+            "name": "Test Item",
+            "price": 10.0,
+            "image": "images/test.webp"
+        }]
+        zip_buf = create_test_zip(items, ["images/test.webp"])
+
+        with tempfile.NamedTemporaryFile(suffix='.zip', delete=False) as tf:
+            tf.write(zip_buf.getvalue())
+            temp_path = tf.name
+
+        try:
+            with self.assertRaises(BackupRestoreError) as cm:
+                inspect_backup_zip(temp_path)
+            self.assertIn("Импорт PUBG предметов", str(cm.exception))
+        finally:
+            Path(temp_path).unlink(missing_ok=True)

@@ -54,7 +54,7 @@ def map_pubg_rarity(rarity_raw: Optional[str]) -> Tuple[str, str]:
     # Exact matches or keywords
     if any(k in r for k in ['knife', 'нож', 'gold', 'золот']):
         return ('knife', '#FFD700')
-    if any(k in r for k in ['mythic', 'мифич', 'ultimate']):
+    if any(k in r for k in ['mythic', 'мифич', 'ultimate', 'jackpot', 'джекпот']):
         return ('mythic', '#FFD700')
     if any(k in r for k in ['legendary', 'легендар', 'red', 'красн']):
         return ('legendary', '#EB4B4B')
@@ -129,9 +129,9 @@ class PubgZipImporter:
         if 'items.json' in norm_map:
             return norm_map['items.json'], ''
 
-        # Check subdirectories
-        candidates = [k for k in norm_map.keys() if k.endswith('/items.json')]
-        if len(candidates) == 1:
+        # Check subdirectories, ignoring hidden/macOS metadata
+        candidates = [k for k in norm_map.keys() if k.endswith('/items.json') and not k.lower().startswith('__macosx')]
+        if candidates:
             candidate = candidates[0]
             prefix = candidate[:-len('items.json')]
             return norm_map[candidate], prefix
@@ -243,10 +243,14 @@ class PubgZipImporter:
                 if not img_path:
                     item_errors.append("Поле 'image' обязательно (путь к изображению в архиве).")
                 else:
-                    # Check direct or prefix-relative
+                    # Check direct, prefix-relative, and images/ subfolder variations
                     candidate1 = img_path
                     candidate2 = f"{prefix}{img_path}" if prefix else img_path
-                    if candidate1 not in norm_map and candidate2 not in norm_map:
+                    alt_path = f"images/{img_path}" if not img_path.startswith('images/') else img_path[7:]
+                    candidate3 = alt_path
+                    candidate4 = f"{prefix}{alt_path}" if prefix else alt_path
+                    if (candidate1 not in norm_map and candidate2 not in norm_map and
+                        candidate3 not in norm_map and candidate4 not in norm_map):
                         item_errors.append(f"Изображение '{img_path}' не найдено внутри ZIP-архива.")
 
                 # If there are structural errors for this item
@@ -275,7 +279,7 @@ class PubgZipImporter:
                 existing_item, match_type = self.find_existing_item(item)
 
                 # Also detect duplicates within the current ZIP batch
-                source_id = str(item.get('source_id') or '').strip()
+                source_id = str(item.get('source_id') or item.get('id') or '').strip()
                 source_url_norm = normalize_url(item.get('source_url'))
                 name_key = (name.lower(), game.lower())
 
@@ -315,6 +319,7 @@ class PubgZipImporter:
                     'image': img_path,
                     'source_id': source_id,
                     'source_url': item.get('source_url', ''),
+                    'source_image_url': item.get('source_image_url', ''),
                     'status': status,
                     'existing_id': existing_item.id if existing_item else None,
                     'matched_by': match_type if existing_item else ('batch_duplicate' if is_batch_duplicate else None),
@@ -342,8 +347,8 @@ class PubgZipImporter:
         2. normalized source_url
         3. fallback by name + game (safe case-insensitive match)
         """
-        # 1. By source_id
-        source_id = str(item_data.get('source_id') or '').strip()
+        # 1. By source_id (check both source_id and id from items.json)
+        source_id = str(item_data.get('source_id') or item_data.get('id') or '').strip()
         if source_id:
             existing = Item.objects.filter(source_id=source_id).first()
             if existing:
@@ -416,7 +421,13 @@ class PubgZipImporter:
             # Helper to read image bytes from zip
             def get_image_bytes_and_ext(img_path: str) -> Tuple[bytes, str]:
                 clean_path = img_path.replace('\\', '/').lstrip('/')
-                actual_zip_name = norm_map.get(clean_path) or norm_map.get(f"{prefix}{clean_path}")
+                alt_path = f"images/{clean_path}" if not clean_path.startswith('images/') else clean_path[7:]
+                actual_zip_name = (
+                    norm_map.get(clean_path)
+                    or norm_map.get(f"{prefix}{clean_path}")
+                    or norm_map.get(alt_path)
+                    or norm_map.get(f"{prefix}{alt_path}")
+                )
                 if not actual_zip_name:
                     raise FileNotFoundError(f"Изображение '{img_path}' отсутствует в архиве.")
                 ext = Path(actual_zip_name).suffix or '.webp'
@@ -495,15 +506,20 @@ class PubgZipImporter:
                             weapon_type, skin_name = parse_weapon_and_skin(item_name, p_item.get('type', ''))
                             rarity_code, rarity_hex = map_pubg_rarity(p_item.get('rarity'))
 
+                            existing_item.name = item_name
+                            existing_item.weapon_type = weapon_type
+                            existing_item.skin_name = skin_name
                             existing_item.value = Decimal(str(p_item['price']))
                             existing_item.rarity = rarity_code
                             existing_item.rarity_color = rarity_hex
-                            existing_item.quality = p_item.get('quality', '') or existing_item.quality
-                            existing_item.item_type = p_item.get('type', 'skin') or existing_item.item_type
+                            existing_item.quality = p_item.get('quality', '') or ""
+                            existing_item.item_type = p_item.get('type', 'skin') or "skin"
                             if source_id:
                                 existing_item.source_id = source_id
                             if source_url_norm:
                                 existing_item.source_url = source_url_norm
+                            if p_item.get('source_image_url'):
+                                existing_item.source_image_url = p_item['source_image_url']
 
                             # Update image if provided and exists
                             try:

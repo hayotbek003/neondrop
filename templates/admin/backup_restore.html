@@ -1,4 +1,4 @@
-﻿{% extends "admin/base_site.html" %}
+{% extends "admin/base_site.html" %}
 {% load i18n static %}
 
 {% block extrastyle %}
@@ -236,6 +236,22 @@
             Выберите ранее сохранённый <code>.zip</code> архив. Перед применением система распакует его во временную директорию, 
             проверит целостность и покажет предпросмотр количества объектов.
         </p>
+
+        <!-- PUBG Item ZIP Notice Banner -->
+        <div style="background: rgba(245, 158, 11, 0.1); border: 1px solid #f59e0b; border-radius: 10px; padding: 14px 18px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <span style="font-size: 24px;">📦</span>
+                <div>
+                    <strong style="color: #fbbf24; font-size: 14px;">Импортируете PUBG-предметы из ZIP (items.json + images/)?</strong>
+                    <div style="color: #cbd5e1; font-size: 12px; margin-top: 2px;">
+                        Этот раздел служит ТОЛЬКО для полного бэкапа базы данных. Для импорта предметов из внешней программы перейдите в отдельный раздел:
+                    </div>
+                </div>
+            </div>
+            <a href="{% url 'admin_pubg_import' %}" style="background: linear-gradient(135deg, #d97706, #f59e0b); color: #000000 !important; font-weight: 800; font-size: 13px; text-decoration: none; padding: 9px 18px; border-radius: 6px; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 2px 10px rgba(245, 158, 11, 0.35);">
+                <span>📦</span> Импорт PUBG предметов
+            </a>
+        </div>
 
         {% if not preview %}
         <!-- STEP 1: Upload Form -->

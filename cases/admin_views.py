@@ -877,7 +877,8 @@ def admin_pubg_import_view(request):
             messages.error(request, "Пожалуйста, выберите .zip файл для импорта.")
             return render(request, 'admin/pubg_import.html', context)
 
-        if not uploaded_file.name.lower().endswith('.zip'):
+        fname = uploaded_file.name.lower()
+        if not (fname.endswith('.zip') or '.zip' in fname):
             messages.error(request, "Неверный формат файла. Разрешены только архивы .zip.")
             return render(request, 'admin/pubg_import.html', context)
 
