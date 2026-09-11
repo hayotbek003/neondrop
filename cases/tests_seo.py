@@ -81,6 +81,20 @@ class SEOTestCase(TestCase):
         fake_response = self.client.get('/googleFakeCanary12345.html')
         self.assertEqual(fake_response.status_code, 404)
 
+    def test_yandex_site_verification_file(self):
+        """Verify yandex_b0735899c24f45c0.html responds with 200 and exact verification content."""
+        response = self.client.get('/yandex_b0735899c24f45c0.html')
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue('text/html' in response['Content-Type'])
+        content = response.content.decode('utf-8')
+        self.assertIn('Verification: b0735899c24f45c0', content)
+        self.assertIn('<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">', content)
+
+        # Security check: Non-existent verification files MUST return 404
+        fake_response = self.client.get('/yandex_fake_canary12345.html')
+        self.assertEqual(fake_response.status_code, 404)
+
+
     def test_homepage_seo(self):
         """Verify homepage has unique title, description, canonical, open graph, and valid Schema.org."""
         response = self.client.get('/')

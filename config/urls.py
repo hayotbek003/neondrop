@@ -10,7 +10,13 @@ import cases.admin_views as admin_views
 import cases.blogger_views as blogger_views
 import users.admin_views as user_admin_views
 from cases.sitemaps import StaticViewSitemap, CaseSitemap
-from cases.seo_views import robots_txt_view, google_verification_file_view, favicon_ico_view, webmanifest_view
+from cases.seo_views import (
+    robots_txt_view,
+    google_verification_file_view,
+    yandex_verification_file_view,
+    favicon_ico_view,
+    webmanifest_view,
+)
 
 sitemaps = {
     'static': StaticViewSitemap,
@@ -69,6 +75,7 @@ urlpatterns = [
     path('favicon.ico', favicon_ico_view, name='favicon_ico'),
     path('site.webmanifest', webmanifest_view, name='webmanifest'),
     path('googlea35031ec8cebfe94.html', google_verification_file_view, name='google_verification_file'),
+    path('yandex_b0735899c24f45c0.html', yandex_verification_file_view, name='yandex_verification_file'),
 
     path('admin/', admin.site.urls),
     path('', include('cases.urls', namespace='cases')),

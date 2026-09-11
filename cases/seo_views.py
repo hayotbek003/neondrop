@@ -29,6 +29,8 @@ def robots_txt_view(request):
         "Allow: /media/",
         "Allow: /favicon.ico",
         "Allow: /site.webmanifest",
+        "Allow: /googlea35031ec8cebfe94.html",
+        "Allow: /yandex_b0735899c24f45c0.html",
         "",
         "# Disallow private user accounts, financial transactions, games, and internal APIs",
         "Disallow: /admin/",
@@ -90,6 +92,20 @@ def google_verification_file_view(request):
     else:
         content = "google-site-verification: googlea35031ec8cebfe94.html"
     return HttpResponse(content, content_type="text/html; charset=utf-8")
+
+
+def yandex_verification_file_view(request):
+    """
+    Handles Yandex Webmaster HTML verification file request for /yandex_b0735899c24f45c0.html.
+    Strictly returns HTTP 200 with the exact authorized HTML verification content.
+    """
+    file_path = settings.BASE_DIR / 'yandex_b0735899c24f45c0.html'
+    if file_path.is_file():
+        content = file_path.read_text(encoding='utf-8').strip()
+    else:
+        content = "<html>\n    <head>\n        <meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\">\n    </head>\n    <body>Verification: b0735899c24f45c0</body>\n</html>"
+    return HttpResponse(content, content_type="text/html; charset=utf-8")
+
 
 
 
