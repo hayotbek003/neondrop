@@ -83,13 +83,23 @@ class SEOTestCase(TestCase):
 
     def test_yandex_site_verification_file(self):
         """Verify yandex verification HTML files respond with 200 and exact verification content."""
-        # Current active token: f632a746318b12ac
+        # Current active token: f632a746318b12ac (GET without slash)
         response = self.client.get('/yandex_f632a746318b12ac.html')
         self.assertEqual(response.status_code, 200)
         self.assertTrue('text/html' in response['Content-Type'])
         content = response.content.decode('utf-8')
         self.assertIn('Verification: f632a746318b12ac', content)
         self.assertIn('<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">', content)
+
+        # GET with trailing slash
+        response_slash = self.client.get('/yandex_f632a746318b12ac.html/')
+        self.assertEqual(response_slash.status_code, 200)
+        self.assertIn('Verification: f632a746318b12ac', response_slash.content.decode('utf-8'))
+
+        # HEAD request
+        response_head = self.client.head('/yandex_f632a746318b12ac.html')
+        self.assertEqual(response_head.status_code, 200)
+        self.assertTrue('text/html' in response_head['Content-Type'])
 
         # Legacy token: b0735899c24f45c0
         response_old = self.client.get('/yandex_b0735899c24f45c0.html')
@@ -100,6 +110,7 @@ class SEOTestCase(TestCase):
         # Security check: Non-existent verification files MUST return 404
         fake_response = self.client.get('/yandex_fake_canary12345.html')
         self.assertEqual(fake_response.status_code, 404)
+
 
 
     def test_homepage_seo(self):

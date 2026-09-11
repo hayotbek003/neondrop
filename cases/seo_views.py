@@ -1,6 +1,8 @@
 import os
 from django.http import HttpResponse, FileResponse
 from django.conf import settings
+from django.views.decorators.csrf import csrf_exempt
+
 
 
 def robots_txt_view(request):
@@ -30,6 +32,20 @@ def robots_txt_view(request):
         "Allow: /favicon.ico",
         "Allow: /site.webmanifest",
         "Allow: /googlea35031ec8cebfe94.html",
+        "Allow: /yandex_*.html",
+        "Allow: /yandex_f632a746318b12ac.html",
+        "Allow: /yandex_b0735899c24f45c0.html",
+        "",
+        "# Explicit permissions for Yandex search engine crawlers",
+        "User-agent: Yandex",
+        "Allow: /",
+        "Allow: /yandex_*.html",
+        "Allow: /yandex_f632a746318b12ac.html",
+        "Allow: /yandex_b0735899c24f45c0.html",
+        "",
+        "User-agent: YandexBot",
+        "Allow: /",
+        "Allow: /yandex_*.html",
         "Allow: /yandex_f632a746318b12ac.html",
         "Allow: /yandex_b0735899c24f45c0.html",
         "",
@@ -95,17 +111,29 @@ def google_verification_file_view(request):
     return HttpResponse(content, content_type="text/html; charset=utf-8")
 
 
+@csrf_exempt
 def yandex_verification_file_view(request, token='f632a746318b12ac'):
     """
     Handles Yandex Webmaster HTML verification file requests.
     Strictly returns HTTP 200 with the exact authorized HTML verification content.
+    - Exempt from CSRF
+    - Content-Type: text/html; charset=utf-8
+    - Explicit Content-Length set
+    - Cache-Control: no-cache, no-store, must-revalidate
     """
-    file_path = settings.BASE_DIR / f'yandex_{token}.html'
-    if file_path.is_file():
-        content = file_path.read_text(encoding='utf-8').strip()
-    else:
-        content = f"<html>\n    <head>\n        <meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\">\n    </head>\n    <body>Verification: {token}</body>\n</html>"
-    return HttpResponse(content, content_type="text/html; charset=utf-8")
+    content = (
+        "<html>\n"
+        "    <head>\n"
+        "        <meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\">\n"
+        "    </head>\n"
+        f"    <body>Verification: {token}</body>\n"
+        "</html>\n"
+    )
+    response = HttpResponse(content, content_type="text/html; charset=utf-8")
+    response['Content-Length'] = str(len(content.encode('utf-8')))
+    response['Cache-Control'] = 'no-cache, no-store, must-revalidate'
+    return response
+
 
 
 

@@ -312,6 +312,12 @@ SECURE_CONTENT_TYPE_NOSNIFF = True
 X_FRAME_OPTIONS = 'DENY'
 
 SECURE_SSL_REDIRECT = not DEBUG and os.environ.get('SECURE_SSL_REDIRECT', 'True').lower() in ('true', '1')
+SECURE_REDIRECT_EXEMPT = [
+    r'^yandex_.*\.html/?$',
+    r'^google.*\.html/?$',
+    r'^robots\.txt$',
+]
+
 
 if not DEBUG:
     SECURE_HSTS_SECONDS = int(os.environ.get('SECURE_HSTS_SECONDS', '31536000'))
