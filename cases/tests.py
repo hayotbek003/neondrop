@@ -395,6 +395,25 @@ class NeonDropComprehensiveTests(TestCase):
         self.assertFalse(data['success'])
         self.assertIn('уже активировали', data['error'])
 
+    def test_promocode_clean_handles_none_values_safely(self):
+        """PromoCode.clean() handles None bonus_value, code, and percentages safely without raising TypeError."""
+        from django.core.exceptions import ValidationError
+        empty_promo = PromoCode(code=None, bonus_value=None, blogger_percentage=None)
+        try:
+            empty_promo.clean()
+        except TypeError as e:
+            self.fail(f"PromoCode.clean() raised TypeError: {e}")
+        except ValidationError:
+            pass
+
+        partial_promo = PromoCode(code='TESTPARTIAL', bonus_type='coins', bonus_value=None)
+        try:
+            partial_promo.clean()
+        except TypeError as e:
+            self.fail(f"PromoCode.clean() raised TypeError on partial form: {e}")
+        except ValidationError:
+            pass
+
     def test_promocode_expired_or_inactive_or_limit_reached(self):
         """Expired, inactive, or max-uses exceeded promo codes are rejected."""
         self.client.login(username='SecurityUser', password='StrongPassword123!')

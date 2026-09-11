@@ -262,7 +262,7 @@ class PersonalCaseChance(models.Model):
 
     def clean(self):
         from django.core.exceptions import ValidationError
-        if self.chance < Decimal('0.01') or self.chance > Decimal('100.00'):
+        if self.chance is not None and (self.chance < Decimal('0.01') or self.chance > Decimal('100.00')):
             raise ValidationError({'chance': "Шанс должен быть в диапазоне от 0.01% до 100.00%."})
         if self.expires_at and self.starts_at and self.expires_at <= self.starts_at:
             raise ValidationError({'expires_at': "Дата окончания должна быть позже даты начала."})
@@ -369,20 +369,25 @@ class PromoCode(models.Model):
         ordering = ['-created_at']
 
     def __str__(self):
-        blogger_str = f" [{self.blogger_percentage}%]" if self.blogger_percentage > 0 else ""
-        return f"{self.code}{blogger_str} ({self.get_bonus_type_display()}: {self.bonus_value})"
+        blogger_str = f" [{self.blogger_percentage}%]" if self.blogger_percentage and self.blogger_percentage > 0 else ""
+        return f"{self.code or '---'}{blogger_str} ({self.get_bonus_type_display()}: {self.bonus_value})"
 
     def clean(self):
         from django.core.exceptions import ValidationError
-        self.code = self.code.strip().upper()
-        if self.bonus_value <= Decimal('0.00'):
+        if self.code:
+            self.code = self.code.strip().upper()
+        if self.bonus_value is not None and self.bonus_value <= Decimal('0.00'):
             raise ValidationError({'bonus_value': "Значение бонуса должно быть больше 0."})
-        if self.blogger_percentage < Decimal('0.00') or self.blogger_percentage > Decimal('100.00'):
+        if self.blogger_percentage is not None and (self.blogger_percentage < Decimal('0.00') or self.blogger_percentage > Decimal('100.00')):
             raise ValidationError({'blogger_percentage': "Процент блогера должен быть от 0.00% до 100.00%."})
-        if self.bonus_type == 'free_case_opens' and not self.case:
+        if getattr(self, 'bonus_type', None) == 'free_case_opens' and not self.case:
             raise ValidationError({'case': "Для типа 'Бесплатные открытия' необходимо выбрать кейс."})
         if self.expires_at and self.starts_at and self.expires_at <= self.starts_at:
             raise ValidationError({'expires_at': "Дата окончания должна быть позже даты начала."})
+        if self.min_deposit is not None and self.min_deposit < Decimal('0.00'):
+            raise ValidationError({'min_deposit': "Минимальный депозит не может быть отрицательным."})
+        if self.max_bonus is not None and self.max_bonus <= Decimal('0.00'):
+            raise ValidationError({'max_bonus': "Максимальная сумма бонуса должна быть больше 0."})
 
     def save(self, *args, **kwargs):
         if self.code:
