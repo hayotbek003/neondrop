@@ -1,5 +1,6 @@
 import hashlib
 import hmac
+import math
 import secrets
 from typing import List, Tuple, Any, Dict, Optional
 from decimal import Decimal
@@ -29,12 +30,66 @@ def calculate_provably_fair_roll(server_seed: str, client_seed: str, nonce: int)
     # Divide by 2^32 (4294967296) to get float in [0, 1)
     return val / 4294967296.0
 
-def get_effective_case_chances(case: Any, user: Optional[Any] = None) -> List[Dict[str, Any]]:
+def calculate_rtp_adjusted_weights(case_items: List[Any], case_price: Any, target_rtp: float = 0.95) -> List[float]:
     """
-    Calculate normalized item probabilities for a case, factoring in active PersonalCaseChance
-    for the given user if present. Guarantees the sum of probabilities is strictly 1.0 (100%).
+    Computes dynamically adjusted drop probabilities for case_items such that:
+    1. Expected payout sum(p_i * v_i) / case_price == target_rtp (e.g. 95%).
+    2. Sum of all probabilities strictly == 1.0.
+    3. Preserves smoothness and base relative proportions of items.
+    4. Base CaseItem.weight in the database is NEVER changed.
     """
-    from .models import PersonalCaseChance
+    price = float(case_price)
+    if price <= 0 or not case_items:
+        n = len(case_items)
+        return [1.0 / n] * n if n > 0 else []
+
+    target_ev = price * float(target_rtp)
+    items_data = [(ci, float(ci.weight), float(ci.item.value)) for ci in case_items]
+    values = [d[2] for d in items_data]
+    base_w = [d[1] for d in items_data]
+    n = len(values)
+
+    min_v = min(values)
+    max_v = max(values)
+    target_ev = max(min_v, min(max_v, target_ev))
+
+    def get_ev(lam):
+        ws = []
+        for w, v in zip(base_w, values):
+            exponent = max(-50.0, min(50.0, lam * (v / price)))
+            ws.append(w * math.exp(exponent))
+        sum_w = sum(ws)
+        if sum_w <= 0:
+            return target_ev, [1.0 / n] * n
+        probs = [w / sum_w for w in ws]
+        ev = sum(p * v for p, v in zip(probs, values))
+        return ev, probs
+
+    low_lam, high_lam = -40.0, 40.0
+    best_probs = [1.0 / n] * n
+    for _ in range(70):
+        mid_lam = (low_lam + high_lam) / 2.0
+        ev, probs = get_ev(mid_lam)
+        best_probs = probs
+        if abs(ev - target_ev) < 1e-5:
+            break
+        if ev < target_ev:
+            low_lam = mid_lam
+        else:
+            high_lam = mid_lam
+
+    return best_probs
+
+def get_effective_case_chances(case: Any, user: Optional[Any] = None, for_display: bool = False) -> List[Dict[str, Any]]:
+    """
+    Calculate normalized item probabilities for a case:
+    1. If user has active PersonalCaseChance (per-item promo), applies boosted chance to that item.
+    2. If user has active PersonalRtpBonus (and not for_display), dynamically adjusts probabilities to target RTP (e.g. 95%).
+    3. In UI display (for_display=True), user sees standard base probabilities without any giveaway indicators.
+    4. Sum of probabilities strictly equals 1.0 (100%).
+    5. Base CaseItem.weight in the database is NEVER altered.
+    """
+    from .models import PersonalCaseChance, PersonalRtpBonus
     
     case_items = list(case.case_items.select_related('item').all())
     if not case_items:
@@ -46,6 +101,8 @@ def get_effective_case_chances(case: Any, user: Optional[Any] = None) -> List[Di
 
     # 1. Check for active Personal Case Chance for this user & case
     active_promo = None
+    active_rtp_bonus = None
+
     if user and user.is_authenticated:
         now = timezone.now()
         active_promo = PersonalCaseChance.objects.filter(
@@ -55,6 +112,15 @@ def get_effective_case_chances(case: Any, user: Optional[Any] = None) -> List[Di
             starts_at__lte=now,
             expires_at__gte=now
         ).select_related('item').first()
+
+        # Check for user-wide RTP bonus if not in UI display-only mode and no per-item promo
+        if not active_promo and not for_display:
+            active_rtp_bonus = PersonalRtpBonus.objects.filter(
+                user=user,
+                is_active=True,
+                start_date__lte=now,
+                end_date__gte=now
+            ).first()
 
     results = []
 
@@ -85,6 +151,17 @@ def get_effective_case_chances(case: Any, user: Optional[Any] = None) -> List[Di
                 'chance_percent': round(prob * 100.0, 2),
                 'is_promoted': is_promoted,
             })
+    elif active_rtp_bonus and float(case.price) > 0:
+        target_rtp_val = float(active_rtp_bonus.target_rtp) / 100.0
+        adjusted_probs = calculate_rtp_adjusted_weights(case_items, case.price, target_rtp=target_rtp_val)
+        for ci, prob in zip(case_items, adjusted_probs):
+            results.append({
+                'case_item': ci,
+                'item': ci.item,
+                'probability': prob,
+                'chance_percent': round(prob * 100.0, 3),
+                'is_promoted': False,  # Stealth: no badge shown
+            })
     else:
         for ci in case_items:
             prob = ci.weight / total_base_weight
@@ -113,7 +190,7 @@ def select_weighted_item(case_items: List[Any], server_seed: str, client_seed: s
         case = case_items[0].case
 
     if case:
-        entries = get_effective_case_chances(case, user)
+        entries = get_effective_case_chances(case, user, for_display=False)
         if entries:
             cumulative = 0.0
             for entry in entries:

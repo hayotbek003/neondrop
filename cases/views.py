@@ -144,8 +144,8 @@ def cases_list_view(request):
 def case_detail_view(request, slug):
     case = get_object_or_404(Case.objects.prefetch_related('case_items__item'), slug=slug, active=True)
     
-    # Calculate effective item chances factoring in active personal promotion for logged-in user
-    items_with_chances = get_effective_case_chances(case, request.user if request.user.is_authenticated else None)
+    # Calculate effective item chances factoring in active personal promotion for logged-in user (stealth for display)
+    items_with_chances = get_effective_case_chances(case, request.user if request.user.is_authenticated else None, for_display=True)
     
     active_personal_promo = None
     free_openings_count = 0

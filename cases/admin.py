@@ -5,7 +5,7 @@ from django.utils import timezone
 from users.models import has_admin_perm
 from .models import (
     Category, Item, Case, CaseItem, Opening,
-    PersonalCaseChance, PromoCode, PromoCodeUse, UserFreeOpening,
+    PersonalCaseChance, PersonalRtpBonus, PromoCode, PromoCodeUse, UserFreeOpening,
     BloggerPayout
 )
 
@@ -294,6 +294,55 @@ class PersonalCaseChanceAdmin(admin.ModelAdmin):
         if obj.starts_at > now:
             return format_html('<span style="color: #eab308; font-weight: bold;">⏳ Ожидает начала</span>')
         return format_html('<span style="color: #22c55e; font-weight: bold;">✓ Активен</span>')
+
+@admin.register(PersonalRtpBonus)
+class PersonalRtpBonusAdmin(admin.ModelAdmin):
+    list_display = (
+        'id', 'user', 'rtp_display', 'status_badge', 'start_date', 'end_date', 'is_active', 'created_at'
+    )
+    list_filter = ('is_active', 'start_date', 'end_date')
+    search_fields = ('user__username', 'user__email', 'notes')
+    autocomplete_fields = ('user',)
+    ordering = ('-created_at',)
+    readonly_fields = ('created_at', 'updated_at')
+    actions = ['activate_selected', 'deactivate_selected']
+
+    def has_view_permission(self, request, obj=None):
+        return has_admin_perm(request.user, 'can_edit_case_chances') or has_admin_perm(request.user, 'can_view_cases')
+
+    def has_change_permission(self, request, obj=None):
+        return has_admin_perm(request.user, 'can_edit_case_chances')
+
+    def has_add_permission(self, request):
+        return has_admin_perm(request.user, 'can_edit_case_chances')
+
+    def has_delete_permission(self, request, obj=None):
+        return has_admin_perm(request.user, 'can_edit_case_chances')
+
+    @admin.display(description="RTP (%)")
+    def rtp_display(self, obj):
+        return format_html('<strong style="color: #22c55e; font-size: 13px;">{}%</strong>', obj.target_rtp)
+
+    @admin.display(description="Статус")
+    def status_badge(self, obj):
+        now = timezone.now()
+        if not obj.is_active:
+            return format_html('<span style="color: #94a3b8; font-weight: bold;">✕ Выключен</span>')
+        if obj.end_date < now:
+            return format_html('<span style="color: #ef4444; font-weight: bold;">✕ Истёк</span>')
+        if obj.start_date > now:
+            return format_html('<span style="color: #eab308; font-weight: bold;">⏳ Ожидает начала</span>')
+        return format_html('<span style="color: #22c55e; font-weight: bold;">✓ Активен</span>')
+
+    @admin.action(description="Активировать выбранные бонусы")
+    def activate_selected(self, request, queryset):
+        count = queryset.update(is_active=True)
+        self.message_user(request, f"Успешно активировано бонусов: {count}.")
+
+    @admin.action(description="Деактивировать выбранные бонусы")
+    def deactivate_selected(self, request, queryset):
+        count = queryset.update(is_active=False)
+        self.message_user(request, f"Успешно деактивировано бонусов: {count}.")
 
 @admin.register(PromoCode)
 class PromoCodeAdmin(admin.ModelAdmin):

@@ -11,7 +11,7 @@ from django.conf import settings
 from users.models import Profile
 from cases.models import (
     Category, Item, Case, CaseItem, Opening,
-    PersonalCaseChance, PromoCode, PromoCodeUse, UserFreeOpening
+    PersonalCaseChance, PersonalRtpBonus, PromoCode, PromoCodeUse, UserFreeOpening
 )
 from inventory.models import InventoryItem
 from payments.models import Transaction
@@ -52,6 +52,7 @@ class Command(BaseCommand):
 
         openings_count = Opening.objects.count()
         personal_chances_count = PersonalCaseChance.objects.count()
+        personal_rtp_bonuses_count = PersonalRtpBonus.objects.count()
         promocodes_count = PromoCode.objects.count()
         promocode_uses_count = PromoCodeUse.objects.count()
         free_openings_count = UserFreeOpening.objects.count()
@@ -60,6 +61,7 @@ class Command(BaseCommand):
         tx_deposits = Transaction.objects.filter(transaction_type='deposit', status='completed').aggregate(s=Sum('amount'))['s'] or Decimal('0.00')
         tx_case_opens = Transaction.objects.filter(transaction_type='case_open', status='completed').aggregate(s=Sum('amount'))['s'] or Decimal('0.00')
         tx_item_sells = Transaction.objects.filter(transaction_type='item_sell', status='completed').aggregate(s=Sum('amount'))['s'] or Decimal('0.00')
+        tx_withdrawals = Transaction.objects.filter(transaction_type='withdrawal', status='completed').aggregate(s=Sum('amount'))['s'] or Decimal('0.00')
 
         upgrades_count = UpgradeAttempt.objects.count()
         contracts_count = Contract.objects.count()
@@ -77,6 +79,7 @@ class Command(BaseCommand):
             'cases.CaseItem': case_items_count,
             'cases.Opening': openings_count,
             'cases.PersonalCaseChance': personal_chances_count,
+            'cases.PersonalRtpBonus': personal_rtp_bonuses_count,
             'cases.PromoCode': promocodes_count,
             'cases.PromoCodeUse': promocode_uses_count,
             'cases.UserFreeOpening': free_openings_count,

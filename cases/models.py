@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
 from django.utils.text import slugify
+from django.utils import timezone
 from datetime import timedelta
 from decimal import Decimal
 
@@ -282,6 +283,62 @@ class PersonalCaseChance(models.Model):
         if not matching:
             return 0.0
         return round((matching.weight / total_weight) * 100.0, 2)
+
+
+class PersonalRtpBonus(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='rtp_bonuses', verbose_name="Пользователь")
+    target_rtp = models.DecimalField(max_digits=5, decimal_places=2, default=Decimal('95.00'), verbose_name="RTP (%)", help_text="Целевой процент возврата игроку (например 95.00 = 95%)")
+    start_date = models.DateTimeField(default=timezone.now, verbose_name="Дата начала")
+    end_date = models.DateTimeField(verbose_name="Дата окончания")
+    is_active = models.BooleanField(default=True, verbose_name="Активен")
+    notes = models.CharField(max_length=255, blank=True, verbose_name="Примечание", help_text="Внутренний комментарий администратора")
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Создано")
+    updated_at = models.DateTimeField(auto_now=True, verbose_name="Обновлено")
+
+    class Meta:
+        verbose_name = "Персональный бонус RTP"
+        verbose_name_plural = "Персональные бонусы RTP"
+        ordering = ['-created_at']
+
+    def __str__(self):
+        status = "Активен" if self.is_valid_now else "Неактивен"
+        return f"{self.user.username} -> RTP {self.target_rtp}% ({status})"
+
+    def clean(self):
+        from django.core.exceptions import ValidationError
+        if self.target_rtp is None or self.target_rtp <= Decimal('0.00') or self.target_rtp > Decimal('200.00'):
+            raise ValidationError({'target_rtp': "RTP должен быть в диапазоне от 0.01% до 200.00%."})
+        if self.end_date and self.start_date and self.end_date <= self.start_date:
+            raise ValidationError({'end_date': "Дата окончания должна быть позже даты начала."})
+
+    @property
+    def rtp(self):
+        return self.target_rtp
+
+    @property
+    def starts_at(self):
+        return self.start_date
+
+    @starts_at.setter
+    def starts_at(self, val):
+        self.start_date = val
+
+    @property
+    def expires_at(self):
+        return self.end_date
+
+    @expires_at.setter
+    def expires_at(self, val):
+        self.end_date = val
+
+    @property
+    def is_valid_now(self):
+        now = timezone.now()
+        return self.is_active and (self.start_date <= now <= self.end_date)
+
+
+UserPersonalRtpBonus = PersonalRtpBonus
+
 
 class PromoCode(models.Model):
     BONUS_TYPE_CHOICES = [

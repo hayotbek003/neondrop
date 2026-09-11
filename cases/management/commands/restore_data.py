@@ -12,7 +12,7 @@ from django.contrib.sessions.models import Session
 from users.models import Profile, GoogleAccount
 from cases.models import (
     Category, Item, Case, CaseItem, Opening,
-    PersonalCaseChance, PromoCode, PromoCodeUse, UserFreeOpening,
+    PersonalCaseChance, PersonalRtpBonus, PromoCode, PromoCodeUse, UserFreeOpening,
     BloggerPayout
 )
 from inventory.models import InventoryItem
@@ -36,6 +36,7 @@ MODELS_CLEAN_REVERSE_ORDER = [
     CurrencySetting,
     BloggerPayout,
     PromoCode,
+    PersonalRtpBonus,
     PersonalCaseChance,
     Opening,
     CaseItem,

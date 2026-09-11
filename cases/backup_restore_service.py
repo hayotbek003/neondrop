@@ -19,7 +19,7 @@ from users.models import Profile, GoogleAccount
 from payments.models import Transaction, CurrencySetting
 from cases.models import (
     Category, Item, Case, CaseItem, Opening,
-    PersonalCaseChance, PromoCode, PromoCodeUse, UserFreeOpening,
+    PersonalCaseChance, PersonalRtpBonus, PromoCode, PromoCodeUse, UserFreeOpening,
     BloggerPayout
 )
 from inventory.models import InventoryItem
@@ -43,6 +43,7 @@ MODELS_EXPORT_ORDER = [
     ('cases.CaseItem', CaseItem),
     ('cases.Opening', Opening),
     ('cases.PersonalCaseChance', PersonalCaseChance),
+    ('cases.PersonalRtpBonus', PersonalRtpBonus),
     ('cases.PromoCode', PromoCode),
     ('cases.BloggerPayout', BloggerPayout),
     ('payments.Transaction', Transaction),
