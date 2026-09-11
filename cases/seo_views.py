@@ -30,6 +30,7 @@ def robots_txt_view(request):
         "Allow: /favicon.ico",
         "Allow: /site.webmanifest",
         "Allow: /googlea35031ec8cebfe94.html",
+        "Allow: /yandex_f632a746318b12ac.html",
         "Allow: /yandex_b0735899c24f45c0.html",
         "",
         "# Disallow private user accounts, financial transactions, games, and internal APIs",
@@ -94,17 +95,18 @@ def google_verification_file_view(request):
     return HttpResponse(content, content_type="text/html; charset=utf-8")
 
 
-def yandex_verification_file_view(request):
+def yandex_verification_file_view(request, token='f632a746318b12ac'):
     """
-    Handles Yandex Webmaster HTML verification file request for /yandex_b0735899c24f45c0.html.
+    Handles Yandex Webmaster HTML verification file requests.
     Strictly returns HTTP 200 with the exact authorized HTML verification content.
     """
-    file_path = settings.BASE_DIR / 'yandex_b0735899c24f45c0.html'
+    file_path = settings.BASE_DIR / f'yandex_{token}.html'
     if file_path.is_file():
         content = file_path.read_text(encoding='utf-8').strip()
     else:
-        content = "<html>\n    <head>\n        <meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\">\n    </head>\n    <body>Verification: b0735899c24f45c0</body>\n</html>"
+        content = f"<html>\n    <head>\n        <meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\">\n    </head>\n    <body>Verification: {token}</body>\n</html>"
     return HttpResponse(content, content_type="text/html; charset=utf-8")
+
 
 
 

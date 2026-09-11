@@ -75,7 +75,8 @@ urlpatterns = [
     path('favicon.ico', favicon_ico_view, name='favicon_ico'),
     path('site.webmanifest', webmanifest_view, name='webmanifest'),
     path('googlea35031ec8cebfe94.html', google_verification_file_view, name='google_verification_file'),
-    path('yandex_b0735899c24f45c0.html', yandex_verification_file_view, name='yandex_verification_file'),
+    path('yandex_f632a746318b12ac.html', yandex_verification_file_view, {'token': 'f632a746318b12ac'}, name='yandex_verification_file'),
+    path('yandex_b0735899c24f45c0.html', yandex_verification_file_view, {'token': 'b0735899c24f45c0'}, name='yandex_verification_file_b0735899c24f45c0'),
 
     path('admin/', admin.site.urls),
     path('', include('cases.urls', namespace='cases')),
