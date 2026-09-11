@@ -13,12 +13,14 @@
   <meta name="robots" content="{% block meta_robots %}index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1{% endblock %}">
   <meta name="author" content="NEONDROP">
 
-  <!-- Google Search Console Verification -->
+  <!-- Search Engine Verifications -->
   {% block google_verification %}
     {% if google_site_verification %}
       <meta name="google-site-verification" content="{{ google_site_verification }}">
     {% endif %}
   {% endblock %}
+  <meta name="yandex-verification" content="f632a746318b12ac">
+
 
   <!-- Canonical URL (Absolute HTTPS) -->
   <link rel="canonical" href="{% block canonical_url %}{{ canonical_url }}{% endblock %}">
