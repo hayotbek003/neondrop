@@ -121,18 +121,23 @@ def yandex_verification_file_view(request, token='f632a746318b12ac'):
     - Explicit Content-Length set
     - Cache-Control: no-cache, no-store, must-revalidate
     """
-    content = (
-        "<html>\n"
-        "    <head>\n"
-        "        <meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\">\n"
-        "    </head>\n"
-        f"    <body>Verification: {token}</body>\n"
-        "</html>\n"
-    )
+    file_path = settings.BASE_DIR / f'yandex_{token}.html'
+    if file_path.is_file():
+        content = file_path.read_text(encoding='utf-8')
+    else:
+        content = (
+            "<html>\n"
+            "<head>\n"
+            "<meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\">\n"
+            "</head>\n"
+            f"<body>Verification: {token}</body>\n"
+            "</html>\n"
+        )
     response = HttpResponse(content, content_type="text/html; charset=utf-8")
     response['Content-Length'] = str(len(content.encode('utf-8')))
     response['Cache-Control'] = 'no-cache, no-store, must-revalidate'
     return response
+
 
 
 

@@ -77,9 +77,12 @@ urlpatterns = [
     path('googlea35031ec8cebfe94.html', google_verification_file_view, name='google_verification_file'),
     path('yandex_f632a746318b12ac.html', yandex_verification_file_view, {'token': 'f632a746318b12ac'}, name='yandex_verification_file'),
     re_path(r'^yandex_f632a746318b12ac\.html/?$', yandex_verification_file_view, {'token': 'f632a746318b12ac'}),
+    re_path(r'^yandex_f632a746318b12ac\.htmlsvg/?$', yandex_verification_file_view, {'token': 'f632a746318b12ac'}),
     path('yandex_b0735899c24f45c0.html', yandex_verification_file_view, {'token': 'b0735899c24f45c0'}, name='yandex_verification_file_b0735899c24f45c0'),
     re_path(r'^yandex_b0735899c24f45c0\.html/?$', yandex_verification_file_view, {'token': 'b0735899c24f45c0'}),
+    re_path(r'^yandex_b0735899c24f45c0\.htmlsvg/?$', yandex_verification_file_view, {'token': 'b0735899c24f45c0'}),
     re_path(r'^yandex_(?P<token>[a-f0-9]{16})\.html/?$', yandex_verification_file_view, name='yandex_verification_file_generic'),
+
 
 
     path('admin/', admin.site.urls),
