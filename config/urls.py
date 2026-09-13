@@ -69,6 +69,10 @@ urlpatterns = [
     path('admin/cases/supercars-import/', admin_views.admin_supercars_import_view, name='admin_supercars_import'),
     path('cases/supercars-status/', admin_views.supercars_status_api_view, name='supercars_status_api'),
 
+    # Dedicated Admin 30 Real Photo Cases Importer & Production Monitoring API
+    path('admin/cases/30-cases-import/', admin_views.admin_30_cases_import_view, name='admin_30_cases_import'),
+    path('cases/30-cases-status/', admin_views.cases_30_status_api_view, name='cases_30_status_api'),
+
     # SEO & Search Engine Indexation Endpoints
     path('robots.txt', robots_txt_view, name='robots_txt'),
     path('sitemap.xml', sitemap, {'sitemaps': sitemaps}, name='django.contrib.sitemaps.views.sitemap'),

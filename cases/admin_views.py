@@ -1445,4 +1445,174 @@ def supercars_status_api_view(request):
     })
 
 
+# ---------------------------------------------------------------------------
+# Dedicated Admin View: 30 Real Cases Importer & Production Monitoring API
+# ---------------------------------------------------------------------------
+
+@staff_member_required
+def admin_30_cases_import_view(request):
+    """
+    Dedicated admin tool to preview and safely execute the import of the 30 real photo cases.
+    - Only staff and superusers allowed.
+    - Requires CSRF on POST.
+    - Shows preview before import: existing vs new cases, existing vs new items.
+    - Idempotent and executed inside transaction.atomic().
+    - Never drops tables or wipes user data.
+    """
+    if not (request.user.is_staff and request.user.is_superuser):
+        return HttpResponseForbidden("Доступ разрешен только главным администраторам (Superuser).")
+
+    from io import StringIO
+    from django.core.management import call_command
+    from django.utils.text import slugify
+
+    res_dir = Path(settings.BASE_DIR) / "cases" / "resources" / "30_cases"
+    cases_json = res_dir / "cases.json"
+    if not cases_json.exists():
+        scratch_path = Path(r"C:\Users\User\.gemini\antigravity\brain\9c5f3916-a635-4e03-934c-0fd82e1bb1c1\scratch\extracted_30_cases")
+        if (scratch_path / "cases.json").exists():
+            cases_json = scratch_path / "cases.json"
+
+    json_cases = []
+    if cases_json.exists():
+        with open(cases_json, "r", encoding="utf-8") as f:
+            data = json.load(f)
+            json_cases = data.get("cases", [])
+
+    action_output = None
+    import_executed = False
+
+    if request.method == 'POST':
+        out = StringIO()
+        try:
+            call_command('import_30_real_cases', stdout=out, stderr=out)
+            action_output = out.getvalue()
+            import_executed = True
+        except Exception as e:
+            action_output = f"Ошибка при выполнении импорта: {str(e)}\n\nЛог:\n{out.getvalue()}"
+
+    # Calculate status / preview
+    total_in_json = len(json_cases)
+    cases_preview = []
+    existing_cases_count = 0
+    new_cases_count = 0
+
+    all_item_names = set()
+    for c in json_cases:
+        for it in c.get('items', []):
+            all_item_names.add(it['name'])
+    total_items_in_json = len(all_item_names)
+    existing_items_count = Item.objects.filter(name__in=all_item_names).count()
+
+    for idx, c in enumerate(json_cases, 1):
+        slug = slugify(c['name'])
+        db_case = Case.objects.filter(slug=slug).first()
+        exists = bool(db_case)
+        if exists:
+            existing_cases_count += 1
+        else:
+            new_cases_count += 1
+
+        img_filename = Path(c['image']).name
+        media_img = Path(settings.MEDIA_ROOT) / 'cases' / img_filename
+        static_img = Path(settings.BASE_DIR) / 'static' / 'cases' / img_filename
+        img_exists = media_img.is_file() or static_img.is_file()
+
+        cases_preview.append({
+            'number': idx,
+            'name': c['name'],
+            'slug': slug,
+            'price': c['case_price_uc'],
+            'items_count': len(c.get('items', [])),
+            'image_filename': img_filename,
+            'image_exists': img_exists,
+            'exists_in_db': exists,
+            'db_items_count': db_case.case_items.count() if db_case else 0,
+            'db_price': db_case.price if db_case else None,
+        })
+
+    context = {
+        'title': 'Импорт 30 кейсов (Real Photos)',
+        'cases_preview': cases_preview,
+        'total_in_json': total_in_json,
+        'existing_cases_count': existing_cases_count,
+        'new_cases_count': new_cases_count,
+        'total_items_in_json': total_items_in_json,
+        'existing_items_count': existing_items_count,
+        'new_items_count': total_items_in_json - existing_items_count,
+        'action_output': action_output,
+        'import_executed': import_executed,
+        'db_engine': getattr(settings, 'DATABASE_ENGINE_NAME', 'PostgreSQL'),
+        'db_host': getattr(settings, 'DATABASE_HOST_DISPLAY', 'default'),
+        'is_persistent': getattr(settings, 'IS_PERSISTENT_DATABASE', False),
+    }
+    return render(request, 'admin/cases_30_import.html', context)
+
+
+def cases_30_status_api_view(request):
+    """
+    Public/monitoring JSON endpoint showing real-time status of the 30 real photo cases in active database.
+    """
+    from django.utils.text import slugify
+
+    res_dir = Path(settings.BASE_DIR) / "cases" / "resources" / "30_cases"
+    cases_json = res_dir / "cases.json"
+    if not cases_json.exists():
+        scratch_path = Path(r"C:\Users\User\.gemini\antigravity\brain\9c5f3916-a635-4e03-934c-0fd82e1bb1c1\scratch\extracted_30_cases")
+        if (scratch_path / "cases.json").exists():
+            cases_json = scratch_path / "cases.json"
+
+    json_cases = []
+    if cases_json.exists():
+        with open(cases_json, "r", encoding="utf-8") as f:
+            data = json.load(f)
+            json_cases = data.get("cases", [])
+
+    cases_data = []
+    found_count = 0
+    total_items_count = 0
+
+    for idx, c in enumerate(json_cases, 1):
+        slug = slugify(c['name'])
+        case = Case.objects.filter(slug=slug).first()
+        if case:
+            found_count += 1
+            items = case.case_items.select_related('item').all()
+            items_count = items.count()
+            total_items_count += items_count
+            prob_sum = sum(ci.weight for ci in items)
+            ev = sum((Decimal(str(ci.weight)) / Decimal('100.0')) * ci.item.value for ci in items)
+            rtp = round((float(ev) / float(case.price) * 100.0), 2) if case.price > 0 else 0.0
+            display_img = case.display_image
+        else:
+            items_count = 0
+            prob_sum = 0.0
+            rtp = 0.0
+            display_img = None
+
+        cases_data.append({
+            'number': idx,
+            'name': c['name'],
+            'slug': slug,
+            'price': c['case_price_uc'],
+            'exists': bool(case),
+            'items_count': items_count,
+            'sum_chances': round(prob_sum, 3),
+            'rtp': rtp,
+            'display_image': display_img,
+        })
+
+    return JsonResponse({
+        'total_cases_in_db': Case.objects.count(),
+        'total_items_in_db': Item.objects.count(),
+        'cases_30_target_count': len(json_cases),
+        'cases_30_found_in_db': found_count,
+        'database_engine': getattr(settings, 'DATABASE_ENGINE_NAME', 'PostgreSQL'),
+        'database_host': getattr(settings, 'DATABASE_HOST_DISPLAY', 'default'),
+        'is_persistent': getattr(settings, 'IS_PERSISTENT_DATABASE', False),
+        'cases': cases_data,
+    })
+
+
+
 

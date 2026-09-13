@@ -1,0 +1,257 @@
+{% extends "admin/base_site.html" %}
+{% load i18n static humanize %}
+
+{% block title %}Импорт 30 кейсов (Real Photos) | {{ site_title|default:_('Django site admin') }}{% endblock %}
+
+{% block extrastyle %}
+{{ block.super }}
+<style>
+  .c30-container {
+    max-width: 1400px;
+    margin: 0 auto 50px auto;
+    color: #f1f5f9;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  }
+  .c30-card {
+    background: linear-gradient(135deg, #0b0f19 0%, #111827 100%);
+    border: 1px solid #1e293b;
+    border-radius: 12px;
+    padding: 24px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+    margin-bottom: 24px;
+  }
+  .c30-title {
+    font-size: 22px;
+    font-weight: 900;
+    color: #38bdf8;
+    margin: 0 0 8px 0;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .c30-badge-ok {
+    background: rgba(16, 185, 129, 0.15);
+    color: #34d399;
+    border: 1px solid #059669;
+    padding: 3px 8px;
+    border-radius: 6px;
+    font-weight: 700;
+    font-size: 12px;
+  }
+  .c30-badge-missing {
+    background: rgba(239, 68, 68, 0.15);
+    color: #f87171;
+    border: 1px solid #dc2626;
+    padding: 3px 8px;
+    border-radius: 6px;
+    font-weight: 700;
+    font-size: 12px;
+  }
+  .c30-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 16px;
+  }
+  .c30-table th {
+    background: #0f172a;
+    color: #94a3b8;
+    text-align: left;
+    padding: 12px 16px;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    border-bottom: 2px solid #334155;
+  }
+  .c30-table td {
+    padding: 12px 16px;
+    border-bottom: 1px solid #1e293b;
+    font-size: 14px;
+  }
+  .c30-table tr:hover {
+    background: rgba(255, 255, 255, 0.02);
+  }
+  .c30-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: linear-gradient(135deg, #00f0ff 0%, #7000ff 100%);
+    color: #ffffff !important;
+    font-weight: 800;
+    font-size: 15px;
+    padding: 12px 28px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    text-decoration: none;
+    box-shadow: 0 4px 14px rgba(0, 240, 255, 0.4);
+    transition: all 0.2s;
+  }
+  .c30-btn:hover {
+    opacity: 0.95;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px rgba(0, 240, 255, 0.6);
+  }
+  .c30-stat-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+    margin: 16px 0;
+  }
+  .c30-stat-box {
+    background: #0f172a;
+    border: 1px solid #1e293b;
+    border-radius: 8px;
+    padding: 16px;
+    text-align: center;
+  }
+  .c30-stat-num {
+    font-size: 28px;
+    font-weight: 900;
+    color: #38bdf8;
+    margin-top: 4px;
+  }
+  .c30-log {
+    background: #030712;
+    border: 1px solid #1f2937;
+    border-radius: 8px;
+    padding: 16px;
+    font-family: monospace;
+    font-size: 13px;
+    color: #10b981;
+    white-space: pre-wrap;
+    max-height: 400px;
+    overflow-y: auto;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="c30-container">
+
+  <!-- Header Card -->
+  <div class="c30-card">
+    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
+      <div>
+        <h1 class="c30-title">
+          <span>✨</span> Импорт 30 новых кейсов (Real Photos)
+        </h1>
+        <p style="color: #94a3b8; margin: 4px 0 0 0; font-size: 14px;">
+          Безопасный инструмент переноса 30 сбалансированных кейсов и 420 предметов в базу данных.
+        </p>
+      </div>
+      <div>
+        <span class="c30-badge-ok">БД: {{ db_engine }}</span>
+        {% if is_persistent %}
+          <span class="c30-badge-ok" style="background: rgba(59, 130, 246, 0.15); color: #60a5fa; border-color: #2563eb;">Persistent Storage</span>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  {% if action_output %}
+  <!-- Execution Log Card -->
+  <div class="c30-card" style="border-color: #059669;">
+    <h2 style="font-size: 18px; color: #34d399; margin-top: 0;">✅ Результат выполнения импорта</h2>
+    <div class="c30-log">{{ action_output }}</div>
+  </div>
+  {% endif %}
+
+  <!-- Preview Card -->
+  <div class="c30-card">
+    <h2 style="font-size: 18px; color: #f8fafc; margin-top: 0; display: flex; align-items: center; gap: 8px;">
+      <span>📊</span> Предварительный просмотр (Preview)
+    </h2>
+    <p style="color: #94a3b8; font-size: 14px; margin-top: 4px;">
+      Импорт работает в режиме транзакции <code>transaction.atomic()</code> и строго <strong>идемпотентен</strong>: существующие данные никогда не удаляются, а повторный запуск не создает дубликатов.
+    </p>
+
+    <div class="c30-stat-grid">
+      <div class="c30-stat-box">
+        <div style="color: #94a3b8; font-size: 12px; text-transform: uppercase;">Всего в наборе</div>
+        <div class="c30-stat-num">{{ total_in_json }} кейсов</div>
+      </div>
+      <div class="c30-stat-box">
+        <div style="color: #94a3b8; font-size: 12px; text-transform: uppercase;">Уже в БД</div>
+        <div class="c30-stat-num" style="color: #34d399;">{{ existing_cases_count }}</div>
+      </div>
+      <div class="c30-stat-box">
+        <div style="color: #94a3b8; font-size: 12px; text-transform: uppercase;">Будет создано</div>
+        <div class="c30-stat-num" style="color: #f59e0b;">{{ new_cases_count }}</div>
+      </div>
+      <div class="c30-stat-box">
+        <div style="color: #94a3b8; font-size: 12px; text-transform: uppercase;">Всего предметов</div>
+        <div class="c30-stat-num">{{ total_items_in_json }}</div>
+      </div>
+      <div class="c30-stat-box">
+        <div style="color: #94a3b8; font-size: 12px; text-transform: uppercase;">Предметов в БД</div>
+        <div class="c30-stat-num" style="color: #34d399;">{{ existing_items_count }}</div>
+      </div>
+      <div class="c30-stat-box">
+        <div style="color: #94a3b8; font-size: 12px; text-transform: uppercase;">Новых предметов</div>
+        <div class="c30-stat-num" style="color: #f59e0b;">{{ new_items_count }}</div>
+      </div>
+    </div>
+
+    <!-- Action Form -->
+    <form method="POST" style="margin-top: 24px;">
+      {% csrf_token %}
+      <div style="display: flex; gap: 16px; align-items: center; flex-wrap: wrap;">
+        <button type="submit" class="c30-btn" onclick="return confirm('Подтвердить выполнение импорта 30 кейсов в базу данных?');">
+          <span>⚡</span> Выполнить безопасный импорт 30 кейсов
+        </button>
+        <span style="color: #94a3b8; font-size: 13px;">
+          * Защищено CSRF, доступно только главным администраторам.
+        </span>
+      </div>
+    </form>
+  </div>
+
+  <!-- Cases List Card -->
+  <div class="c30-card">
+    <h2 style="font-size: 18px; color: #f8fafc; margin-top: 0;">📋 Список 30 кейсов набора</h2>
+    <div style="overflow-x: auto;">
+      <table class="c30-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Кейс</th>
+            <th>Слаг</th>
+            <th>Цена (UC)</th>
+            <th>Предметов</th>
+            <th>Файл фото</th>
+            <th>Фото на диске</th>
+            <th>Статус в БД</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for c in cases_preview %}
+          <tr>
+            <td style="color: #94a3b8; font-weight: 700;">{{ c.number }}</td>
+            <td style="font-weight: 700; color: #38bdf8;">{{ c.name }}</td>
+            <td style="font-family: monospace; color: #a5b4fc;">{{ c.slug }}</td>
+            <td style="font-weight: 800; color: #facc15;">{{ c.price }} UC</td>
+            <td>{{ c.items_count }} шт.</td>
+            <td style="font-family: monospace; font-size: 12px; color: #cbd5e1;">{{ c.image_filename }}</td>
+            <td>
+              {% if c.image_exists %}
+                <span class="c30-badge-ok">Доступно</span>
+              {% else %}
+                <span class="c30-badge-missing">Отсутствует</span>
+              {% endif %}
+            </td>
+            <td>
+              {% if c.exists_in_db %}
+                <span class="c30-badge-ok">В базе ({{ c.db_items_count }} предм.)</span>
+              {% else %}
+                <span class="c30-badge-missing">Не создан</span>
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+{% endblock %}

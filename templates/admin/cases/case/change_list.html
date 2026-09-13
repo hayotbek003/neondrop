@@ -3,6 +3,11 @@
 
 {% block object-tools-items %}
   <li>
+    <a href="{% url 'admin_30_cases_import' %}" style="background: linear-gradient(135deg, #00f0ff, #7000ff); color: #ffffff !important; font-weight: 800; border-radius: 4px; padding: 6px 14px; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 2px 8px rgba(0, 240, 255, 0.4); margin-right: 8px;">
+      <span>✨</span> {% trans "Импорт 30 кейсов (Real Photos)" %}
+    </a>
+  </li>
+  <li>
     <a href="{% url 'admin_supercars_import' %}" style="background: linear-gradient(135deg, #06b6d4, #3b82f6); color: #ffffff !important; font-weight: 800; border-radius: 4px; padding: 6px 14px; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 2px 8px rgba(6, 182, 212, 0.4);">
       <span>🏎️</span> {% trans "Импорт суперкар-кейсов" %}
     </a>

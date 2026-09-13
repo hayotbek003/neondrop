@@ -1,0 +1,2795 @@
+{
+  "format": "NEONDROP 30 cases — real generated-image set",
+  "cases": [
+    {
+      "name": "Neon Spark",
+      "case_price_uc": 20,
+      "image": "images/01_neon_spark.png",
+      "items": [
+        {
+          "name": "Neon Spark Item 01",
+          "price_uc": 10,
+          "rarity": "Common",
+          "chance_percent": 48.24110955
+        },
+        {
+          "name": "Neon Spark Item 02",
+          "price_uc": 10,
+          "rarity": "Common",
+          "chance_percent": 22.11050854
+        },
+        {
+          "name": "Neon Spark Item 03",
+          "price_uc": 11,
+          "rarity": "Common",
+          "chance_percent": 12.06027739
+        },
+        {
+          "name": "Neon Spark Item 04",
+          "price_uc": 11,
+          "rarity": "Common",
+          "chance_percent": 7.03516181
+        },
+        {
+          "name": "Neon Spark Item 05",
+          "price_uc": 11,
+          "rarity": "Uncommon",
+          "chance_percent": 4.02009246
+        },
+        {
+          "name": "Neon Spark Item 06",
+          "price_uc": 12,
+          "rarity": "Uncommon",
+          "chance_percent": 2.51255779
+        },
+        {
+          "name": "Neon Spark Item 07",
+          "price_uc": 12,
+          "rarity": "Rare",
+          "chance_percent": 1.7085393
+        },
+        {
+          "name": "Neon Spark Item 08",
+          "price_uc": 12,
+          "rarity": "Rare",
+          "chance_percent": 1.00502312
+        },
+        {
+          "name": "Neon Spark Item 09",
+          "price_uc": 12,
+          "rarity": "Epic",
+          "chance_percent": 0.60301387
+        },
+        {
+          "name": "Neon Spark Item 10",
+          "price_uc": 13,
+          "rarity": "Epic",
+          "chance_percent": 0.35175809
+        },
+        {
+          "name": "Neon Spark Item 11",
+          "price_uc": 13,
+          "rarity": "Legendary",
+          "chance_percent": 0.20100462
+        },
+        {
+          "name": "Neon Spark Item 12",
+          "price_uc": 13,
+          "rarity": "Legendary",
+          "chance_percent": 0.10050231
+        },
+        {
+          "name": "Neon Spark Item 13",
+          "price_uc": 14,
+          "rarity": "Mythic",
+          "chance_percent": 0.05025116
+        },
+        {
+          "name": "Neon Spark Item 14",
+          "price_uc": 5465,
+          "rarity": "Jackpot",
+          "chance_percent": 0.0002
+        }
+      ],
+      "chance_total_percent": 100.0,
+      "jackpot_chance_percent": 0.0002
+    },
+    {
+      "name": "Cyber Rush",
+      "case_price_uc": 25,
+      "image": "images/02_cyber_rush.png",
+      "items": [
+        {
+          "name": "Cyber Rush Item 01",
+          "price_uc": 10,
+          "rarity": "Common",
+          "chance_percent": 48.24110955
+        },
+        {
+          "name": "Cyber Rush Item 02",
+          "price_uc": 11,
+          "rarity": "Common",
+          "chance_percent": 22.11050854
+        },
+        {
+          "name": "Cyber Rush Item 03",
+          "price_uc": 11,
+          "rarity": "Common",
+          "chance_percent": 12.06027739
+        },
+        {
+          "name": "Cyber Rush Item 04",
+          "price_uc": 11,
+          "rarity": "Common",
+          "chance_percent": 7.03516181
+        },
+        {
+          "name": "Cyber Rush Item 05",
+          "price_uc": 12,
+          "rarity": "Uncommon",
+          "chance_percent": 4.02009246
+        },
+        {
+          "name": "Cyber Rush Item 06",
+          "price_uc": 12,
+          "rarity": "Uncommon",
+          "chance_percent": 2.51255779
+        },
+        {
+          "name": "Cyber Rush Item 07",
+          "price_uc": 12,
+          "rarity": "Rare",
+          "chance_percent": 1.7085393
+        },
+        {
+          "name": "Cyber Rush Item 08",
+          "price_uc": 12,
+          "rarity": "Rare",
+          "chance_percent": 1.00502312
+        },
+        {
+          "name": "Cyber Rush Item 09",
+          "price_uc": 12,
+          "rarity": "Epic",
+          "chance_percent": 0.60301387
+        },
+        {
+          "name": "Cyber Rush Item 10",
+          "price_uc": 13,
+          "rarity": "Epic",
+          "chance_percent": 0.35175809
+        },
+        {
+          "name": "Cyber Rush Item 11",
+          "price_uc": 13,
+          "rarity": "Legendary",
+          "chance_percent": 0.20100462
+        },
+        {
+          "name": "Cyber Rush Item 12",
+          "price_uc": 14,
+          "rarity": "Legendary",
+          "chance_percent": 0.10050231
+        },
+        {
+          "name": "Cyber Rush Item 13",
+          "price_uc": 14,
+          "rarity": "Mythic",
+          "chance_percent": 0.05025116
+        },
+        {
+          "name": "Cyber Rush Item 14",
+          "price_uc": 6717,
+          "rarity": "Jackpot",
+          "chance_percent": 0.0002
+        }
+      ],
+      "chance_total_percent": 100.0,
+      "jackpot_chance_percent": 0.0002
+    },
+    {
+      "name": "Purple Storm",
+      "case_price_uc": 30,
+      "image": "images/03_purple_storm.png",
+      "items": [
+        {
+          "name": "Purple Storm Item 01",
+          "price_uc": 10,
+          "rarity": "Common",
+          "chance_percent": 48.24110955
+        },
+        {
+          "name": "Purple Storm Item 02",
+          "price_uc": 11,
+          "rarity": "Common",
+          "chance_percent": 22.11050854
+        },
+        {
+          "name": "Purple Storm Item 03",
+          "price_uc": 12,
+          "rarity": "Common",
+          "chance_percent": 12.06027739
+        },
+        {
+          "name": "Purple Storm Item 04",
+          "price_uc": 13,
+          "rarity": "Common",
+          "chance_percent": 7.03516181
+        },
+        {
+          "name": "Purple Storm Item 05",
+          "price_uc": 13,
+          "rarity": "Uncommon",
+          "chance_percent": 4.02009246
+        },
+        {
+          "name": "Purple Storm Item 06",
+          "price_uc": 13,
+          "rarity": "Uncommon",
+          "chance_percent": 2.51255779
+        },
+        {
+          "name": "Purple Storm Item 07",
+          "price_uc": 13,
+          "rarity": "Rare",
+          "chance_percent": 1.7085393
+        },
+        {
+          "name": "Purple Storm Item 08",
+          "price_uc": 13,
+          "rarity": "Rare",
+          "chance_percent": 1.00502312
+        },
+        {
+          "name": "Purple Storm Item 09",
+          "price_uc": 14,
+          "rarity": "Epic",
+          "chance_percent": 0.60301387
+        },
+        {
+          "name": "Purple Storm Item 10",
+          "price_uc": 14,
+          "rarity": "Epic",
+          "chance_percent": 0.35175809
+        },
+        {
+          "name": "Purple Storm Item 11",
+          "price_uc": 14,
+          "rarity": "Legendary",
+          "chance_percent": 0.20100462
+        },
+        {
+          "name": "Purple Storm Item 12",
+          "price_uc": 16,
+          "rarity": "Legendary",
+          "chance_percent": 0.10050231
+        },
+        {
+          "name": "Purple Storm Item 13",
+          "price_uc": 16,
+          "rarity": "Mythic",
+          "chance_percent": 0.05025116
+        },
+        {
+          "name": "Purple Storm Item 14",
+          "price_uc": 6152,
+          "rarity": "Jackpot",
+          "chance_percent": 0.0002
+        }
+      ],
+      "chance_total_percent": 100.0,
+      "jackpot_chance_percent": 0.0002
+    },
+    {
+      "name": "Night Drive",
+      "case_price_uc": 35,
+      "image": "images/04_night_drive.png",
+      "items": [
+        {
+          "name": "Night Drive Item 01",
+          "price_uc": 10,
+          "rarity": "Common",
+          "chance_percent": 48.24110955
+        },
+        {
+          "name": "Night Drive Item 02",
+          "price_uc": 11,
+          "rarity": "Common",
+          "chance_percent": 22.11050854
+        },
+        {
+          "name": "Night Drive Item 03",
+          "price_uc": 11,
+          "rarity": "Common",
+          "chance_percent": 12.06027739
+        },
+        {
+          "name": "Night Drive Item 04",
+          "price_uc": 12,
+          "rarity": "Common",
+          "chance_percent": 7.03516181
+        },
+        {
+          "name": "Night Drive Item 05",
+          "price_uc": 12,
+          "rarity": "Uncommon",
+          "chance_percent": 4.02009246
+        },
+        {
+          "name": "Night Drive Item 06",
+          "price_uc": 12,
+          "rarity": "Uncommon",
+          "chance_percent": 2.51255779
+        },
+        {
+          "name": "Night Drive Item 07",
+          "price_uc": 13,
+          "rarity": "Rare",
+          "chance_percent": 1.7085393
+        },
+        {
+          "name": "Night Drive Item 08",
+          "price_uc": 13,
+          "rarity": "Rare",
+          "chance_percent": 1.00502312
+        },
+        {
+          "name": "Night Drive Item 09",
+          "price_uc": 15,
+          "rarity": "Epic",
+          "chance_percent": 0.60301387
+        },
+        {
+          "name": "Night Drive Item 10",
+          "price_uc": 15,
+          "rarity": "Epic",
+          "chance_percent": 0.35175809
+        },
+        {
+          "name": "Night Drive Item 11",
+          "price_uc": 17,
+          "rarity": "Legendary",
+          "chance_percent": 0.20100462
+        },
+        {
+          "name": "Night Drive Item 12",
+          "price_uc": 17,
+          "rarity": "Legendary",
+          "chance_percent": 0.10050231
+        },
+        {
+          "name": "Night Drive Item 13",
+          "price_uc": 18,
+          "rarity": "Mythic",
+          "chance_percent": 0.05025116
+        },
+        {
+          "name": "Night Drive Item 14",
+          "price_uc": 6276,
+          "rarity": "Jackpot",
+          "chance_percent": 0.0002
+        }
+      ],
+      "chance_total_percent": 100.0,
+      "jackpot_chance_percent": 0.0002
+    },
+    {
+      "name": "Digital Wave",
+      "case_price_uc": 40,
+      "image": "images/05_digital_wave.png",
+      "items": [
+        {
+          "name": "Digital Wave Item 01",
+          "price_uc": 10,
+          "rarity": "Common",
+          "chance_percent": 48.24110955
+        },
+        {
+          "name": "Digital Wave Item 02",
+          "price_uc": 12,
+          "rarity": "Common",
+          "chance_percent": 22.11050854
+        },
+        {
+          "name": "Digital Wave Item 03",
+          "price_uc": 13,
+          "rarity": "Common",
+          "chance_percent": 12.06027739
+        },
+        {
+          "name": "Digital Wave Item 04",
+          "price_uc": 13,
+          "rarity": "Common",
+          "chance_percent": 7.03516181
+        },
+        {
+          "name": "Digital Wave Item 05",
+          "price_uc": 13,
+          "rarity": "Uncommon",
+          "chance_percent": 4.02009246
+        },
+        {
+          "name": "Digital Wave Item 06",
+          "price_uc": 14,
+          "rarity": "Uncommon",
+          "chance_percent": 2.51255779
+        },
+        {
+          "name": "Digital Wave Item 07",
+          "price_uc": 14,
+          "rarity": "Rare",
+          "chance_percent": 1.7085393
+        },
+        {
+          "name": "Digital Wave Item 08",
+          "price_uc": 17,
+          "rarity": "Rare",
+          "chance_percent": 1.00502312
+        },
+        {
+          "name": "Digital Wave Item 09",
+          "price_uc": 17,
+          "rarity": "Epic",
+          "chance_percent": 0.60301387
+        },
+        {
+          "name": "Digital Wave Item 10",
+          "price_uc": 18,
+          "rarity": "Epic",
+          "chance_percent": 0.35175809
+        },
+        {
+          "name": "Digital Wave Item 11",
+          "price_uc": 18,
+          "rarity": "Legendary",
+          "chance_percent": 0.20100462
+        },
+        {
+          "name": "Digital Wave Item 12",
+          "price_uc": 19,
+          "rarity": "Legendary",
+          "chance_percent": 0.10050231
+        },
+        {
+          "name": "Digital Wave Item 13",
+          "price_uc": 21,
+          "rarity": "Mythic",
+          "chance_percent": 0.05025116
+        },
+        {
+          "name": "Digital Wave Item 14",
+          "price_uc": 8373,
+          "rarity": "Jackpot",
+          "chance_percent": 0.0002
+        }
+      ],
+      "chance_total_percent": 100.0,
+      "jackpot_chance_percent": 0.0002
+    },
+    {
+      "name": "Quantum Box",
+      "case_price_uc": 50,
+      "image": "images/06_quantum_box.png",
+      "items": [
+        {
+          "name": "Quantum Box Item 01",
+          "price_uc": 11,
+          "rarity": "Common",
+          "chance_percent": 48.24110955
+        },
+        {
+          "name": "Quantum Box Item 02",
+          "price_uc": 12,
+          "rarity": "Common",
+          "chance_percent": 22.11050854
+        },
+        {
+          "name": "Quantum Box Item 03",
+          "price_uc": 13,
+          "rarity": "Common",
+          "chance_percent": 12.06027739
+        },
+        {
+          "name": "Quantum Box Item 04",
+          "price_uc": 15,
+          "rarity": "Common",
+          "chance_percent": 7.03516181
+        },
+        {
+          "name": "Quantum Box Item 05",
+          "price_uc": 16,
+          "rarity": "Uncommon",
+          "chance_percent": 4.02009246
+        },
+        {
+          "name": "Quantum Box Item 06",
+          "price_uc": 17,
+          "rarity": "Uncommon",
+          "chance_percent": 2.51255779
+        },
+        {
+          "name": "Quantum Box Item 07",
+          "price_uc": 19,
+          "rarity": "Rare",
+          "chance_percent": 1.7085393
+        },
+        {
+          "name": "Quantum Box Item 08",
+          "price_uc": 19,
+          "rarity": "Rare",
+          "chance_percent": 1.00502312
+        },
+        {
+          "name": "Quantum Box Item 09",
+          "price_uc": 20,
+          "rarity": "Epic",
+          "chance_percent": 0.60301387
+        },
+        {
+          "name": "Quantum Box Item 10",
+          "price_uc": 20,
+          "rarity": "Epic",
+          "chance_percent": 0.35175809
+        },
+        {
+          "name": "Quantum Box Item 11",
+          "price_uc": 22,
+          "rarity": "Legendary",
+          "chance_percent": 0.20100462
+        },
+        {
+          "name": "Quantum Box Item 12",
+          "price_uc": 24,
+          "rarity": "Legendary",
+          "chance_percent": 0.10050231
+        },
+        {
+          "name": "Quantum Box Item 13",
+          "price_uc": 24,
+          "rarity": "Mythic",
+          "chance_percent": 0.05025116
+        },
+        {
+          "name": "Quantum Box Item 14",
+          "price_uc": 8633,
+          "rarity": "Jackpot",
+          "chance_percent": 0.0002
+        }
+      ],
+      "chance_total_percent": 100.0,
+      "jackpot_chance_percent": 0.0002
+    },
+    {
+      "name": "Phantom Core",
+      "case_price_uc": 60,
+      "image": "images/07_phantom_core.png",
+      "items": [
+        {
+          "name": "Phantom Core Item 01",
+          "price_uc": 10,
+          "rarity": "Common",
+          "chance_percent": 48.24110955
+        },
+        {
+          "name": "Phantom Core Item 02",
+          "price_uc": 13,
+          "rarity": "Common",
+          "chance_percent": 22.11050854
+        },
+        {
+          "name": "Phantom Core Item 03",
+          "price_uc": 13,
+          "rarity": "Common",
+          "chance_percent": 12.06027739
+        },
+        {
+          "name": "Phantom Core Item 04",
+          "price_uc": 13,
+          "rarity": "Common",
+          "chance_percent": 7.03516181
+        },
+        {
+          "name": "Phantom Core Item 05",
+          "price_uc": 13,
+          "rarity": "Uncommon",
+          "chance_percent": 4.02009246
+        },
+        {
+          "name": "Phantom Core Item 06",
+          "price_uc": 14,
+          "rarity": "Uncommon",
+          "chance_percent": 2.51255779
+        },
+        {
+          "name": "Phantom Core Item 07",
+          "price_uc": 18,
+          "rarity": "Rare",
+          "chance_percent": 1.7085393
+        },
+        {
+          "name": "Phantom Core Item 08",
+          "price_uc": 19,
+          "rarity": "Rare",
+          "chance_percent": 1.00502312
+        },
+        {
+          "name": "Phantom Core Item 09",
+          "price_uc": 19,
+          "rarity": "Epic",
+          "chance_percent": 0.60301387
+        },
+        {
+          "name": "Phantom Core Item 10",
+          "price_uc": 19,
+          "rarity": "Epic",
+          "chance_percent": 0.35175809
+        },
+        {
+          "name": "Phantom Core Item 11",
+          "price_uc": 21,
+          "rarity": "Legendary",
+          "chance_percent": 0.20100462
+        },
+        {
+          "name": "Phantom Core Item 12",
+          "price_uc": 27,
+          "rarity": "Legendary",
+          "chance_percent": 0.10050231
+        },
+        {
+          "name": "Phantom Core Item 13",
+          "price_uc": 28,
+          "rarity": "Mythic",
+          "chance_percent": 0.05025116
+        },
+        {
+          "name": "Phantom Core Item 14",
+          "price_uc": 9281,
+          "rarity": "Jackpot",
+          "chance_percent": 0.0002
+        }
+      ],
+      "chance_total_percent": 100.0,
+      "jackpot_chance_percent": 0.0002
+    },
+    {
+      "name": "Vortex",
+      "case_price_uc": 70,
+      "image": "images/08_vortex.png",
+      "items": [
+        {
+          "name": "Vortex Item 01",
+          "price_uc": 12,
+          "rarity": "Common",
+          "chance_percent": 48.24110955
+        },
+        {
+          "name": "Vortex Item 02",
+          "price_uc": 12,
+          "rarity": "Common",
+          "chance_percent": 22.11050854
+        },
+        {
+          "name": "Vortex Item 03",
+          "price_uc": 14,
+          "rarity": "Common",
+          "chance_percent": 12.06027739
+        },
+        {
+          "name": "Vortex Item 04",
+          "price_uc": 16,
+          "rarity": "Common",
+          "chance_percent": 7.03516181
+        },
+        {
+          "name": "Vortex Item 05",
+          "price_uc": 16,
+          "rarity": "Uncommon",
+          "chance_percent": 4.02009246
+        },
+        {
+          "name": "Vortex Item 06",
+          "price_uc": 17,
+          "rarity": "Uncommon",
+          "chance_percent": 2.51255779
+        },
+        {
+          "name": "Vortex Item 07",
+          "price_uc": 17,
+          "rarity": "Rare",
+          "chance_percent": 1.7085393
+        },
+        {
+          "name": "Vortex Item 08",
+          "price_uc": 22,
+          "rarity": "Rare",
+          "chance_percent": 1.00502312
+        },
+        {
+          "name": "Vortex Item 09",
+          "price_uc": 26,
+          "rarity": "Epic",
+          "chance_percent": 0.60301387
+        },
+        {
+          "name": "Vortex Item 10",
+          "price_uc": 26,
+          "rarity": "Epic",
+          "chance_percent": 0.35175809
+        },
+        {
+          "name": "Vortex Item 11",
+          "price_uc": 29,
+          "rarity": "Legendary",
+          "chance_percent": 0.20100462
+        },
+        {
+          "name": "Vortex Item 12",
+          "price_uc": 29,
+          "rarity": "Legendary",
+          "chance_percent": 0.10050231
+        },
+        {
+          "name": "Vortex Item 13",
+          "price_uc": 31,
+          "rarity": "Mythic",
+          "chance_percent": 0.05025116
+        },
+        {
+          "name": "Vortex Item 14",
+          "price_uc": 6208,
+          "rarity": "Jackpot",
+          "chance_percent": 0.0002
+        }
+      ],
+      "chance_total_percent": 100.0,
+      "jackpot_chance_percent": 0.0002
+    },
+    {
+      "name": "Hyper Drop",
+      "case_price_uc": 80,
+      "image": "images/09_hyper_drop.png",
+      "items": [
+        {
+          "name": "Hyper Drop Item 01",
+          "price_uc": 10,
+          "rarity": "Common",
+          "chance_percent": 48.24110955
+        },
+        {
+          "name": "Hyper Drop Item 02",
+          "price_uc": 20,
+          "rarity": "Common",
+          "chance_percent": 22.11050854
+        },
+        {
+          "name": "Hyper Drop Item 03",
+          "price_uc": 22,
+          "rarity": "Common",
+          "chance_percent": 12.06027739
+        },
+        {
+          "name": "Hyper Drop Item 04",
+          "price_uc": 26,
+          "rarity": "Common",
+          "chance_percent": 7.03516181
+        },
+        {
+          "name": "Hyper Drop Item 05",
+          "price_uc": 26,
+          "rarity": "Uncommon",
+          "chance_percent": 4.02009246
+        },
+        {
+          "name": "Hyper Drop Item 06",
+          "price_uc": 29,
+          "rarity": "Uncommon",
+          "chance_percent": 2.51255779
+        },
+        {
+          "name": "Hyper Drop Item 07",
+          "price_uc": 29,
+          "rarity": "Rare",
+          "chance_percent": 1.7085393
+        },
+        {
+          "name": "Hyper Drop Item 08",
+          "price_uc": 31,
+          "rarity": "Rare",
+          "chance_percent": 1.00502312
+        },
+        {
+          "name": "Hyper Drop Item 09",
+          "price_uc": 32,
+          "rarity": "Epic",
+          "chance_percent": 0.60301387
+        },
+        {
+          "name": "Hyper Drop Item 10",
+          "price_uc": 33,
+          "rarity": "Epic",
+          "chance_percent": 0.35175809
+        },
+        {
+          "name": "Hyper Drop Item 11",
+          "price_uc": 34,
+          "rarity": "Legendary",
+          "chance_percent": 0.20100462
+        },
+        {
+          "name": "Hyper Drop Item 12",
+          "price_uc": 35,
+          "rarity": "Legendary",
+          "chance_percent": 0.10050231
+        },
+        {
+          "name": "Hyper Drop Item 13",
+          "price_uc": 36,
+          "rarity": "Mythic",
+          "chance_percent": 0.05025116
+        },
+        {
+          "name": "Hyper Drop Item 14",
+          "price_uc": 9585,
+          "rarity": "Jackpot",
+          "chance_percent": 0.0002
+        }
+      ],
+      "chance_total_percent": 100.0,
+      "jackpot_chance_percent": 0.0002
+    },
+    {
+      "name": "Shadow X",
+      "case_price_uc": 90,
+      "image": "images/10_shadow_x.png",
+      "items": [
+        {
+          "name": "Shadow X Item 01",
+          "price_uc": 16,
+          "rarity": "Common",
+          "chance_percent": 48.24110955
+        },
+        {
+          "name": "Shadow X Item 02",
+          "price_uc": 16,
+          "rarity": "Common",
+          "chance_percent": 22.11050854
+        },
+        {
+          "name": "Shadow X Item 03",
+          "price_uc": 17,
+          "rarity": "Common",
+          "chance_percent": 12.06027739
+        },
+        {
+          "name": "Shadow X Item 04",
+          "price_uc": 18,
+          "rarity": "Common",
+          "chance_percent": 7.03516181
+        },
+        {
+          "name": "Shadow X Item 05",
+          "price_uc": 25,
+          "rarity": "Uncommon",
+          "chance_percent": 4.02009246
+        },
+        {
+          "name": "Shadow X Item 06",
+          "price_uc": 25,
+          "rarity": "Uncommon",
+          "chance_percent": 2.51255779
+        },
+        {
+          "name": "Shadow X Item 07",
+          "price_uc": 30,
+          "rarity": "Rare",
+          "chance_percent": 1.7085393
+        },
+        {
+          "name": "Shadow X Item 08",
+          "price_uc": 30,
+          "rarity": "Rare",
+          "chance_percent": 1.00502312
+        },
+        {
+          "name": "Shadow X Item 09",
+          "price_uc": 32,
+          "rarity": "Epic",
+          "chance_percent": 0.60301387
+        },
+        {
+          "name": "Shadow X Item 10",
+          "price_uc": 32,
+          "rarity": "Epic",
+          "chance_percent": 0.35175809
+        },
+        {
+          "name": "Shadow X Item 11",
+          "price_uc": 32,
+          "rarity": "Legendary",
+          "chance_percent": 0.20100462
+        },
+        {
+          "name": "Shadow X Item 12",
+          "price_uc": 34,
+          "rarity": "Legendary",
+          "chance_percent": 0.10050231
+        },
+        {
+          "name": "Shadow X Item 13",
+          "price_uc": 39,
+          "rarity": "Mythic",
+          "chance_percent": 0.05025116
+        },
+        {
+          "name": "Shadow X Item 14",
+          "price_uc": 6290,
+          "rarity": "Jackpot",
+          "chance_percent": 0.0002
+        }
+      ],
+      "chance_total_percent": 100.0,
+      "jackpot_chance_percent": 0.0002
+    },
+    {
+      "name": "Chrome Rush",
+      "case_price_uc": 100,
+      "image": "images/11_chrome_rush.png",
+      "items": [
+        {
+          "name": "Chrome Rush Item 01",
+          "price_uc": 13,
+          "rarity": "Common",
+          "chance_percent": 48.24110955
+        },
+        {
+          "name": "Chrome Rush Item 02",
+          "price_uc": 19,
+          "rarity": "Common",
+          "chance_percent": 22.11050854
+        },
+        {
+          "name": "Chrome Rush Item 03",
+          "price_uc": 21,
+          "rarity": "Common",
+          "chance_percent": 12.06027739
+        },
+        {
+          "name": "Chrome Rush Item 04",
+          "price_uc": 27,
+          "rarity": "Common",
+          "chance_percent": 7.03516181
+        },
+        {
+          "name": "Chrome Rush Item 05",
+          "price_uc": 33,
+          "rarity": "Uncommon",
+          "chance_percent": 4.02009246
+        },
+        {
+          "name": "Chrome Rush Item 06",
+          "price_uc": 33,
+          "rarity": "Uncommon",
+          "chance_percent": 2.51255779
+        },
+        {
+          "name": "Chrome Rush Item 07",
+          "price_uc": 37,
+          "rarity": "Rare",
+          "chance_percent": 1.7085393
+        },
+        {
+          "name": "Chrome Rush Item 08",
+          "price_uc": 40,
+          "rarity": "Rare",
+          "chance_percent": 1.00502312
+        },
+        {
+          "name": "Chrome Rush Item 09",
+          "price_uc": 40,
+          "rarity": "Epic",
+          "chance_percent": 0.60301387
+        },
+        {
+          "name": "Chrome Rush Item 10",
+          "price_uc": 40,
+          "rarity": "Epic",
+          "chance_percent": 0.35175809
+        },
+        {
+          "name": "Chrome Rush Item 11",
+          "price_uc": 44,
+          "rarity": "Legendary",
+          "chance_percent": 0.20100462
+        },
+        {
+          "name": "Chrome Rush Item 12",
+          "price_uc": 46,
+          "rarity": "Legendary",
+          "chance_percent": 0.10050231
+        },
+        {
+          "name": "Chrome Rush Item 13",
+          "price_uc": 47,
+          "rarity": "Mythic",
+          "chance_percent": 0.05025116
+        },
+        {
+          "name": "Chrome Rush Item 14",
+          "price_uc": 5145,
+          "rarity": "Jackpot",
+          "chance_percent": 0.0002
+        }
+      ],
+      "chance_total_percent": 100.0,
+      "jackpot_chance_percent": 0.0002
+    },
+    {
+      "name": "Inferno",
+      "case_price_uc": 120,
+      "image": "images/12_inferno.png",
+      "items": [
+        {
+          "name": "Inferno Item 01",
+          "price_uc": 14,
+          "rarity": "Common",
+          "chance_percent": 48.24110955
+        },
+        {
+          "name": "Inferno Item 02",
+          "price_uc": 16,
+          "rarity": "Common",
+          "chance_percent": 22.11050854
+        },
+        {
+          "name": "Inferno Item 03",
+          "price_uc": 17,
+          "rarity": "Common",
+          "chance_percent": 12.06027739
+        },
+        {
+          "name": "Inferno Item 04",
+          "price_uc": 20,
+          "rarity": "Common",
+          "chance_percent": 7.03516181
+        },
+        {
+          "name": "Inferno Item 05",
+          "price_uc": 22,
+          "rarity": "Uncommon",
+          "chance_percent": 4.02009246
+        },
+        {
+          "name": "Inferno Item 06",
+          "price_uc": 23,
+          "rarity": "Uncommon",
+          "chance_percent": 2.51255779
+        },
+        {
+          "name": "Inferno Item 07",
+          "price_uc": 28,
+          "rarity": "Rare",
+          "chance_percent": 1.7085393
+        },
+        {
+          "name": "Inferno Item 08",
+          "price_uc": 37,
+          "rarity": "Rare",
+          "chance_percent": 1.00502312
+        },
+        {
+          "name": "Inferno Item 09",
+          "price_uc": 37,
+          "rarity": "Epic",
+          "chance_percent": 0.60301387
+        },
+        {
+          "name": "Inferno Item 10",
+          "price_uc": 40,
+          "rarity": "Epic",
+          "chance_percent": 0.35175809
+        },
+        {
+          "name": "Inferno Item 11",
+          "price_uc": 42,
+          "rarity": "Legendary",
+          "chance_percent": 0.20100462
+        },
+        {
+          "name": "Inferno Item 12",
+          "price_uc": 50,
+          "rarity": "Legendary",
+          "chance_percent": 0.10050231
+        },
+        {
+          "name": "Inferno Item 13",
+          "price_uc": 52,
+          "rarity": "Mythic",
+          "chance_percent": 0.05025116
+        },
+        {
+          "name": "Inferno Item 14",
+          "price_uc": 9547,
+          "rarity": "Jackpot",
+          "chance_percent": 0.0002
+        }
+      ],
+      "chance_total_percent": 100.0,
+      "jackpot_chance_percent": 0.0002
+    },
+    {
+      "name": "Ice Legacy",
+      "case_price_uc": 140,
+      "image": "images/13_ice_legacy.png",
+      "items": [
+        {
+          "name": "Ice Legacy Item 01",
+          "price_uc": 16,
+          "rarity": "Common",
+          "chance_percent": 48.24110955
+        },
+        {
+          "name": "Ice Legacy Item 02",
+          "price_uc": 24,
+          "rarity": "Common",
+          "chance_percent": 22.11050854
+        },
+        {
+          "name": "Ice Legacy Item 03",
+          "price_uc": 28,
+          "rarity": "Common",
+          "chance_percent": 12.06027739
+        },
+        {
+          "name": "Ice Legacy Item 04",
+          "price_uc": 33,
+          "rarity": "Common",
+          "chance_percent": 7.03516181
+        },
+        {
+          "name": "Ice Legacy Item 05",
+          "price_uc": 34,
+          "rarity": "Uncommon",
+          "chance_percent": 4.02009246
+        },
+        {
+          "name": "Ice Legacy Item 06",
+          "price_uc": 37,
+          "rarity": "Uncommon",
+          "chance_percent": 2.51255779
+        },
+        {
+          "name": "Ice Legacy Item 07",
+          "price_uc": 40,
+          "rarity": "Rare",
+          "chance_percent": 1.7085393
+        },
+        {
+          "name": "Ice Legacy Item 08",
+          "price_uc": 40,
+          "rarity": "Rare",
+          "chance_percent": 1.00502312
+        },
+        {
+          "name": "Ice Legacy Item 09",
+          "price_uc": 45,
+          "rarity": "Epic",
+          "chance_percent": 0.60301387
+        },
+        {
+          "name": "Ice Legacy Item 10",
+          "price_uc": 49,
+          "rarity": "Epic",
+          "chance_percent": 0.35175809
+        },
+        {
+          "name": "Ice Legacy Item 11",
+          "price_uc": 51,
+          "rarity": "Legendary",
+          "chance_percent": 0.20100462
+        },
+        {
+          "name": "Ice Legacy Item 12",
+          "price_uc": 61,
+          "rarity": "Legendary",
+          "chance_percent": 0.10050231
+        },
+        {
+          "name": "Ice Legacy Item 13",
+          "price_uc": 63,
+          "rarity": "Mythic",
+          "chance_percent": 0.05025116
+        },
+        {
+          "name": "Ice Legacy Item 14",
+          "price_uc": 6788,
+          "rarity": "Jackpot",
+          "chance_percent": 0.0002
+        }
+      ],
+      "chance_total_percent": 100.0,
+      "jackpot_chance_percent": 0.0002
+    },
+    {
+      "name": "Toxic Pulse",
+      "case_price_uc": 160,
+      "image": "images/14_toxic_pulse.png",
+      "items": [
+        {
+          "name": "Toxic Pulse Item 01",
+          "price_uc": 27,
+          "rarity": "Common",
+          "chance_percent": 48.24110955
+        },
+        {
+          "name": "Toxic Pulse Item 02",
+          "price_uc": 27,
+          "rarity": "Common",
+          "chance_percent": 22.11050854
+        },
+        {
+          "name": "Toxic Pulse Item 03",
+          "price_uc": 30,
+          "rarity": "Common",
+          "chance_percent": 12.06027739
+        },
+        {
+          "name": "Toxic Pulse Item 04",
+          "price_uc": 30,
+          "rarity": "Common",
+          "chance_percent": 7.03516181
+        },
+        {
+          "name": "Toxic Pulse Item 05",
+          "price_uc": 41,
+          "rarity": "Uncommon",
+          "chance_percent": 4.02009246
+        },
+        {
+          "name": "Toxic Pulse Item 06",
+          "price_uc": 43,
+          "rarity": "Uncommon",
+          "chance_percent": 2.51255779
+        },
+        {
+          "name": "Toxic Pulse Item 07",
+          "price_uc": 47,
+          "rarity": "Rare",
+          "chance_percent": 1.7085393
+        },
+        {
+          "name": "Toxic Pulse Item 08",
+          "price_uc": 51,
+          "rarity": "Rare",
+          "chance_percent": 1.00502312
+        },
+        {
+          "name": "Toxic Pulse Item 09",
+          "price_uc": 53,
+          "rarity": "Epic",
+          "chance_percent": 0.60301387
+        },
+        {
+          "name": "Toxic Pulse Item 10",
+          "price_uc": 56,
+          "rarity": "Epic",
+          "chance_percent": 0.35175809
+        },
+        {
+          "name": "Toxic Pulse Item 11",
+          "price_uc": 59,
+          "rarity": "Legendary",
+          "chance_percent": 0.20100462
+        },
+        {
+          "name": "Toxic Pulse Item 12",
+          "price_uc": 63,
+          "rarity": "Legendary",
+          "chance_percent": 0.10050231
+        },
+        {
+          "name": "Toxic Pulse Item 13",
+          "price_uc": 66,
+          "rarity": "Mythic",
+          "chance_percent": 0.05025116
+        },
+        {
+          "name": "Toxic Pulse Item 14",
+          "price_uc": 9817,
+          "rarity": "Jackpot",
+          "chance_percent": 0.0002
+        }
+      ],
+      "chance_total_percent": 100.0,
+      "jackpot_chance_percent": 0.0002
+    },
+    {
+      "name": "Galaxy",
+      "case_price_uc": 180,
+      "image": "images/15_galaxy.png",
+      "items": [
+        {
+          "name": "Galaxy Item 01",
+          "price_uc": 23,
+          "rarity": "Common",
+          "chance_percent": 48.24110955
+        },
+        {
+          "name": "Galaxy Item 02",
+          "price_uc": 26,
+          "rarity": "Common",
+          "chance_percent": 22.11050854
+        },
+        {
+          "name": "Galaxy Item 03",
+          "price_uc": 37,
+          "rarity": "Common",
+          "chance_percent": 12.06027739
+        },
+        {
+          "name": "Galaxy Item 04",
+          "price_uc": 43,
+          "rarity": "Common",
+          "chance_percent": 7.03516181
+        },
+        {
+          "name": "Galaxy Item 05",
+          "price_uc": 55,
+          "rarity": "Uncommon",
+          "chance_percent": 4.02009246
+        },
+        {
+          "name": "Galaxy Item 06",
+          "price_uc": 57,
+          "rarity": "Uncommon",
+          "chance_percent": 2.51255779
+        },
+        {
+          "name": "Galaxy Item 07",
+          "price_uc": 60,
+          "rarity": "Rare",
+          "chance_percent": 1.7085393
+        },
+        {
+          "name": "Galaxy Item 08",
+          "price_uc": 67,
+          "rarity": "Rare",
+          "chance_percent": 1.00502312
+        },
+        {
+          "name": "Galaxy Item 09",
+          "price_uc": 76,
+          "rarity": "Epic",
+          "chance_percent": 0.60301387
+        },
+        {
+          "name": "Galaxy Item 10",
+          "price_uc": 76,
+          "rarity": "Epic",
+          "chance_percent": 0.35175809
+        },
+        {
+          "name": "Galaxy Item 11",
+          "price_uc": 77,
+          "rarity": "Legendary",
+          "chance_percent": 0.20100462
+        },
+        {
+          "name": "Galaxy Item 12",
+          "price_uc": 79,
+          "rarity": "Legendary",
+          "chance_percent": 0.10050231
+        },
+        {
+          "name": "Galaxy Item 13",
+          "price_uc": 84,
+          "rarity": "Mythic",
+          "chance_percent": 0.05025116
+        },
+        {
+          "name": "Galaxy Item 14",
+          "price_uc": 8749,
+          "rarity": "Jackpot",
+          "chance_percent": 0.0002
+        }
+      ],
+      "chance_total_percent": 100.0,
+      "jackpot_chance_percent": 0.0002
+    },
+    {
+      "name": "Eclipse",
+      "case_price_uc": 200,
+      "image": "images/16_eclipse.png",
+      "items": [
+        {
+          "name": "Eclipse Item 01",
+          "price_uc": 25,
+          "rarity": "Common",
+          "chance_percent": 48.24110955
+        },
+        {
+          "name": "Eclipse Item 02",
+          "price_uc": 26,
+          "rarity": "Common",
+          "chance_percent": 22.11050854
+        },
+        {
+          "name": "Eclipse Item 03",
+          "price_uc": 39,
+          "rarity": "Common",
+          "chance_percent": 12.06027739
+        },
+        {
+          "name": "Eclipse Item 04",
+          "price_uc": 45,
+          "rarity": "Common",
+          "chance_percent": 7.03516181
+        },
+        {
+          "name": "Eclipse Item 05",
+          "price_uc": 56,
+          "rarity": "Uncommon",
+          "chance_percent": 4.02009246
+        },
+        {
+          "name": "Eclipse Item 06",
+          "price_uc": 57,
+          "rarity": "Uncommon",
+          "chance_percent": 2.51255779
+        },
+        {
+          "name": "Eclipse Item 07",
+          "price_uc": 58,
+          "rarity": "Rare",
+          "chance_percent": 1.7085393
+        },
+        {
+          "name": "Eclipse Item 08",
+          "price_uc": 60,
+          "rarity": "Rare",
+          "chance_percent": 1.00502312
+        },
+        {
+          "name": "Eclipse Item 09",
+          "price_uc": 73,
+          "rarity": "Epic",
+          "chance_percent": 0.60301387
+        },
+        {
+          "name": "Eclipse Item 10",
+          "price_uc": 77,
+          "rarity": "Epic",
+          "chance_percent": 0.35175809
+        },
+        {
+          "name": "Eclipse Item 11",
+          "price_uc": 78,
+          "rarity": "Legendary",
+          "chance_percent": 0.20100462
+        },
+        {
+          "name": "Eclipse Item 12",
+          "price_uc": 88,
+          "rarity": "Legendary",
+          "chance_percent": 0.10050231
+        },
+        {
+          "name": "Eclipse Item 13",
+          "price_uc": 91,
+          "rarity": "Mythic",
+          "chance_percent": 0.05025116
+        },
+        {
+          "name": "Eclipse Item 14",
+          "price_uc": 8948,
+          "rarity": "Jackpot",
+          "chance_percent": 0.0002
+        }
+      ],
+      "chance_total_percent": 100.0,
+      "jackpot_chance_percent": 0.0002
+    },
+    {
+      "name": "Velocity",
+      "case_price_uc": 220,
+      "image": "images/17_velocity.png",
+      "items": [
+        {
+          "name": "Velocity Item 01",
+          "price_uc": 27,
+          "rarity": "Common",
+          "chance_percent": 48.24110955
+        },
+        {
+          "name": "Velocity Item 02",
+          "price_uc": 30,
+          "rarity": "Common",
+          "chance_percent": 22.11050854
+        },
+        {
+          "name": "Velocity Item 03",
+          "price_uc": 46,
+          "rarity": "Common",
+          "chance_percent": 12.06027739
+        },
+        {
+          "name": "Velocity Item 04",
+          "price_uc": 50,
+          "rarity": "Common",
+          "chance_percent": 7.03516181
+        },
+        {
+          "name": "Velocity Item 05",
+          "price_uc": 55,
+          "rarity": "Uncommon",
+          "chance_percent": 4.02009246
+        },
+        {
+          "name": "Velocity Item 06",
+          "price_uc": 57,
+          "rarity": "Uncommon",
+          "chance_percent": 2.51255779
+        },
+        {
+          "name": "Velocity Item 07",
+          "price_uc": 66,
+          "rarity": "Rare",
+          "chance_percent": 1.7085393
+        },
+        {
+          "name": "Velocity Item 08",
+          "price_uc": 75,
+          "rarity": "Rare",
+          "chance_percent": 1.00502312
+        },
+        {
+          "name": "Velocity Item 09",
+          "price_uc": 77,
+          "rarity": "Epic",
+          "chance_percent": 0.60301387
+        },
+        {
+          "name": "Velocity Item 10",
+          "price_uc": 81,
+          "rarity": "Epic",
+          "chance_percent": 0.35175809
+        },
+        {
+          "name": "Velocity Item 11",
+          "price_uc": 85,
+          "rarity": "Legendary",
+          "chance_percent": 0.20100462
+        },
+        {
+          "name": "Velocity Item 12",
+          "price_uc": 91,
+          "rarity": "Legendary",
+          "chance_percent": 0.10050231
+        },
+        {
+          "name": "Velocity Item 13",
+          "price_uc": 92,
+          "rarity": "Mythic",
+          "chance_percent": 0.05025116
+        },
+        {
+          "name": "Velocity Item 14",
+          "price_uc": 5771,
+          "rarity": "Jackpot",
+          "chance_percent": 0.0002
+        }
+      ],
+      "chance_total_percent": 100.0,
+      "jackpot_chance_percent": 0.0002
+    },
+    {
+      "name": "Royal",
+      "case_price_uc": 240,
+      "image": "images/18_royal.png",
+      "items": [
+        {
+          "name": "Royal Item 01",
+          "price_uc": 35,
+          "rarity": "Common",
+          "chance_percent": 48.24110955
+        },
+        {
+          "name": "Royal Item 02",
+          "price_uc": 53,
+          "rarity": "Common",
+          "chance_percent": 22.11050854
+        },
+        {
+          "name": "Royal Item 03",
+          "price_uc": 53,
+          "rarity": "Common",
+          "chance_percent": 12.06027739
+        },
+        {
+          "name": "Royal Item 04",
+          "price_uc": 54,
+          "rarity": "Common",
+          "chance_percent": 7.03516181
+        },
+        {
+          "name": "Royal Item 05",
+          "price_uc": 59,
+          "rarity": "Uncommon",
+          "chance_percent": 4.02009246
+        },
+        {
+          "name": "Royal Item 06",
+          "price_uc": 63,
+          "rarity": "Uncommon",
+          "chance_percent": 2.51255779
+        },
+        {
+          "name": "Royal Item 07",
+          "price_uc": 65,
+          "rarity": "Rare",
+          "chance_percent": 1.7085393
+        },
+        {
+          "name": "Royal Item 08",
+          "price_uc": 68,
+          "rarity": "Rare",
+          "chance_percent": 1.00502312
+        },
+        {
+          "name": "Royal Item 09",
+          "price_uc": 68,
+          "rarity": "Epic",
+          "chance_percent": 0.60301387
+        },
+        {
+          "name": "Royal Item 10",
+          "price_uc": 78,
+          "rarity": "Epic",
+          "chance_percent": 0.35175809
+        },
+        {
+          "name": "Royal Item 11",
+          "price_uc": 92,
+          "rarity": "Legendary",
+          "chance_percent": 0.20100462
+        },
+        {
+          "name": "Royal Item 12",
+          "price_uc": 98,
+          "rarity": "Legendary",
+          "chance_percent": 0.10050231
+        },
+        {
+          "name": "Royal Item 13",
+          "price_uc": 100,
+          "rarity": "Mythic",
+          "chance_percent": 0.05025116
+        },
+        {
+          "name": "Royal Item 14",
+          "price_uc": 8576,
+          "rarity": "Jackpot",
+          "chance_percent": 0.0002
+        }
+      ],
+      "chance_total_percent": 100.0,
+      "jackpot_chance_percent": 0.0002
+    },
+    {
+      "name": "Titan",
+      "case_price_uc": 260,
+      "image": "images/19_titan.png",
+      "items": [
+        {
+          "name": "Titan Item 01",
+          "price_uc": 38,
+          "rarity": "Common",
+          "chance_percent": 48.24110955
+        },
+        {
+          "name": "Titan Item 02",
+          "price_uc": 40,
+          "rarity": "Common",
+          "chance_percent": 22.11050854
+        },
+        {
+          "name": "Titan Item 03",
+          "price_uc": 40,
+          "rarity": "Common",
+          "chance_percent": 12.06027739
+        },
+        {
+          "name": "Titan Item 04",
+          "price_uc": 43,
+          "rarity": "Common",
+          "chance_percent": 7.03516181
+        },
+        {
+          "name": "Titan Item 05",
+          "price_uc": 48,
+          "rarity": "Uncommon",
+          "chance_percent": 4.02009246
+        },
+        {
+          "name": "Titan Item 06",
+          "price_uc": 51,
+          "rarity": "Uncommon",
+          "chance_percent": 2.51255779
+        },
+        {
+          "name": "Titan Item 07",
+          "price_uc": 58,
+          "rarity": "Rare",
+          "chance_percent": 1.7085393
+        },
+        {
+          "name": "Titan Item 08",
+          "price_uc": 80,
+          "rarity": "Rare",
+          "chance_percent": 1.00502312
+        },
+        {
+          "name": "Titan Item 09",
+          "price_uc": 89,
+          "rarity": "Epic",
+          "chance_percent": 0.60301387
+        },
+        {
+          "name": "Titan Item 10",
+          "price_uc": 92,
+          "rarity": "Epic",
+          "chance_percent": 0.35175809
+        },
+        {
+          "name": "Titan Item 11",
+          "price_uc": 93,
+          "rarity": "Legendary",
+          "chance_percent": 0.20100462
+        },
+        {
+          "name": "Titan Item 12",
+          "price_uc": 110,
+          "rarity": "Legendary",
+          "chance_percent": 0.10050231
+        },
+        {
+          "name": "Titan Item 13",
+          "price_uc": 113,
+          "rarity": "Mythic",
+          "chance_percent": 0.05025116
+        },
+        {
+          "name": "Titan Item 14",
+          "price_uc": 7840,
+          "rarity": "Jackpot",
+          "chance_percent": 0.0002
+        }
+      ],
+      "chance_total_percent": 100.0,
+      "jackpot_chance_percent": 0.0002
+    },
+    {
+      "name": "Spectre",
+      "case_price_uc": 280,
+      "image": "images/20_spectre.png",
+      "items": [
+        {
+          "name": "Spectre Item 01",
+          "price_uc": 36,
+          "rarity": "Common",
+          "chance_percent": 48.24110955
+        },
+        {
+          "name": "Spectre Item 02",
+          "price_uc": 44,
+          "rarity": "Common",
+          "chance_percent": 22.11050854
+        },
+        {
+          "name": "Spectre Item 03",
+          "price_uc": 62,
+          "rarity": "Common",
+          "chance_percent": 12.06027739
+        },
+        {
+          "name": "Spectre Item 04",
+          "price_uc": 66,
+          "rarity": "Common",
+          "chance_percent": 7.03516181
+        },
+        {
+          "name": "Spectre Item 05",
+          "price_uc": 78,
+          "rarity": "Uncommon",
+          "chance_percent": 4.02009246
+        },
+        {
+          "name": "Spectre Item 06",
+          "price_uc": 80,
+          "rarity": "Uncommon",
+          "chance_percent": 2.51255779
+        },
+        {
+          "name": "Spectre Item 07",
+          "price_uc": 84,
+          "rarity": "Rare",
+          "chance_percent": 1.7085393
+        },
+        {
+          "name": "Spectre Item 08",
+          "price_uc": 86,
+          "rarity": "Rare",
+          "chance_percent": 1.00502312
+        },
+        {
+          "name": "Spectre Item 09",
+          "price_uc": 94,
+          "rarity": "Epic",
+          "chance_percent": 0.60301387
+        },
+        {
+          "name": "Spectre Item 10",
+          "price_uc": 99,
+          "rarity": "Epic",
+          "chance_percent": 0.35175809
+        },
+        {
+          "name": "Spectre Item 11",
+          "price_uc": 115,
+          "rarity": "Legendary",
+          "chance_percent": 0.20100462
+        },
+        {
+          "name": "Spectre Item 12",
+          "price_uc": 118,
+          "rarity": "Legendary",
+          "chance_percent": 0.10050231
+        },
+        {
+          "name": "Spectre Item 13",
+          "price_uc": 118,
+          "rarity": "Mythic",
+          "chance_percent": 0.05025116
+        },
+        {
+          "name": "Spectre Item 14",
+          "price_uc": 6676,
+          "rarity": "Jackpot",
+          "chance_percent": 0.0002
+        }
+      ],
+      "chance_total_percent": 100.0,
+      "jackpot_chance_percent": 0.0002
+    },
+    {
+      "name": "Aurora",
+      "case_price_uc": 300,
+      "image": "images/21_aurora.png",
+      "items": [
+        {
+          "name": "Aurora Item 01",
+          "price_uc": 35,
+          "rarity": "Common",
+          "chance_percent": 48.24110955
+        },
+        {
+          "name": "Aurora Item 02",
+          "price_uc": 38,
+          "rarity": "Common",
+          "chance_percent": 22.11050854
+        },
+        {
+          "name": "Aurora Item 03",
+          "price_uc": 44,
+          "rarity": "Common",
+          "chance_percent": 12.06027739
+        },
+        {
+          "name": "Aurora Item 04",
+          "price_uc": 50,
+          "rarity": "Common",
+          "chance_percent": 7.03516181
+        },
+        {
+          "name": "Aurora Item 05",
+          "price_uc": 51,
+          "rarity": "Uncommon",
+          "chance_percent": 4.02009246
+        },
+        {
+          "name": "Aurora Item 06",
+          "price_uc": 89,
+          "rarity": "Uncommon",
+          "chance_percent": 2.51255779
+        },
+        {
+          "name": "Aurora Item 07",
+          "price_uc": 93,
+          "rarity": "Rare",
+          "chance_percent": 1.7085393
+        },
+        {
+          "name": "Aurora Item 08",
+          "price_uc": 94,
+          "rarity": "Rare",
+          "chance_percent": 1.00502312
+        },
+        {
+          "name": "Aurora Item 09",
+          "price_uc": 96,
+          "rarity": "Epic",
+          "chance_percent": 0.60301387
+        },
+        {
+          "name": "Aurora Item 10",
+          "price_uc": 100,
+          "rarity": "Epic",
+          "chance_percent": 0.35175809
+        },
+        {
+          "name": "Aurora Item 11",
+          "price_uc": 101,
+          "rarity": "Legendary",
+          "chance_percent": 0.20100462
+        },
+        {
+          "name": "Aurora Item 12",
+          "price_uc": 118,
+          "rarity": "Legendary",
+          "chance_percent": 0.10050231
+        },
+        {
+          "name": "Aurora Item 13",
+          "price_uc": 131,
+          "rarity": "Mythic",
+          "chance_percent": 0.05025116
+        },
+        {
+          "name": "Aurora Item 14",
+          "price_uc": 9486,
+          "rarity": "Jackpot",
+          "chance_percent": 0.0002
+        }
+      ],
+      "chance_total_percent": 100.0,
+      "jackpot_chance_percent": 0.0002
+    },
+    {
+      "name": "Overdrive",
+      "case_price_uc": 320,
+      "image": "images/22_overdrive.png",
+      "items": [
+        {
+          "name": "Overdrive Item 01",
+          "price_uc": 37,
+          "rarity": "Common",
+          "chance_percent": 48.24110955
+        },
+        {
+          "name": "Overdrive Item 02",
+          "price_uc": 46,
+          "rarity": "Common",
+          "chance_percent": 22.11050854
+        },
+        {
+          "name": "Overdrive Item 03",
+          "price_uc": 47,
+          "rarity": "Common",
+          "chance_percent": 12.06027739
+        },
+        {
+          "name": "Overdrive Item 04",
+          "price_uc": 50,
+          "rarity": "Common",
+          "chance_percent": 7.03516181
+        },
+        {
+          "name": "Overdrive Item 05",
+          "price_uc": 68,
+          "rarity": "Uncommon",
+          "chance_percent": 4.02009246
+        },
+        {
+          "name": "Overdrive Item 06",
+          "price_uc": 78,
+          "rarity": "Uncommon",
+          "chance_percent": 2.51255779
+        },
+        {
+          "name": "Overdrive Item 07",
+          "price_uc": 87,
+          "rarity": "Rare",
+          "chance_percent": 1.7085393
+        },
+        {
+          "name": "Overdrive Item 08",
+          "price_uc": 93,
+          "rarity": "Rare",
+          "chance_percent": 1.00502312
+        },
+        {
+          "name": "Overdrive Item 09",
+          "price_uc": 94,
+          "rarity": "Epic",
+          "chance_percent": 0.60301387
+        },
+        {
+          "name": "Overdrive Item 10",
+          "price_uc": 122,
+          "rarity": "Epic",
+          "chance_percent": 0.35175809
+        },
+        {
+          "name": "Overdrive Item 11",
+          "price_uc": 131,
+          "rarity": "Legendary",
+          "chance_percent": 0.20100462
+        },
+        {
+          "name": "Overdrive Item 12",
+          "price_uc": 135,
+          "rarity": "Legendary",
+          "chance_percent": 0.10050231
+        },
+        {
+          "name": "Overdrive Item 13",
+          "price_uc": 141,
+          "rarity": "Mythic",
+          "chance_percent": 0.05025116
+        },
+        {
+          "name": "Overdrive Item 14",
+          "price_uc": 5195,
+          "rarity": "Jackpot",
+          "chance_percent": 0.0002
+        }
+      ],
+      "chance_total_percent": 100.0,
+      "jackpot_chance_percent": 0.0002
+    },
+    {
+      "name": "Dragon",
+      "case_price_uc": 350,
+      "image": "images/23_dragon.png",
+      "items": [
+        {
+          "name": "Dragon Item 01",
+          "price_uc": 36,
+          "rarity": "Common",
+          "chance_percent": 48.24110955
+        },
+        {
+          "name": "Dragon Item 02",
+          "price_uc": 62,
+          "rarity": "Common",
+          "chance_percent": 22.11050854
+        },
+        {
+          "name": "Dragon Item 03",
+          "price_uc": 66,
+          "rarity": "Common",
+          "chance_percent": 12.06027739
+        },
+        {
+          "name": "Dragon Item 04",
+          "price_uc": 73,
+          "rarity": "Common",
+          "chance_percent": 7.03516181
+        },
+        {
+          "name": "Dragon Item 05",
+          "price_uc": 76,
+          "rarity": "Uncommon",
+          "chance_percent": 4.02009246
+        },
+        {
+          "name": "Dragon Item 06",
+          "price_uc": 81,
+          "rarity": "Uncommon",
+          "chance_percent": 2.51255779
+        },
+        {
+          "name": "Dragon Item 07",
+          "price_uc": 88,
+          "rarity": "Rare",
+          "chance_percent": 1.7085393
+        },
+        {
+          "name": "Dragon Item 08",
+          "price_uc": 91,
+          "rarity": "Rare",
+          "chance_percent": 1.00502312
+        },
+        {
+          "name": "Dragon Item 09",
+          "price_uc": 106,
+          "rarity": "Epic",
+          "chance_percent": 0.60301387
+        },
+        {
+          "name": "Dragon Item 10",
+          "price_uc": 107,
+          "rarity": "Epic",
+          "chance_percent": 0.35175809
+        },
+        {
+          "name": "Dragon Item 11",
+          "price_uc": 115,
+          "rarity": "Legendary",
+          "chance_percent": 0.20100462
+        },
+        {
+          "name": "Dragon Item 12",
+          "price_uc": 133,
+          "rarity": "Legendary",
+          "chance_percent": 0.10050231
+        },
+        {
+          "name": "Dragon Item 13",
+          "price_uc": 135,
+          "rarity": "Mythic",
+          "chance_percent": 0.05025116
+        },
+        {
+          "name": "Dragon Item 14",
+          "price_uc": 5723,
+          "rarity": "Jackpot",
+          "chance_percent": 0.0002
+        }
+      ],
+      "chance_total_percent": 100.0,
+      "jackpot_chance_percent": 0.0002
+    },
+    {
+      "name": "Diamond",
+      "case_price_uc": 380,
+      "image": "images/24_diamond.png",
+      "items": [
+        {
+          "name": "Diamond Item 01",
+          "price_uc": 41,
+          "rarity": "Common",
+          "chance_percent": 48.24110955
+        },
+        {
+          "name": "Diamond Item 02",
+          "price_uc": 50,
+          "rarity": "Common",
+          "chance_percent": 22.11050854
+        },
+        {
+          "name": "Diamond Item 03",
+          "price_uc": 50,
+          "rarity": "Common",
+          "chance_percent": 12.06027739
+        },
+        {
+          "name": "Diamond Item 04",
+          "price_uc": 51,
+          "rarity": "Common",
+          "chance_percent": 7.03516181
+        },
+        {
+          "name": "Diamond Item 05",
+          "price_uc": 60,
+          "rarity": "Uncommon",
+          "chance_percent": 4.02009246
+        },
+        {
+          "name": "Diamond Item 06",
+          "price_uc": 63,
+          "rarity": "Uncommon",
+          "chance_percent": 2.51255779
+        },
+        {
+          "name": "Diamond Item 07",
+          "price_uc": 71,
+          "rarity": "Rare",
+          "chance_percent": 1.7085393
+        },
+        {
+          "name": "Diamond Item 08",
+          "price_uc": 75,
+          "rarity": "Rare",
+          "chance_percent": 1.00502312
+        },
+        {
+          "name": "Diamond Item 09",
+          "price_uc": 87,
+          "rarity": "Epic",
+          "chance_percent": 0.60301387
+        },
+        {
+          "name": "Diamond Item 10",
+          "price_uc": 113,
+          "rarity": "Epic",
+          "chance_percent": 0.35175809
+        },
+        {
+          "name": "Diamond Item 11",
+          "price_uc": 133,
+          "rarity": "Legendary",
+          "chance_percent": 0.20100462
+        },
+        {
+          "name": "Diamond Item 12",
+          "price_uc": 141,
+          "rarity": "Legendary",
+          "chance_percent": 0.10050231
+        },
+        {
+          "name": "Diamond Item 13",
+          "price_uc": 169,
+          "rarity": "Mythic",
+          "chance_percent": 0.05025116
+        },
+        {
+          "name": "Diamond Item 14",
+          "price_uc": 6946,
+          "rarity": "Jackpot",
+          "chance_percent": 0.0002
+        }
+      ],
+      "chance_total_percent": 100.0,
+      "jackpot_chance_percent": 0.0002
+    },
+    {
+      "name": "Ultra Neon",
+      "case_price_uc": 400,
+      "image": "images/25_ultra_neon.png",
+      "items": [
+        {
+          "name": "Ultra Neon Item 01",
+          "price_uc": 67,
+          "rarity": "Common",
+          "chance_percent": 48.24110955
+        },
+        {
+          "name": "Ultra Neon Item 02",
+          "price_uc": 67,
+          "rarity": "Common",
+          "chance_percent": 22.11050854
+        },
+        {
+          "name": "Ultra Neon Item 03",
+          "price_uc": 71,
+          "rarity": "Common",
+          "chance_percent": 12.06027739
+        },
+        {
+          "name": "Ultra Neon Item 04",
+          "price_uc": 76,
+          "rarity": "Common",
+          "chance_percent": 7.03516181
+        },
+        {
+          "name": "Ultra Neon Item 05",
+          "price_uc": 90,
+          "rarity": "Uncommon",
+          "chance_percent": 4.02009246
+        },
+        {
+          "name": "Ultra Neon Item 06",
+          "price_uc": 94,
+          "rarity": "Uncommon",
+          "chance_percent": 2.51255779
+        },
+        {
+          "name": "Ultra Neon Item 07",
+          "price_uc": 112,
+          "rarity": "Rare",
+          "chance_percent": 1.7085393
+        },
+        {
+          "name": "Ultra Neon Item 08",
+          "price_uc": 121,
+          "rarity": "Rare",
+          "chance_percent": 1.00502312
+        },
+        {
+          "name": "Ultra Neon Item 09",
+          "price_uc": 136,
+          "rarity": "Epic",
+          "chance_percent": 0.60301387
+        },
+        {
+          "name": "Ultra Neon Item 10",
+          "price_uc": 151,
+          "rarity": "Epic",
+          "chance_percent": 0.35175809
+        },
+        {
+          "name": "Ultra Neon Item 11",
+          "price_uc": 164,
+          "rarity": "Legendary",
+          "chance_percent": 0.20100462
+        },
+        {
+          "name": "Ultra Neon Item 12",
+          "price_uc": 166,
+          "rarity": "Legendary",
+          "chance_percent": 0.10050231
+        },
+        {
+          "name": "Ultra Neon Item 13",
+          "price_uc": 178,
+          "rarity": "Mythic",
+          "chance_percent": 0.05025116
+        },
+        {
+          "name": "Ultra Neon Item 14",
+          "price_uc": 7694,
+          "rarity": "Jackpot",
+          "chance_percent": 0.0002
+        }
+      ],
+      "chance_total_percent": 100.0,
+      "jackpot_chance_percent": 0.0002
+    },
+    {
+      "name": "Blackout",
+      "case_price_uc": 420,
+      "image": "images/26_blackout.png",
+      "items": [
+        {
+          "name": "Blackout Item 01",
+          "price_uc": 51,
+          "rarity": "Common",
+          "chance_percent": 48.24110955
+        },
+        {
+          "name": "Blackout Item 02",
+          "price_uc": 69,
+          "rarity": "Common",
+          "chance_percent": 22.11050854
+        },
+        {
+          "name": "Blackout Item 03",
+          "price_uc": 78,
+          "rarity": "Common",
+          "chance_percent": 12.06027739
+        },
+        {
+          "name": "Blackout Item 04",
+          "price_uc": 85,
+          "rarity": "Common",
+          "chance_percent": 7.03516181
+        },
+        {
+          "name": "Blackout Item 05",
+          "price_uc": 96,
+          "rarity": "Uncommon",
+          "chance_percent": 4.02009246
+        },
+        {
+          "name": "Blackout Item 06",
+          "price_uc": 100,
+          "rarity": "Uncommon",
+          "chance_percent": 2.51255779
+        },
+        {
+          "name": "Blackout Item 07",
+          "price_uc": 104,
+          "rarity": "Rare",
+          "chance_percent": 1.7085393
+        },
+        {
+          "name": "Blackout Item 08",
+          "price_uc": 115,
+          "rarity": "Rare",
+          "chance_percent": 1.00502312
+        },
+        {
+          "name": "Blackout Item 09",
+          "price_uc": 115,
+          "rarity": "Epic",
+          "chance_percent": 0.60301387
+        },
+        {
+          "name": "Blackout Item 10",
+          "price_uc": 119,
+          "rarity": "Epic",
+          "chance_percent": 0.35175809
+        },
+        {
+          "name": "Blackout Item 11",
+          "price_uc": 147,
+          "rarity": "Legendary",
+          "chance_percent": 0.20100462
+        },
+        {
+          "name": "Blackout Item 12",
+          "price_uc": 152,
+          "rarity": "Legendary",
+          "chance_percent": 0.10050231
+        },
+        {
+          "name": "Blackout Item 13",
+          "price_uc": 178,
+          "rarity": "Mythic",
+          "chance_percent": 0.05025116
+        },
+        {
+          "name": "Blackout Item 14",
+          "price_uc": 5067,
+          "rarity": "Jackpot",
+          "chance_percent": 0.0002
+        }
+      ],
+      "chance_total_percent": 100.0,
+      "jackpot_chance_percent": 0.0002
+    },
+    {
+      "name": "Cosmic",
+      "case_price_uc": 440,
+      "image": "images/27_cosmic.png",
+      "items": [
+        {
+          "name": "Cosmic Item 01",
+          "price_uc": 48,
+          "rarity": "Common",
+          "chance_percent": 48.24110955
+        },
+        {
+          "name": "Cosmic Item 02",
+          "price_uc": 51,
+          "rarity": "Common",
+          "chance_percent": 22.11050854
+        },
+        {
+          "name": "Cosmic Item 03",
+          "price_uc": 53,
+          "rarity": "Common",
+          "chance_percent": 12.06027739
+        },
+        {
+          "name": "Cosmic Item 04",
+          "price_uc": 58,
+          "rarity": "Common",
+          "chance_percent": 7.03516181
+        },
+        {
+          "name": "Cosmic Item 05",
+          "price_uc": 63,
+          "rarity": "Uncommon",
+          "chance_percent": 4.02009246
+        },
+        {
+          "name": "Cosmic Item 06",
+          "price_uc": 73,
+          "rarity": "Uncommon",
+          "chance_percent": 2.51255779
+        },
+        {
+          "name": "Cosmic Item 07",
+          "price_uc": 74,
+          "rarity": "Rare",
+          "chance_percent": 1.7085393
+        },
+        {
+          "name": "Cosmic Item 08",
+          "price_uc": 77,
+          "rarity": "Rare",
+          "chance_percent": 1.00502312
+        },
+        {
+          "name": "Cosmic Item 09",
+          "price_uc": 102,
+          "rarity": "Epic",
+          "chance_percent": 0.60301387
+        },
+        {
+          "name": "Cosmic Item 10",
+          "price_uc": 103,
+          "rarity": "Epic",
+          "chance_percent": 0.35175809
+        },
+        {
+          "name": "Cosmic Item 11",
+          "price_uc": 120,
+          "rarity": "Legendary",
+          "chance_percent": 0.20100462
+        },
+        {
+          "name": "Cosmic Item 12",
+          "price_uc": 128,
+          "rarity": "Legendary",
+          "chance_percent": 0.10050231
+        },
+        {
+          "name": "Cosmic Item 13",
+          "price_uc": 178,
+          "rarity": "Mythic",
+          "chance_percent": 0.05025116
+        },
+        {
+          "name": "Cosmic Item 14",
+          "price_uc": 5124,
+          "rarity": "Jackpot",
+          "chance_percent": 0.0002
+        }
+      ],
+      "chance_total_percent": 100.0,
+      "jackpot_chance_percent": 0.0002
+    },
+    {
+      "name": "Legend",
+      "case_price_uc": 460,
+      "image": "images/28_legend.png",
+      "items": [
+        {
+          "name": "Legend Item 01",
+          "price_uc": 75,
+          "rarity": "Common",
+          "chance_percent": 48.24110955
+        },
+        {
+          "name": "Legend Item 02",
+          "price_uc": 87,
+          "rarity": "Common",
+          "chance_percent": 22.11050854
+        },
+        {
+          "name": "Legend Item 03",
+          "price_uc": 90,
+          "rarity": "Common",
+          "chance_percent": 12.06027739
+        },
+        {
+          "name": "Legend Item 04",
+          "price_uc": 97,
+          "rarity": "Common",
+          "chance_percent": 7.03516181
+        },
+        {
+          "name": "Legend Item 05",
+          "price_uc": 122,
+          "rarity": "Uncommon",
+          "chance_percent": 4.02009246
+        },
+        {
+          "name": "Legend Item 06",
+          "price_uc": 129,
+          "rarity": "Uncommon",
+          "chance_percent": 2.51255779
+        },
+        {
+          "name": "Legend Item 07",
+          "price_uc": 133,
+          "rarity": "Rare",
+          "chance_percent": 1.7085393
+        },
+        {
+          "name": "Legend Item 08",
+          "price_uc": 170,
+          "rarity": "Rare",
+          "chance_percent": 1.00502312
+        },
+        {
+          "name": "Legend Item 09",
+          "price_uc": 173,
+          "rarity": "Epic",
+          "chance_percent": 0.60301387
+        },
+        {
+          "name": "Legend Item 10",
+          "price_uc": 188,
+          "rarity": "Epic",
+          "chance_percent": 0.35175809
+        },
+        {
+          "name": "Legend Item 11",
+          "price_uc": 192,
+          "rarity": "Legendary",
+          "chance_percent": 0.20100462
+        },
+        {
+          "name": "Legend Item 12",
+          "price_uc": 205,
+          "rarity": "Legendary",
+          "chance_percent": 0.10050231
+        },
+        {
+          "name": "Legend Item 13",
+          "price_uc": 209,
+          "rarity": "Mythic",
+          "chance_percent": 0.05025116
+        },
+        {
+          "name": "Legend Item 14",
+          "price_uc": 6323,
+          "rarity": "Jackpot",
+          "chance_percent": 0.0002
+        }
+      ],
+      "chance_total_percent": 100.0,
+      "jackpot_chance_percent": 0.0002
+    },
+    {
+      "name": "Immortal",
+      "case_price_uc": 480,
+      "image": "images/29_immortal.png",
+      "items": [
+        {
+          "name": "Immortal Item 01",
+          "price_uc": 76,
+          "rarity": "Common",
+          "chance_percent": 48.24110955
+        },
+        {
+          "name": "Immortal Item 02",
+          "price_uc": 78,
+          "rarity": "Common",
+          "chance_percent": 22.11050854
+        },
+        {
+          "name": "Immortal Item 03",
+          "price_uc": 96,
+          "rarity": "Common",
+          "chance_percent": 12.06027739
+        },
+        {
+          "name": "Immortal Item 04",
+          "price_uc": 101,
+          "rarity": "Common",
+          "chance_percent": 7.03516181
+        },
+        {
+          "name": "Immortal Item 05",
+          "price_uc": 102,
+          "rarity": "Uncommon",
+          "chance_percent": 4.02009246
+        },
+        {
+          "name": "Immortal Item 06",
+          "price_uc": 107,
+          "rarity": "Uncommon",
+          "chance_percent": 2.51255779
+        },
+        {
+          "name": "Immortal Item 07",
+          "price_uc": 115,
+          "rarity": "Rare",
+          "chance_percent": 1.7085393
+        },
+        {
+          "name": "Immortal Item 08",
+          "price_uc": 123,
+          "rarity": "Rare",
+          "chance_percent": 1.00502312
+        },
+        {
+          "name": "Immortal Item 09",
+          "price_uc": 131,
+          "rarity": "Epic",
+          "chance_percent": 0.60301387
+        },
+        {
+          "name": "Immortal Item 10",
+          "price_uc": 161,
+          "rarity": "Epic",
+          "chance_percent": 0.35175809
+        },
+        {
+          "name": "Immortal Item 11",
+          "price_uc": 183,
+          "rarity": "Legendary",
+          "chance_percent": 0.20100462
+        },
+        {
+          "name": "Immortal Item 12",
+          "price_uc": 203,
+          "rarity": "Legendary",
+          "chance_percent": 0.10050231
+        },
+        {
+          "name": "Immortal Item 13",
+          "price_uc": 216,
+          "rarity": "Mythic",
+          "chance_percent": 0.05025116
+        },
+        {
+          "name": "Immortal Item 14",
+          "price_uc": 9073,
+          "rarity": "Jackpot",
+          "chance_percent": 0.0002
+        }
+      ],
+      "chance_total_percent": 100.0,
+      "jackpot_chance_percent": 0.0002
+    },
+    {
+      "name": "Supreme",
+      "case_price_uc": 500,
+      "image": "images/30_supreme.png",
+      "items": [
+        {
+          "name": "Supreme Item 01",
+          "price_uc": 62,
+          "rarity": "Common",
+          "chance_percent": 48.24110955
+        },
+        {
+          "name": "Supreme Item 02",
+          "price_uc": 84,
+          "rarity": "Common",
+          "chance_percent": 22.11050854
+        },
+        {
+          "name": "Supreme Item 03",
+          "price_uc": 84,
+          "rarity": "Common",
+          "chance_percent": 12.06027739
+        },
+        {
+          "name": "Supreme Item 04",
+          "price_uc": 97,
+          "rarity": "Common",
+          "chance_percent": 7.03516181
+        },
+        {
+          "name": "Supreme Item 05",
+          "price_uc": 117,
+          "rarity": "Uncommon",
+          "chance_percent": 4.02009246
+        },
+        {
+          "name": "Supreme Item 06",
+          "price_uc": 135,
+          "rarity": "Uncommon",
+          "chance_percent": 2.51255779
+        },
+        {
+          "name": "Supreme Item 07",
+          "price_uc": 154,
+          "rarity": "Rare",
+          "chance_percent": 1.7085393
+        },
+        {
+          "name": "Supreme Item 08",
+          "price_uc": 160,
+          "rarity": "Rare",
+          "chance_percent": 1.00502312
+        },
+        {
+          "name": "Supreme Item 09",
+          "price_uc": 175,
+          "rarity": "Epic",
+          "chance_percent": 0.60301387
+        },
+        {
+          "name": "Supreme Item 10",
+          "price_uc": 180,
+          "rarity": "Epic",
+          "chance_percent": 0.35175809
+        },
+        {
+          "name": "Supreme Item 11",
+          "price_uc": 186,
+          "rarity": "Legendary",
+          "chance_percent": 0.20100462
+        },
+        {
+          "name": "Supreme Item 12",
+          "price_uc": 204,
+          "rarity": "Legendary",
+          "chance_percent": 0.10050231
+        },
+        {
+          "name": "Supreme Item 13",
+          "price_uc": 228,
+          "rarity": "Mythic",
+          "chance_percent": 0.05025116
+        },
+        {
+          "name": "Supreme Item 14",
+          "price_uc": 7251,
+          "rarity": "Jackpot",
+          "chance_percent": 0.0002
+        }
+      ],
+      "chance_total_percent": 100.0,
+      "jackpot_chance_percent": 0.0002
+    }
+  ]
+}
