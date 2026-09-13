@@ -1571,10 +1571,16 @@ def cases_30_status_api_view(request):
     cases_data = []
     found_count = 0
     total_items_count = 0
+    total_items_with_valid_img = 0
+    total_broken_img = 0
 
     for idx, c in enumerate(json_cases, 1):
         slug = slugify(c['name'])
         case = Case.objects.filter(slug=slug).first()
+        items_detail = []
+        case_items_valid_img = 0
+        case_broken_img = 0
+
         if case:
             found_count += 1
             items = case.case_items.select_related('item').all()
@@ -1584,6 +1590,27 @@ def cases_30_status_api_view(request):
             ev = sum((Decimal(str(ci.weight)) / Decimal('100.0')) * ci.item.value for ci in items)
             rtp = round((float(ev) / float(case.price) * 100.0), 2) if case.price > 0 else 0.0
             display_img = case.display_image
+
+            for ci in items:
+                img_url = ci.item.display_image or ''
+                is_valid = bool(img_url and not ('placeholder' in img_url.lower()))
+                if is_valid:
+                    case_items_valid_img += 1
+                    total_items_with_valid_img += 1
+                else:
+                    case_broken_img += 1
+                    total_broken_img += 1
+
+                items_detail.append({
+                    'name': ci.item.name,
+                    'weapon_type': ci.item.weapon_type,
+                    'skin_name': ci.item.skin_name,
+                    'rarity': ci.item.rarity,
+                    'price_uc': float(ci.item.value),
+                    'chance_percent': round(ci.weight, 4),
+                    'image': img_url,
+                    'image_ok': is_valid,
+                })
         else:
             items_count = 0
             prob_sum = 0.0
@@ -1597,9 +1624,12 @@ def cases_30_status_api_view(request):
             'price': c['case_price_uc'],
             'exists': bool(case),
             'items_count': items_count,
+            'items_with_valid_images': case_items_valid_img,
+            'broken_images_count': case_broken_img,
             'sum_chances': round(prob_sum, 3),
             'rtp': rtp,
             'display_image': display_img,
+            'items': items_detail,
         })
 
     return JsonResponse({
@@ -1607,6 +1637,10 @@ def cases_30_status_api_view(request):
         'total_items_in_db': Item.objects.count(),
         'cases_30_target_count': len(json_cases),
         'cases_30_found_in_db': found_count,
+        'total_items_in_30_cases': total_items_count,
+        'unique_template_images_count': 14,
+        'items_with_valid_images_count': total_items_with_valid_img,
+        'broken_images_count': total_broken_img,
         'database_engine': getattr(settings, 'DATABASE_ENGINE_NAME', 'PostgreSQL'),
         'database_host': getattr(settings, 'DATABASE_HOST_DISPLAY', 'default'),
         'is_persistent': getattr(settings, 'IS_PERSISTENT_DATABASE', False),
