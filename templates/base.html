@@ -97,7 +97,12 @@
             <span>{{ user_balance|uc }}</span>
           </span>
         </div>
-        <a href="{% url 'payments:deposit' %}" class="btn-topup-mini" title="Пополнить">+</a>
+        <div style="display: flex; gap: 6px; align-items: center;">
+          <a href="{% url 'payments:deposit' %}" class="btn-topup-mini" title="Пополнить">+</a>
+          <button type="button" class="btn-withdraw-mini open-withdraw-modal-trigger" title="Вывести">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+          </button>
+        </div>
       </div>
     {% else %}
       <div class="drawer-auth-buttons">
@@ -155,6 +160,10 @@
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect><line x1="1" y1="10" x2="23" y2="10"></line></svg>
           <span>Пополнить баланс</span>
         </a>
+        <button type="button" class="drawer-link open-withdraw-modal-trigger" style="text-align: left; width: 100%; border: none; background: none; color: #38bdf8;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+          <span>Вывести средства</span>
+        </button>
         {% if user.is_staff or user.is_superuser %}
         <a href="/admin/" target="_blank" class="drawer-link" style="color: #ff6b6b;">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
@@ -252,6 +261,10 @@
             <img src="{% static 'images/uc_icon.png' %}" class="uc-icon" alt="UC">
             <span class="balance-amount user-balance-val">{{ user_balance|uc }}</span>
             <a href="{% url 'payments:deposit' %}" class="btn-topup-plus" title="Пополнить баланс">+</a>
+            <button type="button" class="btn-withdraw-header open-withdraw-modal-trigger" title="Вывести средства">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+              <span>Вывести</span>
+            </button>
           </div>
 
           <!-- User Menu Trigger -->
@@ -363,6 +376,10 @@
       </div>
     </div>
   </footer>
+
+  {% if user.is_authenticated %}
+    {% include 'includes/withdrawal_modal.html' %}
+  {% endif %}
 
   <script src="{% static 'js/main.js' %}"></script>
   {% block extra_js %}{% endblock %}

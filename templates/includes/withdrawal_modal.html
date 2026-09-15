@@ -1,0 +1,112 @@
+{% load static humanize currency_tags %}
+<!-- ==================== WITHDRAWAL MODAL ==================== -->
+<div class="modal-backdrop" id="withdrawalModalBackdrop" style="display: none;"></div>
+<div class="modal-cyber" id="withdrawalModal" style="display: none; max-width: 500px;" role="dialog" aria-labelledby="withdrawModalTitle" aria-modal="true">
+  
+  <div class="modal-header">
+    <div style="display: flex; align-items: center; gap: 10px;">
+      <span style="font-size: 22px;">💸</span>
+      <h3 class="modal-title" id="withdrawModalTitle">ВЫВОД СРЕДСТВ</h3>
+    </div>
+    <button type="button" class="modal-close-btn" id="closeWithdrawalModalBtn" aria-label="Закрыть">&times;</button>
+  </div>
+
+  <div class="modal-body" style="padding: 24px;">
+    
+    <!-- Balance & Min Info Box -->
+    <div style="background: rgba(168, 85, 247, 0.08); border: 1px solid rgba(168, 85, 247, 0.25); border-radius: 12px; padding: 14px 16px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center;">
+      <div>
+        <div style="font-size: 11px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px;">ВАШ БАЛАНС:</div>
+        <div style="font-family: var(--font-display); font-size: 18px; font-weight: 800; color: #38bdf8; display: flex; align-items: center; gap: 6px; margin-top: 2px;">
+          <img src="{% static 'images/uc_icon.png' %}" class="uc-icon" alt="UC" style="width: 20px; height: 20px;">
+          <span class="user-balance-val">{{ user_balance|uc }}</span>
+        </div>
+      </div>
+      <div style="text-align: right;">
+        <div style="font-size: 11px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px;">МИН. ВЫВОД:</div>
+        <div style="font-family: var(--font-display); font-size: 15px; font-weight: 700; color: #ffd700; margin-top: 2px;">
+          10 UC
+        </div>
+      </div>
+    </div>
+
+    <!-- Security notice -->
+    <div style="background: rgba(6, 182, 212, 0.08); border: 1px solid rgba(6, 182, 212, 0.2); border-radius: 10px; padding: 10px 14px; margin-bottom: 20px; font-size: 12px; color: #cbd5e1; line-height: 1.5; display: flex; gap: 8px; align-items: flex-start;">
+      <span style="font-size: 15px; line-height: 1;">🛡️</span>
+      <span>При создании заявки <strong>UC не списываются сразу</strong>. Баланс списывается только после подтверждения администратором.</span>
+    </div>
+
+    <form id="withdrawalForm" style="display: flex; flex-direction: column; gap: 16px;">
+      {% csrf_token %}
+      
+      <!-- Amount Input -->
+      <div>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+          <label for="withdrawAmount" style="font-family: var(--font-sub); font-size: 13px; font-weight: 700; color: #cbd5e1; text-transform: uppercase;">
+            Сумма вывода (UC):
+          </label>
+          <button type="button" id="withdrawAllBtn" style="font-size: 11px; font-weight: 700; color: #ec4899; text-transform: uppercase; background: none; border: none; cursor: pointer;">
+            ВСЯ СУММА
+          </button>
+        </div>
+        <div style="position: relative;">
+          <img src="{% static 'images/uc_icon.png' %}" class="uc-icon" alt="UC" style="position: absolute; left: 14px; top: 50%; transform: translateY(-50%); width: 20px; height: 20px;">
+          <input type="number" step="any" min="10" id="withdrawAmount" name="amount" placeholder="Минимум 10 UC" class="input-cyber" style="font-size: 18px; font-family: var(--font-display); font-weight: 800; color: #38bdf8; padding-left: 44px;" required>
+        </div>
+        <div id="withdrawApproxPreview" style="font-size: 12px; color: #94a3b8; margin-top: 6px; display: flex; gap: 10px;">
+          <span>≈ <strong id="withdrawApproxUzs" style="color: #38bdf8;">0 UZS</strong></span>
+          <span>&bull;</span>
+          <span>≈ <strong id="withdrawApproxUsd" style="color: #cbd5e1;">$0.00</strong></span>
+        </div>
+      </div>
+
+      <!-- Method Select -->
+      <div>
+        <label for="withdrawMethod" style="font-family: var(--font-sub); font-size: 13px; font-weight: 700; color: #cbd5e1; text-transform: uppercase; margin-bottom: 6px; display: block;">
+          Способ получения:
+        </label>
+        <select id="withdrawMethod" name="method" class="input-cyber" style="font-size: 14px; font-weight: 600; padding: 10px 14px;" required>
+          <option value="PUBG Mobile (Player ID)">PUBG Mobile (по ID игрока)</option>
+          <option value="Банковская карта (UZS: Uzcard / Humo)">Банковская карта (UZS: Uzcard / Humo)</option>
+          <option value="Банковская карта (RUB: Сбербанк / Т-Банк)">Банковская карта (RUB: Сбер / Т-Банк / СБП)</option>
+          <option value="Криптовалюта (USDT TRC20 / TON)">Криптовалюта (USDT TRC20 / TON)</option>
+          <option value="Telegram кошелек (Wallet)">Telegram Кошелёк (Wallet)</option>
+          <option value="Другой способ">Другой способ (уточнить в чате)</option>
+        </select>
+      </div>
+
+      <!-- Details Input -->
+      <div>
+        <label for="withdrawDetails" style="font-family: var(--font-sub); font-size: 13px; font-weight: 700; color: #cbd5e1; text-transform: uppercase; margin-bottom: 6px; display: block;">
+          Реквизиты пользователя:
+        </label>
+        <textarea id="withdrawDetails" name="details" rows="2" placeholder="Номер карты, кошелька или PUBG ID (например: 5123456789, Ник: ProGamer)" class="input-cyber" style="font-size: 13.5px; line-height: 1.5; padding: 10px 14px; resize: none;" required></textarea>
+      </div>
+
+      <!-- Submit Button -->
+      <button type="submit" id="submitWithdrawBtn" class="btn-neon" style="width: 100%; font-size: 15px; padding: 14px 0; justify-content: center; background: linear-gradient(135deg, #0284c7, #06b6d4, #a855f7); margin-top: 4px;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" style="margin-right: 8px;"><use href="#icon-telegram"></use></svg>
+        ВЫВЕСТИ ЧЕРЕЗ TELEGRAM
+      </button>
+    </form>
+
+    <!-- Success Feedback Container -->
+    <div id="withdrawSuccessNotice" style="display: none; margin-top: 20px; background: rgba(34, 197, 94, 0.12); border: 1px solid #22c55e; border-radius: 12px; padding: 18px; text-align: center;">
+      <p style="color: #4ade80; font-weight: 700; font-size: 15px; margin-bottom: 8px;">
+        ✓ Заявка #<span id="createdWithdrawalId"></span> успешно создана!
+      </p>
+      <p style="color: #cbd5e1; font-size: 13px; margin-bottom: 14px; line-height: 1.4;">
+        Для подтверждения перейдите в чат с администратором:
+      </p>
+      <a id="withdrawTgLink" href="#" target="_blank" rel="noopener noreferrer" class="btn-neon btn-neon-green" style="font-size: 13.5px; padding: 10px 20px; display: inline-flex; justify-content: center;">
+        ОТКРЫТЬ ЧАТ В TELEGRAM
+      </a>
+    </div>
+
+    <!-- Error Alert Container -->
+    <div id="withdrawErrorNotice" style="display: none; margin-top: 15px; background: rgba(239, 68, 68, 0.15); border: 1px solid #ef4444; border-radius: 8px; padding: 12px; color: #f87171; font-size: 13px; text-align: center;">
+    </div>
+
+  </div>
+
+</div>

@@ -32,7 +32,13 @@
         </div>
         <div class="usd-approx-sub user-balance-usd" style="font-size: 11px; color: #94a3b8; text-align: left; margin-top: 2px;">{{ profile.balance|usd_approx }}</div>
       </div>
-      <a href="{% url 'payments:deposit' %}" class="btn-neon profile-topup-btn">ПОПОЛНИТЬ БАЛАНС</a>
+      <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+        <a href="{% url 'payments:deposit' %}" class="btn-neon profile-topup-btn">ПОПОЛНИТЬ БАЛАНС</a>
+        <button type="button" class="btn-cyber-outline open-withdraw-modal-trigger" style="font-size: 13px; padding: 10px 18px; border-color: #06b6d4; color: #38bdf8; display: inline-flex; align-items: center; gap: 6px;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+          ВЫВЕСТИ
+        </button>
+      </div>
     </div>
   </div>
 
@@ -108,6 +114,9 @@
         <a href="{% url 'payments:deposit' %}" class="btn-cyber-outline" style="text-align: left; border: none;">
           💳 ПОПОЛНЕНИЕ БАЛАНСА
         </a>
+        <button type="button" class="btn-cyber-outline open-withdraw-modal-trigger" style="text-align: left; border: none; width: 100%; color: #38bdf8; cursor: pointer;">
+          💸 ВЫВОД СРЕДСТВ
+        </button>
         <a href="{% url 'users:settings' %}" class="btn-cyber-outline" style="text-align: left; border: none;">
           ⚙️ НАСТРОЙКИ
         </a>

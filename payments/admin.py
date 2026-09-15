@@ -7,9 +7,9 @@ from django.urls import path, reverse
 from django.utils.html import format_html
 from django.contrib.admin.views.decorators import staff_member_required
 
-from .models import Transaction, CurrencySetting
+from .models import Transaction, CurrencySetting, Withdrawal
 from .services import modify_user_balance
-from users.models import has_admin_perm
+from users.models import has_admin_perm, Profile
 
 
 def _link_user_promo_code(user, promo_code, admin_user, tx=None):
@@ -321,3 +321,234 @@ class CurrencySettingAdmin(admin.ModelAdmin):
             return f"1 UC ≈ ${rate:.4f} USD (60 UC ≈ ${(60 * rate):.2f})"
         return "N/A"
     calculated_uc_in_usd.short_description = "Расчёт стоимости 1 UC"
+
+
+@admin.action(description='✅ Одобрить выбранные заявки на вывод (списать UC)')
+def approve_withdrawals_action(modeladmin, request, queryset):
+    if not has_admin_perm(request.user, 'can_approve_withdrawals'):
+        modeladmin.message_user(request, "⛔ Ошибка доступа: у вас нет прав на подтверждение выводов (can_approve_withdrawals).", level=messages.ERROR)
+        return
+
+    approved_count = 0
+    for w in queryset.filter(status='pending'):
+        try:
+            with transaction.atomic():
+                profile = Profile.objects.select_for_update().get(user=w.user)
+                if profile.balance < w.amount:
+                    modeladmin.message_user(
+                        request,
+                        f"Недостаточно средств у пользователя {w.username} (Баланс: {profile.balance} UC, требуется: {w.amount} UC). Заявка #{w.id} не одобрена.",
+                        level=messages.ERROR
+                    )
+                    continue
+
+                # Deduct balance strictly once
+                balance_before = profile.balance
+                profile.balance -= w.amount
+                profile.save(update_fields=['balance'])
+                balance_after = profile.balance
+
+                # Record authoritative Transaction ledger entry
+                tx = Transaction.objects.create(
+                    user=w.user,
+                    amount=-w.amount,
+                    balance_before=balance_before,
+                    balance_after=balance_after,
+                    transaction_type='withdraw',
+                    status='completed',
+                    payment_method='telegram',
+                    reference_id=f"withdrawal:{w.id}",
+                    description=f"Вывод средств #{w.id} ({w.method}: {w.details}) (Одобрено админом: {request.user.username})",
+                    comment=w.details
+                )
+
+                w.status = 'approved'
+                w.processed_by = request.user
+                w.related_transaction = tx
+                w.save(update_fields=['status', 'processed_by', 'related_transaction', 'updated_at'])
+                approved_count += 1
+        except Exception as e:
+            modeladmin.message_user(request, f"Ошибка при обработке заявки #{w.id}: {e}", level=messages.ERROR)
+
+    if approved_count > 0:
+        modeladmin.message_user(request, f"Успешно одобрено заявок на вывод: {approved_count}.", level=messages.SUCCESS)
+
+
+@admin.action(description='❌ Отклонить выбранные заявки на вывод (баланс не изменяется)')
+def reject_withdrawals_action(modeladmin, request, queryset):
+    if not has_admin_perm(request.user, 'can_approve_withdrawals'):
+        modeladmin.message_user(request, "⛔ Ошибка доступа: у вас нет прав на отклонение выводов.", level=messages.ERROR)
+        return
+
+    rejected_count = 0
+    for w in queryset.filter(status='pending'):
+        try:
+            with transaction.atomic():
+                w.status = 'rejected'
+                w.processed_by = request.user
+                w.save(update_fields=['status', 'processed_by', 'updated_at'])
+                rejected_count += 1
+        except Exception as e:
+            modeladmin.message_user(request, f"Ошибка при отклонении заявки #{w.id}: {e}", level=messages.ERROR)
+
+    if rejected_count > 0:
+        modeladmin.message_user(request, f"Отклонено заявок на вывод: {rejected_count}. Баланс пользователей не изменялся.", level=messages.WARNING)
+
+
+@admin.register(Withdrawal)
+class WithdrawalAdmin(admin.ModelAdmin):
+    list_display = (
+        'id', 'username_display', 'user_id_display', 'amount_badge',
+        'method', 'details_display', 'created_at', 'status_badge', 'quick_actions'
+    )
+    list_filter = ('status', 'method', 'created_at')
+    search_fields = ('username', 'user__email', 'user__id', 'details', 'method', 'id')
+    readonly_fields = ('created_at', 'updated_at', 'username', 'user_id_val', 'processed_by', 'related_transaction')
+    actions = [approve_withdrawals_action, reject_withdrawals_action]
+    ordering = ('-created_at',)
+
+    def has_view_permission(self, request, obj=None):
+        if request.user.is_superuser:
+            return True
+        return has_admin_perm(request.user, 'can_view_withdrawals')
+
+    def has_change_permission(self, request, obj=None):
+        if request.user.is_superuser:
+            return True
+        return has_admin_perm(request.user, 'can_approve_withdrawals')
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return request.user.is_superuser
+
+    def username_display(self, obj):
+        url = reverse('admin:auth_user_change', args=[obj.user.id])
+        return format_html('<a href="{}" style="font-weight: 700; color: #a855f7;">👤 {}</a>', url, obj.username)
+    username_display.short_description = 'Пользователь'
+    username_display.admin_order_field = 'username'
+
+    def user_id_display(self, obj):
+        return format_html('<span style="font-family: monospace; color: #94a3b8;">#{}</span>', obj.user_id_val)
+    user_id_display.short_description = 'User ID'
+    user_id_display.admin_order_field = 'user_id_val'
+
+    def amount_badge(self, obj):
+        return format_html('<strong style="color: #ec4899; font-size: 14px;">-{} UC</strong>', f"{obj.amount:.2f}")
+    amount_badge.short_description = 'Сумма'
+    amount_badge.admin_order_field = 'amount'
+
+    def details_display(self, obj):
+        text = obj.details or ""
+        short = (text[:45] + '...') if len(text) > 45 else text
+        return format_html('<span title="{}">{}</span>', text, short)
+    details_display.short_description = 'Реквизиты'
+
+    def status_badge(self, obj):
+        if obj.status in ('approved', 'completed'):
+            return format_html('<span class="badge-neon-green">✓ ОДОБРЕНО</span>')
+        if obj.status == 'pending':
+            return format_html('<span class="badge-neon-yellow">⏳ ОЖИДАЕТ</span>')
+        if obj.status == 'rejected':
+            return format_html('<span class="badge-neon-red">✕ ОТКЛОНЕНО</span>')
+        return format_html('<span class="badge-neon-purple">{}</span>', obj.get_status_display())
+    status_badge.short_description = 'Статус'
+    status_badge.admin_order_field = 'status'
+
+    def quick_actions(self, obj):
+        if obj.status == 'pending':
+            approve_url = reverse('admin:payments_withdrawal_approve', args=[obj.id])
+            reject_url = reverse('admin:payments_withdrawal_reject', args=[obj.id])
+            return format_html(
+                '<div style="display: flex; gap: 6px;">'
+                '<a href="{}" onclick="return confirm(\'Вы действительно хотите ОДОБРИТЬ вывод #{} на сумму {} UC для пользователя {}? Баланс будет списан.\');" '
+                'class="button" style="background: linear-gradient(135deg, #059669, #10b981) !important; padding: 4px 8px !important; font-size: 11px !important;">✅ Одобрить</a>'
+                '<a href="{}" onclick="return confirm(\'Отклонить заявку на вывод #{}?\');" '
+                'class="button" style="background: linear-gradient(135deg, #dc2626, #ef4444) !important; padding: 4px 8px !important; font-size: 11px !important;">❌ Отклонить</a>'
+                '</div>',
+                approve_url, obj.id, obj.amount, obj.username,
+                reject_url, obj.id
+            )
+        if obj.status in ('approved', 'completed'):
+            return format_html('<span style="color: #10b981; font-weight: 600; font-size: 12px;">Выплачено</span>')
+        return format_html('<span style="color: #64748b; font-size: 12px;">Отклонено</span>')
+    quick_actions.short_description = 'Действия'
+
+    def get_urls(self):
+        urls = super().get_urls()
+        custom_urls = [
+            path('<int:withdrawal_id>/approve/', self.admin_site.admin_view(self.approve_single_withdrawal), name='payments_withdrawal_approve'),
+            path('<int:withdrawal_id>/reject/', self.admin_site.admin_view(self.reject_single_withdrawal), name='payments_withdrawal_reject'),
+        ]
+        return custom_urls + urls
+
+    def approve_single_withdrawal(self, request, withdrawal_id):
+        if not has_admin_perm(request.user, 'can_approve_withdrawals'):
+            messages.error(request, "⛔ Ошибка доступа: у вас нет прав на подтверждение выводов (can_approve_withdrawals).")
+            return redirect('admin:payments_withdrawal_changelist')
+
+        w = get_object_or_404(Withdrawal, id=withdrawal_id)
+        if w.status != 'pending':
+            messages.warning(request, f"Заявка #{w.id} уже обработана (текущий статус: {w.get_status_display()}). Повторное действие невозможно.")
+            return redirect('admin:payments_withdrawal_changelist')
+
+        try:
+            with transaction.atomic():
+                profile = Profile.objects.select_for_update().get(user=w.user)
+                if profile.balance < w.amount:
+                    messages.error(
+                        request,
+                        f"Недостаточно средств у пользователя {w.username}! Баланс: {profile.balance} UC, сумма вывода: {w.amount} UC. Списание отменено."
+                    )
+                    return redirect('admin:payments_withdrawal_changelist')
+
+                balance_before = profile.balance
+                profile.balance -= w.amount
+                profile.save(update_fields=['balance'])
+                balance_after = profile.balance
+
+                tx = Transaction.objects.create(
+                    user=w.user,
+                    amount=-w.amount,
+                    balance_before=balance_before,
+                    balance_after=balance_after,
+                    transaction_type='withdraw',
+                    status='completed',
+                    payment_method='telegram',
+                    reference_id=f"withdrawal:{w.id}",
+                    description=f"Вывод средств #{w.id} ({w.method}: {w.details}) (Одобрено админом: {request.user.username})",
+                    comment=w.details
+                )
+
+                w.status = 'approved'
+                w.processed_by = request.user
+                w.related_transaction = tx
+                w.save(update_fields=['status', 'processed_by', 'related_transaction', 'updated_at'])
+                messages.success(request, f"Заявка #{w.id} успешно одобрена! С баланса пользователя {w.username} списано {w.amount} UC.")
+        except Exception as e:
+            messages.error(request, f"Ошибка при одобрении заявки #{w.id}: {e}")
+
+        return redirect('admin:payments_withdrawal_changelist')
+
+    def reject_single_withdrawal(self, request, withdrawal_id):
+        if not has_admin_perm(request.user, 'can_approve_withdrawals'):
+            messages.error(request, "⛔ Ошибка доступа: у вас нет прав на отклонение выводов.")
+            return redirect('admin:payments_withdrawal_changelist')
+
+        w = get_object_or_404(Withdrawal, id=withdrawal_id)
+        if w.status != 'pending':
+            messages.warning(request, f"Заявка #{w.id} уже обработана (текущий статус: {w.get_status_display()}).")
+            return redirect('admin:payments_withdrawal_changelist')
+
+        try:
+            with transaction.atomic():
+                w.status = 'rejected'
+                w.processed_by = request.user
+                w.save(update_fields=['status', 'processed_by', 'updated_at'])
+                messages.warning(request, f"Заявка #{w.id} отклонена. Баланс пользователя не изменялся.")
+        except Exception as e:
+            messages.error(request, f"Ошибка при отклонении заявки #{w.id}: {e}")
+
+        return redirect('admin:payments_withdrawal_changelist')
+

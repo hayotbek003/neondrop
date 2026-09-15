@@ -215,12 +215,174 @@ window.updateUserBalance = function(newBalance) {
   });
 };
 
+// Withdrawal Modal Controller
+function initWithdrawalModal() {
+  const modal = document.getElementById('withdrawalModal');
+  const backdrop = document.getElementById('withdrawalModalBackdrop');
+  const closeBtn = document.getElementById('closeWithdrawalModalBtn');
+  const triggers = document.querySelectorAll('.open-withdraw-modal-trigger');
+  const form = document.getElementById('withdrawalForm');
+  const amountInput = document.getElementById('withdrawAmount');
+  const withdrawAllBtn = document.getElementById('withdrawAllBtn');
+  const approxUzs = document.getElementById('withdrawApproxUzs');
+  const approxUsd = document.getElementById('withdrawApproxUsd');
+  const submitBtn = document.getElementById('submitWithdrawBtn');
+  const successNotice = document.getElementById('withdrawSuccessNotice');
+  const errorNotice = document.getElementById('withdrawErrorNotice');
+  const createdIdSpan = document.getElementById('createdWithdrawalId');
+  const tgLink = document.getElementById('withdrawTgLink');
+
+  if (!modal || !backdrop) return;
+
+  function updateWithdrawApproximations() {
+    const amt = parseFloat(amountInput ? amountInput.value : 0) || 0;
+    const ucToUzs = (window.NEONDROP_CURRENCY && window.NEONDROP_CURRENCY.ucToUzs) ? window.NEONDROP_CURRENCY.ucToUzs : 250.0;
+    const ucToUsd = (window.NEONDROP_CURRENCY && window.NEONDROP_CURRENCY.ucToUsdRate) ? window.NEONDROP_CURRENCY.ucToUsdRate : (250.0 / 12000.0);
+
+    const uzsVal = Math.round(amt * ucToUzs);
+    const usdVal = (amt * ucToUsd).toFixed(2);
+
+    if (approxUzs) approxUzs.textContent = `${uzsVal.toLocaleString('ru-RU')} UZS`;
+    if (approxUsd) approxUsd.textContent = `$${usdVal}`;
+  }
+
+  function openModal() {
+    modal.style.display = 'block';
+    backdrop.style.display = 'block';
+    // Trigger transition
+    setTimeout(() => {
+      modal.classList.add('show');
+      backdrop.classList.add('active');
+    }, 10);
+    document.body.style.overflow = 'hidden';
+
+    if (errorNotice) {
+      errorNotice.style.display = 'none';
+      errorNotice.textContent = '';
+    }
+    if (successNotice) {
+      successNotice.style.display = 'none';
+    }
+    if (form) {
+      form.style.display = 'flex';
+    }
+    updateWithdrawApproximations();
+  }
+
+  function closeModal() {
+    modal.classList.remove('show');
+    backdrop.classList.remove('active');
+    setTimeout(() => {
+      modal.style.display = 'none';
+      backdrop.style.display = 'none';
+    }, 250);
+    document.body.style.overflow = '';
+  }
+
+  triggers.forEach(trig => {
+    trig.addEventListener('click', (e) => {
+      e.preventDefault();
+      openModal();
+    });
+  });
+
+  if (closeBtn) closeBtn.addEventListener('click', closeModal);
+  if (backdrop) backdrop.addEventListener('click', closeModal);
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && modal.classList.contains('show')) {
+      closeModal();
+    }
+  });
+
+  if (amountInput) {
+    amountInput.addEventListener('input', updateWithdrawApproximations);
+  }
+
+  if (withdrawAllBtn && amountInput) {
+    withdrawAllBtn.addEventListener('click', () => {
+      const balanceEl = document.querySelector('.user-balance-val');
+      if (balanceEl) {
+        // Strip text and parse digits
+        const raw = balanceEl.textContent.replace(/[^0-9.,]/g, '').replace(',', '.');
+        const parsed = parseFloat(raw);
+        if (!isNaN(parsed) && parsed > 0) {
+          amountInput.value = parsed;
+          updateWithdrawApproximations();
+        }
+      }
+    });
+  }
+
+  if (form) {
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const amountVal = parseFloat(amountInput.value);
+      if (isNaN(amountVal) || amountVal < 10) {
+        if (errorNotice) {
+          errorNotice.textContent = 'Минимальная сумма вывода — 10 UC.';
+          errorNotice.style.display = 'block';
+        }
+        return;
+      }
+
+      if (errorNotice) errorNotice.style.display = 'none';
+      submitBtn.disabled = true;
+      submitBtn.style.opacity = '0.7';
+      submitBtn.innerHTML = 'Создание заявки...';
+
+      try {
+        const formData = new FormData(form);
+        const res = await fetch('/deposit/api/create-withdrawal/', {
+          method: 'POST',
+          headers: {
+            'X-CSRFToken': typeof getCsrfToken === 'function' ? getCsrfToken() : (getCookie('csrftoken') || '')
+          },
+          credentials: 'same-origin',
+          body: formData
+        });
+
+        const data = await res.json();
+        if (data.success && data.telegram_url) {
+          if (createdIdSpan) createdIdSpan.textContent = data.withdrawal_id;
+          if (tgLink) tgLink.href = data.telegram_url;
+          if (form) form.style.display = 'none';
+          if (successNotice) successNotice.style.display = 'block';
+
+          // Try opening Telegram deep link in new tab
+          const tgWindow = window.open(data.telegram_url, '_blank');
+          if (!tgWindow || tgWindow.closed || typeof tgWindow.closed === 'undefined') {
+            // Fallback
+            window.location.href = data.telegram_url;
+          }
+        } else {
+          if (errorNotice) {
+            errorNotice.textContent = data.error || 'Ошибка при создании заявки';
+            errorNotice.style.display = 'block';
+          }
+        }
+      } catch (err) {
+        if (errorNotice) {
+          errorNotice.textContent = 'Ошибка соединения с сервером. Попробуйте позже.';
+          errorNotice.style.display = 'block';
+        }
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.style.opacity = '1';
+        submitBtn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" style="margin-right: 8px;"><use href="#icon-telegram"></use></svg> ВЫВЕСТИ ЧЕРЕЗ TELEGRAM';
+      }
+    });
+  }
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   initLiveDrops();
   initMobileDrawer();
+  initWithdrawalModal();
   
   // Unlock audio on first user click
   document.body.addEventListener('click', () => {
     window.soundFX.init();
   }, { once: true });
 });
+

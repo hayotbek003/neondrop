@@ -346,6 +346,16 @@ html, body {
     font-size: 14px;
   }
 
+  .btn-withdraw-header {
+    padding: 3px 6px;
+    font-size: 10px;
+    gap: 3px;
+  }
+
+  .btn-withdraw-header span {
+    display: none;
+  }
+
   .user-menu-trigger {
     padding: 2px;
     border-radius: 50%;

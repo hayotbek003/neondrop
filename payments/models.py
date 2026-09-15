@@ -14,6 +14,7 @@ class Transaction(models.Model):
         ('battle_entry', 'Вход в битву кейсов'),
         ('battle_win', 'Выигрыш в битве кейсов'),
         ('promo_bonus', 'Бонус по промокоду'),
+        ('withdraw', 'Вывод средств'),
         ('admin_adjustment', 'Корректировка администратором'),
     ]
 
@@ -122,4 +123,48 @@ class CurrencySetting(models.Model):
         super().save(*args, **kwargs)
         from django.core.cache import cache
         cache.delete('neondrop_currency_rates')
+
+
+class Withdrawal(models.Model):
+    STATUS_CHOICES = [
+        ('pending', 'Ожидает проверки'),
+        ('approved', 'Одобрено'),
+        ('rejected', 'Отклонено'),
+        ('completed', 'Завершено (Выплачено)'),
+    ]
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='withdrawals', verbose_name="Пользователь")
+    username = models.CharField(max_length=150, verbose_name="Имя пользователя")
+    user_id_val = models.PositiveIntegerField(verbose_name="ID пользователя")
+    amount = models.DecimalField(max_digits=12, decimal_places=2, verbose_name="Сумма вывода (UC)")
+    method = models.CharField(max_length=100, verbose_name="Способ получения")
+    details = models.TextField(verbose_name="Реквизиты")
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending', verbose_name="Статус")
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Дата заявки")
+    updated_at = models.DateTimeField(auto_now=True, verbose_name="Дата обновления")
+    processed_by = models.ForeignKey(
+        User,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name='processed_withdrawals',
+        verbose_name="Обработал администратор"
+    )
+    related_transaction = models.ForeignKey(
+        Transaction,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name='withdrawal_record',
+        verbose_name="Связанная транзакция"
+    )
+    admin_comment = models.TextField(blank=True, null=True, verbose_name="Комментарий администратора")
+
+    class Meta:
+        verbose_name = "Заявка на вывод"
+        verbose_name_plural = "Заявки на вывод (Withdrawals)"
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"Заявка #{self.id} | {self.username} | {self.amount} UC ({self.get_status_display()})"
 

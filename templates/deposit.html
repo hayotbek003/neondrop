@@ -8,7 +8,13 @@
 
   <div class="section-header" style="margin-bottom: 24px;">
     <h1 class="section-title">ПОПОЛНЕНИЕ БАЛАНСА</h1>
-    <a href="{% url 'users:profile' %}" class="btn-cyber-outline">&larr; В ПРОФИЛЬ</a>
+    <div style="display: flex; gap: 10px; align-items: center;">
+      <button type="button" class="btn-cyber-outline open-withdraw-modal-trigger" style="border-color: #06b6d4; color: #38bdf8; display: inline-flex; align-items: center; gap: 6px;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+        ВЫВЕСТИ
+      </button>
+      <a href="{% url 'users:profile' %}" class="btn-cyber-outline">&larr; В ПРОФИЛЬ</a>
+    </div>
   </div>
 
   <!-- Deposit Form Card -->
