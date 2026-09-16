@@ -323,7 +323,7 @@ class CurrencySettingAdmin(admin.ModelAdmin):
     calculated_uc_in_usd.short_description = "Расчёт стоимости 1 UC"
 
 
-@admin.action(description='✅ Одобрить выбранные заявки на вывод (списать UC)')
+@admin.action(description='✅ Завершить выбранные заявки на вывод (выплачено)')
 def approve_withdrawals_action(modeladmin, request, queryset):
     if not has_admin_perm(request.user, 'can_approve_withdrawals'):
         modeladmin.message_user(request, "⛔ Ошибка доступа: у вас нет прав на подтверждение выводов (can_approve_withdrawals).", level=messages.ERROR)
@@ -333,48 +333,24 @@ def approve_withdrawals_action(modeladmin, request, queryset):
     for w in queryset.filter(status='pending'):
         try:
             with transaction.atomic():
-                profile = Profile.objects.select_for_update().get(user=w.user)
-                if profile.balance < w.amount:
-                    modeladmin.message_user(
-                        request,
-                        f"Недостаточно средств у пользователя {w.username} (Баланс: {profile.balance} UC, требуется: {w.amount} UC). Заявка #{w.id} не одобрена.",
-                        level=messages.ERROR
-                    )
+                w_locked = Withdrawal.objects.select_for_update().get(id=w.id)
+                if w_locked.status != 'pending':
                     continue
 
-                # Deduct balance strictly once
-                balance_before = profile.balance
-                profile.balance -= w.amount
-                profile.save(update_fields=['balance'])
-                balance_after = profile.balance
-
-                # Record authoritative Transaction ledger entry
-                tx = Transaction.objects.create(
-                    user=w.user,
-                    amount=-w.amount,
-                    balance_before=balance_before,
-                    balance_after=balance_after,
-                    transaction_type='withdraw',
-                    status='completed',
-                    payment_method='telegram',
-                    reference_id=f"withdrawal:{w.id}",
-                    description=f"Вывод средств #{w.id} ({w.method}: {w.details}) (Одобрено админом: {request.user.username})",
-                    comment=w.details
-                )
-
-                w.status = 'approved'
-                w.processed_by = request.user
-                w.related_transaction = tx
-                w.save(update_fields=['status', 'processed_by', 'related_transaction', 'updated_at'])
+                # UC was already deducted when user created the request.
+                # Do NOT deduct balance again!
+                w_locked.status = 'completed'
+                w_locked.processed_by = request.user
+                w_locked.save(update_fields=['status', 'processed_by', 'updated_at'])
                 approved_count += 1
         except Exception as e:
             modeladmin.message_user(request, f"Ошибка при обработке заявки #{w.id}: {e}", level=messages.ERROR)
 
     if approved_count > 0:
-        modeladmin.message_user(request, f"Успешно одобрено заявок на вывод: {approved_count}.", level=messages.SUCCESS)
+        modeladmin.message_user(request, f"Успешно завершено заявок на вывод: {approved_count}. Повторное списание баланса НЕ производилось.", level=messages.SUCCESS)
 
 
-@admin.action(description='❌ Отклонить выбранные заявки на вывод (баланс не изменяется)')
+@admin.action(description='❌ Отклонить выбранные заявки на вывод (с автоматическим возвратом UC)')
 def reject_withdrawals_action(modeladmin, request, queryset):
     if not has_admin_perm(request.user, 'can_approve_withdrawals'):
         modeladmin.message_user(request, "⛔ Ошибка доступа: у вас нет прав на отклонение выводов.", level=messages.ERROR)
@@ -384,22 +360,47 @@ def reject_withdrawals_action(modeladmin, request, queryset):
     for w in queryset.filter(status='pending'):
         try:
             with transaction.atomic():
-                w.status = 'rejected'
-                w.processed_by = request.user
-                w.save(update_fields=['status', 'processed_by', 'updated_at'])
+                w_locked = Withdrawal.objects.select_for_update().get(id=w.id)
+                if w_locked.status != 'pending':
+                    continue
+
+                # Automatically return deducted UC back to user profile
+                profile = Profile.objects.select_for_update().get(user=w_locked.user)
+                balance_before = profile.balance
+                profile.balance += w_locked.amount
+                profile.save(update_fields=['balance'])
+                balance_after = profile.balance
+
+                # Distinct refund Transaction
+                Transaction.objects.create(
+                    user=w_locked.user,
+                    amount=w_locked.amount,
+                    balance_before=balance_before,
+                    balance_after=balance_after,
+                    transaction_type='admin_adjustment',
+                    status='completed',
+                    payment_method='system',
+                    reference_id=f"withdrawal_refund:{w_locked.id}",
+                    description=f"Возврат средств за отклоненную заявку на вывод #{w_locked.id}",
+                    comment=f"Возврат {w_locked.amount} UC за отклоненный вывод #{w_locked.id}"
+                )
+
+                w_locked.status = 'rejected'
+                w_locked.processed_by = request.user
+                w_locked.save(update_fields=['status', 'processed_by', 'updated_at'])
                 rejected_count += 1
         except Exception as e:
             modeladmin.message_user(request, f"Ошибка при отклонении заявки #{w.id}: {e}", level=messages.ERROR)
 
     if rejected_count > 0:
-        modeladmin.message_user(request, f"Отклонено заявок на вывод: {rejected_count}. Баланс пользователей не изменялся.", level=messages.WARNING)
+        modeladmin.message_user(request, f"Отклонено заявок: {rejected_count}. Пользователям автоматически возвращены списанные UC.", level=messages.WARNING)
 
 
 @admin.register(Withdrawal)
 class WithdrawalAdmin(admin.ModelAdmin):
     list_display = (
-        'id', 'username_display', 'user_id_display', 'amount_badge',
-        'method', 'details_display', 'created_at', 'status_badge', 'quick_actions'
+        'id_display', 'username_display', 'user_id_display', 'amount_badge',
+        'method_display', 'details_display', 'status_badge', 'created_at_display', 'quick_actions'
     )
     list_filter = ('status', 'method', 'created_at')
     search_fields = ('username', 'user__email', 'user__id', 'details', 'method', 'id')
@@ -423,6 +424,11 @@ class WithdrawalAdmin(admin.ModelAdmin):
     def has_delete_permission(self, request, obj=None):
         return request.user.is_superuser
 
+    def id_display(self, obj):
+        return format_html('<strong>#{}</strong>', obj.id)
+    id_display.short_description = '№'
+    id_display.admin_order_field = 'id'
+
     def username_display(self, obj):
         url = reverse('admin:auth_user_change', args=[obj.user.id])
         return format_html('<a href="{}" style="font-weight: 700; color: #a855f7;">👤 {}</a>', url, obj.username)
@@ -435,9 +441,15 @@ class WithdrawalAdmin(admin.ModelAdmin):
     user_id_display.admin_order_field = 'user_id_val'
 
     def amount_badge(self, obj):
-        return format_html('<strong style="color: #ec4899; font-size: 14px;">-{} UC</strong>', f"{obj.amount:.2f}")
-    amount_badge.short_description = 'Сумма'
+        amt = int(obj.amount) if obj.amount % 1 == 0 else f"{obj.amount:.2f}"
+        return format_html('<strong style="color: #ec4899; font-size: 14px;">{} UC</strong>', amt)
+    amount_badge.short_description = 'Сумма UC'
     amount_badge.admin_order_field = 'amount'
+
+    def method_display(self, obj):
+        return obj.method
+    method_display.short_description = 'Способ получения'
+    method_display.admin_order_field = 'method'
 
     def details_display(self, obj):
         text = obj.details or ""
@@ -446,8 +458,8 @@ class WithdrawalAdmin(admin.ModelAdmin):
     details_display.short_description = 'Реквизиты'
 
     def status_badge(self, obj):
-        if obj.status in ('approved', 'completed'):
-            return format_html('<span class="badge-neon-green">✓ ОДОБРЕНО</span>')
+        if obj.status in ('completed', 'approved'):
+            return format_html('<span class="badge-neon-green">✓ ВЫПЛАЧЕНО</span>')
         if obj.status == 'pending':
             return format_html('<span class="badge-neon-yellow">⏳ ОЖИДАЕТ</span>')
         if obj.status == 'rejected':
@@ -456,23 +468,29 @@ class WithdrawalAdmin(admin.ModelAdmin):
     status_badge.short_description = 'Статус'
     status_badge.admin_order_field = 'status'
 
+    def created_at_display(self, obj):
+        return obj.created_at.strftime('%d.%m.%Y %H:%M')
+    created_at_display.short_description = 'Дата'
+    created_at_display.admin_order_field = 'created_at'
+
     def quick_actions(self, obj):
         if obj.status == 'pending':
             approve_url = reverse('admin:payments_withdrawal_approve', args=[obj.id])
             reject_url = reverse('admin:payments_withdrawal_reject', args=[obj.id])
+            amt = int(obj.amount) if obj.amount % 1 == 0 else f"{obj.amount:.2f}"
             return format_html(
                 '<div style="display: flex; gap: 6px;">'
-                '<a href="{}" onclick="return confirm(\'Вы действительно хотите ОДОБРИТЬ вывод #{} на сумму {} UC для пользователя {}? Баланс будет списан.\');" '
-                'class="button" style="background: linear-gradient(135deg, #059669, #10b981) !important; padding: 4px 8px !important; font-size: 11px !important;">✅ Одобрить</a>'
-                '<a href="{}" onclick="return confirm(\'Отклонить заявку на вывод #{}?\');" '
+                '<a href="{}" onclick="return confirm(\'Подтвердить выплату #{}: {} UC для {}? Баланс уже списан при создании заявки.\');" '
+                'class="button" style="background: linear-gradient(135deg, #059669, #10b981) !important; padding: 4px 8px !important; font-size: 11px !important;">✅ Выплачено</a>'
+                '<a href="{}" onclick="return confirm(\'Отклонить вывод #{}? {} UC автоматически вернутся на баланс пользователя {}.\');" '
                 'class="button" style="background: linear-gradient(135deg, #dc2626, #ef4444) !important; padding: 4px 8px !important; font-size: 11px !important;">❌ Отклонить</a>'
                 '</div>',
-                approve_url, obj.id, obj.amount, obj.username,
-                reject_url, obj.id
+                approve_url, obj.id, amt, obj.username,
+                reject_url, obj.id, amt, obj.username
             )
-        if obj.status in ('approved', 'completed'):
+        if obj.status in ('completed', 'approved'):
             return format_html('<span style="color: #10b981; font-weight: 600; font-size: 12px;">Выплачено</span>')
-        return format_html('<span style="color: #64748b; font-size: 12px;">Отклонено</span>')
+        return format_html('<span style="color: #64748b; font-size: 12px;">Отклонено (Возвращено)</span>')
     quick_actions.short_description = 'Действия'
 
     def get_urls(self):
@@ -488,46 +506,20 @@ class WithdrawalAdmin(admin.ModelAdmin):
             messages.error(request, "⛔ Ошибка доступа: у вас нет прав на подтверждение выводов (can_approve_withdrawals).")
             return redirect('admin:payments_withdrawal_changelist')
 
-        w = get_object_or_404(Withdrawal, id=withdrawal_id)
-        if w.status != 'pending':
-            messages.warning(request, f"Заявка #{w.id} уже обработана (текущий статус: {w.get_status_display()}). Повторное действие невозможно.")
-            return redirect('admin:payments_withdrawal_changelist')
-
         try:
             with transaction.atomic():
-                profile = Profile.objects.select_for_update().get(user=w.user)
-                if profile.balance < w.amount:
-                    messages.error(
-                        request,
-                        f"Недостаточно средств у пользователя {w.username}! Баланс: {profile.balance} UC, сумма вывода: {w.amount} UC. Списание отменено."
-                    )
+                w = Withdrawal.objects.select_for_update().get(id=withdrawal_id)
+                if w.status != 'pending':
+                    messages.warning(request, f"Заявка #{w.id} уже обработана (текущий статус: {w.get_status_display()}). Повторное действие невозможно.")
                     return redirect('admin:payments_withdrawal_changelist')
 
-                balance_before = profile.balance
-                profile.balance -= w.amount
-                profile.save(update_fields=['balance'])
-                balance_after = profile.balance
-
-                tx = Transaction.objects.create(
-                    user=w.user,
-                    amount=-w.amount,
-                    balance_before=balance_before,
-                    balance_after=balance_after,
-                    transaction_type='withdraw',
-                    status='completed',
-                    payment_method='telegram',
-                    reference_id=f"withdrawal:{w.id}",
-                    description=f"Вывод средств #{w.id} ({w.method}: {w.details}) (Одобрено админом: {request.user.username})",
-                    comment=w.details
-                )
-
-                w.status = 'approved'
+                # UC was already deducted upon creation! Do NOT deduct balance again!
+                w.status = 'completed'
                 w.processed_by = request.user
-                w.related_transaction = tx
-                w.save(update_fields=['status', 'processed_by', 'related_transaction', 'updated_at'])
-                messages.success(request, f"Заявка #{w.id} успешно одобрена! С баланса пользователя {w.username} списано {w.amount} UC.")
+                w.save(update_fields=['status', 'processed_by', 'updated_at'])
+                messages.success(request, f"Заявка #{w.id} успешно завершена (выплачена). Баланс пользователя не изменялся (UC списаны при создании заявки).")
         except Exception as e:
-            messages.error(request, f"Ошибка при одобрении заявки #{w.id}: {e}")
+            messages.error(request, f"Ошибка при обработке заявки #{withdrawal_id}: {e}")
 
         return redirect('admin:payments_withdrawal_changelist')
 
@@ -536,19 +528,41 @@ class WithdrawalAdmin(admin.ModelAdmin):
             messages.error(request, "⛔ Ошибка доступа: у вас нет прав на отклонение выводов.")
             return redirect('admin:payments_withdrawal_changelist')
 
-        w = get_object_or_404(Withdrawal, id=withdrawal_id)
-        if w.status != 'pending':
-            messages.warning(request, f"Заявка #{w.id} уже обработана (текущий статус: {w.get_status_display()}).")
-            return redirect('admin:payments_withdrawal_changelist')
-
         try:
             with transaction.atomic():
+                w = Withdrawal.objects.select_for_update().get(id=withdrawal_id)
+                if w.status != 'pending':
+                    messages.warning(request, f"Заявка #{w.id} уже обработана (текущий статус: {w.get_status_display()}). Повторное действие невозможно.")
+                    return redirect('admin:payments_withdrawal_changelist')
+
+                # Automatically refund UC to user profile
+                profile = Profile.objects.select_for_update().get(user=w.user)
+                balance_before = profile.balance
+                profile.balance += w.amount
+                profile.save(update_fields=['balance'])
+                balance_after = profile.balance
+
+                # Create separate refund Transaction record
+                Transaction.objects.create(
+                    user=w.user,
+                    amount=w.amount,
+                    balance_before=balance_before,
+                    balance_after=balance_after,
+                    transaction_type='admin_adjustment',
+                    status='completed',
+                    payment_method='system',
+                    reference_id=f"withdrawal_refund:{w.id}",
+                    description=f"Возврат средств за отклоненную заявку на вывод #{w.id}",
+                    comment=f"Возврат {w.amount} UC за заявку #{w.id}"
+                )
+
                 w.status = 'rejected'
                 w.processed_by = request.user
                 w.save(update_fields=['status', 'processed_by', 'updated_at'])
-                messages.warning(request, f"Заявка #{w.id} отклонена. Баланс пользователя не изменялся.")
+                amt_str = int(w.amount) if w.amount % 1 == 0 else f"{w.amount:.2f}"
+                messages.warning(request, f"Заявка #{w.id} отклонена. Пользователю {w.username} автоматически возвращено {amt_str} UC.")
         except Exception as e:
-            messages.error(request, f"Ошибка при отклонении заявки #{w.id}: {e}")
+            messages.error(request, f"Ошибка при отклонении заявки #{withdrawal_id}: {e}")
 
         return redirect('admin:payments_withdrawal_changelist')
 

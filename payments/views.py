@@ -7,10 +7,12 @@ from django.views.decorators.http import require_POST
 from django.views.decorators.csrf import ensure_csrf_cookie
 from django.http import JsonResponse
 from django.conf import settings
+from django.db import transaction
 
 from .models import Transaction, Withdrawal
 from .currency import format_uc, format_usd_approx, format_uzs_approx, get_currency_rates
 from config.security import rate_limit, get_client_ip
+from users.models import Profile
 
 security_logger = logging.getLogger('neondrop.security')
 audit_logger = logging.getLogger('neondrop.audit')
@@ -101,68 +103,103 @@ def create_withdrawal_request_api(request):
         return JsonResponse({'success': False, 'error': 'Пожалуйста, укажите ваши реквизиты.'}, status=400)
 
     try:
-        amount = Decimal(amount_raw)
-        if amount < Decimal('60.00'):
+        amount_dec = Decimal(amount_raw)
+        if amount_dec <= Decimal('0'):
+            return JsonResponse({'success': False, 'error': 'Сумма вывода должна быть больше нуля.'}, status=400)
+        if amount_dec % 1 != 0:
+            return JsonResponse({'success': False, 'error': 'Сумма вывода должна быть целым числом UC.'}, status=400)
+        amount_int = int(amount_dec)
+        if amount_int < 60:
             return JsonResponse({'success': False, 'error': 'Минимальная сумма вывода — 60 UC.'}, status=400)
+        amount = Decimal(amount_int)
     except Exception:
         return JsonResponse({'success': False, 'error': 'Некорректная сумма вывода.'}, status=400)
 
-    current_balance = request.user.profile.balance
-    if amount > current_balance:
-        return JsonResponse({
-            'success': False,
-            'error': f'Недостаточно средств. Ваш баланс: {format_uc(current_balance)}, запрошено: {format_uc(amount)}.'
-        }, status=400)
+    # Atomic balance deduction and withdrawal creation with row lock
+    with transaction.atomic():
+        profile = Profile.objects.select_for_update().get(user=request.user)
+        if profile.balance < amount:
+            cur_bal = int(profile.balance) if profile.balance % 1 == 0 else f"{profile.balance:.2f}"
+            return JsonResponse({
+                'success': False,
+                'error': f'Недостаточно средств. Ваш баланс: {cur_bal} UC, запрошено: {amount_int} UC.'
+            }, status=400)
 
-    # Create pending Withdrawal record (NO BALANCE DEDUCTION AT THIS STAGE)
-    w = Withdrawal.objects.create(
-        user=request.user,
-        username=request.user.username,
-        user_id_val=request.user.id,
-        amount=amount,
-        method=method,
-        details=details,
-        status='pending'
-    )
+        # 1. Deduct UC immediately
+        balance_before = profile.balance
+        profile.balance -= amount
+        profile.save(update_fields=['balance'])
+        balance_after = profile.balance
+
+        # 2. Create pending Withdrawal record
+        w = Withdrawal.objects.create(
+            user=request.user,
+            username=request.user.username,
+            user_id_val=request.user.id,
+            amount=amount,
+            method=method,
+            details=details,
+            status='pending'
+        )
+
+        # 3. Create immutable Transaction record for the deduction
+        tx = Transaction.objects.create(
+            user=request.user,
+            amount=-amount,
+            balance_before=balance_before,
+            balance_after=balance_after,
+            transaction_type='withdraw',
+            status='completed',
+            payment_method='telegram',
+            reference_id=f"withdrawal:{w.id}",
+            description=f"Вывод UC #{w.id} ({method}: {details})",
+            comment=details,
+            ip_address=ip
+        )
+
+        w.related_transaction = tx
+        w.save(update_fields=['related_transaction'])
 
     audit_logger.info(
         f"WITHDRAWAL_REQUEST_CREATED: user={request.user.username} (id={request.user.id}) | "
-        f"amount={amount} UC | withdrawal_id={w.id} | method={method} | ip={ip}"
+        f"amount={amount} UC | balance_before={balance_before} | balance_after={balance_after} | "
+        f"withdrawal_id={w.id} | method={method} | ip={ip}"
     )
 
-    # Format Telegram administrator direct link with exact required pre-filled text
     tg_admin = getattr(settings, 'TELEGRAM_BOT_USERNAME', 'neondrop_admin').lstrip('@')
     created_at_str = w.created_at.strftime('%d.%m.%Y %H:%M')
-    email_str = request.user.email or 'не указан'
+    balance_after_display = f"{int(balance_after)}" if balance_after % 1 == 0 else f"{balance_after:.2f}"
 
-    # Exact format required:
-    # ЗАЯВКА НА ВЫВОД NEONDROP
-    # Пользователь: {username}
-    # ID: {user_id}
-    # Email: {email}
-    # Сумма: {amount} UC
-    # Способ получения: {method}
-    # Реквизиты: {details}
-    # Баланс пользователя: {current_balance} UC
-    # Дата заявки: {created_at}
+    # Telegram format:
+    # 🔔 НОВЫЙ ВЫВОД NEONDROP
     # Заявка №: {withdrawal_id}
-    # Просьба проверить заявку и подтвердить вывод.
-
-    amount_display = f"{amount:.2f}".rstrip('0').rstrip('.') if amount % 1 == 0 else f"{amount:.2f}"
-    balance_display = f"{current_balance:.2f}".rstrip('0').rstrip('.') if current_balance % 1 == 0 else f"{current_balance:.2f}"
-
+    # 👤 Пользователь: {username}
+    # 🆔 ID: {user_id}
+    # 💰 Сумма: {amount_uc} UC
+    # 📤 Способ получения:
+    # {method}
+    # 📋 Реквизиты:
+    # {details}
+    # 💳 Баланс после вывода:
+    # {balance_after} UC
+    # 📅 Дата:
+    # {created_at}
+    # Статус: ОЖИДАЕТ ВЫПЛАТЫ
     msg_template = (
-        f"ЗАЯВКА НА ВЫВОД NEONDROP\n\n"
-        f"Пользователь: {request.user.username}\n"
-        f"ID: {request.user.id}\n"
-        f"Email: {email_str}\n"
-        f"Сумма: {amount_display} UC\n"
-        f"Способ получения: {method}\n"
-        f"Реквизиты: {details}\n\n"
-        f"Баланс пользователя: {balance_display} UC\n\n"
-        f"Дата заявки: {created_at_str}\n\n"
+        f"🔔 НОВЫЙ ВЫВОД NEONDROP\n\n"
         f"Заявка №: {w.id}\n\n"
-        f"Просьба проверить заявку и подтвердить вывод."
+        f"👤 Пользователь: {request.user.username}\n"
+        f"🆔 ID: {request.user.id}\n\n"
+        f"💰 Сумма: {amount_int} UC\n\n"
+        f"📤 Способ получения:\n"
+        f"{method}\n\n"
+        f"📋 Реквизиты:\n"
+        f"{details}\n\n"
+        f"💳 Баланс после вывода:\n"
+        f"{balance_after_display} UC\n\n"
+        f"📅 Дата:\n"
+        f"{created_at_str}\n\n"
+        f"Статус: ОЖИДАЕТ ВЫПЛАТЫ"
     )
 
     encoded_msg = urllib.parse.quote(msg_template)
@@ -171,7 +208,8 @@ def create_withdrawal_request_api(request):
     return JsonResponse({
         'success': True,
         'withdrawal_id': w.id,
+        'balance_after': balance_after_display,
         'telegram_url': telegram_url,
-        'message': 'Заявка на вывод успешно создана. Перейдите в Telegram для отправки сообщения администратору.'
+        'message': f'Заявка на вывод #{w.id} создана. С баланса списано {amount_int} UC.'
     })
 

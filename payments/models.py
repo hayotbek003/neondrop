@@ -165,6 +165,14 @@ class Withdrawal(models.Model):
         verbose_name_plural = "Заявки на вывод (Withdrawals)"
         ordering = ['-created_at']
 
+    @property
+    def amount_uc(self):
+        return int(self.amount) if self.amount % 1 == 0 else self.amount
+
+    @property
+    def user_id(self):
+        return self.user_id_val
+
     def __str__(self):
         return f"Заявка #{self.id} | {self.username} | {self.amount} UC ({self.get_status_display()})"
 

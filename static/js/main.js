@@ -224,9 +224,11 @@ function initWithdrawalModal() {
   const form = document.getElementById('withdrawalForm');
   const amountInput = document.getElementById('withdrawAmount');
   const withdrawAllBtn = document.getElementById('withdrawAllBtn');
-  const approxUzs = document.getElementById('withdrawApproxUzs');
-  const approxUsd = document.getElementById('withdrawApproxUsd');
-  const submitBtn = document.getElementById('submitWithdrawBtn');
+  const startWithdrawBtn = document.getElementById('startWithdrawBtn');
+  const confirmStep = document.getElementById('withdrawConfirmStep');
+  const confirmAmountDisplay = document.getElementById('confirmAmountDisplay');
+  const cancelConfirmBtn = document.getElementById('withdrawCancelConfirmBtn');
+  const finalSubmitBtn = document.getElementById('withdrawFinalSubmitBtn');
   const successNotice = document.getElementById('withdrawSuccessNotice');
   const errorNotice = document.getElementById('withdrawErrorNotice');
   const createdIdSpan = document.getElementById('createdWithdrawalId');
@@ -234,22 +236,45 @@ function initWithdrawalModal() {
 
   if (!modal || !backdrop) return;
 
-  function updateWithdrawApproximations() {
-    const amt = parseFloat(amountInput ? amountInput.value : 0) || 0;
-    const ucToUzs = (window.NEONDROP_CURRENCY && window.NEONDROP_CURRENCY.ucToUzs) ? window.NEONDROP_CURRENCY.ucToUzs : 250.0;
-    const ucToUsd = (window.NEONDROP_CURRENCY && window.NEONDROP_CURRENCY.ucToUsdRate) ? window.NEONDROP_CURRENCY.ucToUsdRate : (250.0 / 12000.0);
+  function getUserBalance() {
+    const balanceEl = document.querySelector('.user-balance-val');
+    if (!balanceEl) return 0;
+    const raw = balanceEl.textContent.replace(/[^0-9.,]/g, '').replace(',', '.');
+    const parsed = parseFloat(raw);
+    return isNaN(parsed) ? 0 : parsed;
+  }
 
-    const uzsVal = Math.round(amt * ucToUzs);
-    const usdVal = (amt * ucToUsd).toFixed(2);
+  function updateUserBalance(newBal) {
+    document.querySelectorAll('.user-balance-val').forEach(el => {
+      el.textContent = typeof newBal === 'number' ? newBal.toLocaleString('ru-RU') : newBal;
+    });
+  }
 
-    if (approxUzs) approxUzs.textContent = `${uzsVal.toLocaleString('ru-RU')} UZS`;
-    if (approxUsd) approxUsd.textContent = `$${usdVal}`;
+  function showError(msg) {
+    if (errorNotice) {
+      errorNotice.textContent = msg;
+      errorNotice.style.display = 'block';
+    }
+  }
+
+  function checkAmountValidity() {
+    const val = parseFloat(amountInput ? amountInput.value : 0);
+    if (startWithdrawBtn) {
+      if (isNaN(val) || val < 60) {
+        startWithdrawBtn.disabled = true;
+        startWithdrawBtn.style.opacity = '0.5';
+        startWithdrawBtn.style.cursor = 'not-allowed';
+      } else {
+        startWithdrawBtn.disabled = false;
+        startWithdrawBtn.style.opacity = '1';
+        startWithdrawBtn.style.cursor = 'pointer';
+      }
+    }
   }
 
   function openModal() {
     modal.style.display = 'block';
     backdrop.style.display = 'block';
-    // Trigger transition
     setTimeout(() => {
       modal.classList.add('show');
       backdrop.classList.add('active');
@@ -260,13 +285,10 @@ function initWithdrawalModal() {
       errorNotice.style.display = 'none';
       errorNotice.textContent = '';
     }
-    if (successNotice) {
-      successNotice.style.display = 'none';
-    }
-    if (form) {
-      form.style.display = 'flex';
-    }
-    updateWithdrawApproximations();
+    if (successNotice) successNotice.style.display = 'none';
+    if (confirmStep) confirmStep.style.display = 'none';
+    if (form) form.style.display = 'flex';
+    checkAmountValidity();
   }
 
   function closeModal() {
@@ -296,40 +318,75 @@ function initWithdrawalModal() {
   });
 
   if (amountInput) {
-    amountInput.addEventListener('input', updateWithdrawApproximations);
+    amountInput.addEventListener('input', checkAmountValidity);
   }
 
   if (withdrawAllBtn && amountInput) {
     withdrawAllBtn.addEventListener('click', () => {
-      const balanceEl = document.querySelector('.user-balance-val');
-      if (balanceEl) {
-        // Strip text and parse digits
-        const raw = balanceEl.textContent.replace(/[^0-9.,]/g, '').replace(',', '.');
-        const parsed = parseFloat(raw);
-        if (!isNaN(parsed) && parsed > 0) {
-          amountInput.value = parsed;
-          updateWithdrawApproximations();
-        }
+      const bal = Math.floor(getUserBalance());
+      if (bal > 0) {
+        amountInput.value = bal;
+        checkAmountValidity();
       }
     });
   }
 
-  if (form) {
-    form.addEventListener('submit', async (e) => {
-      e.preventDefault();
+  // Step 1: User clicks "ВЫВЕСТИ ЧЕРЕЗ TELEGRAM" -> validate and show confirmation
+  if (startWithdrawBtn) {
+    startWithdrawBtn.addEventListener('click', () => {
       const amountVal = parseFloat(amountInput.value);
+      const detailsInput = document.getElementById('withdrawDetails');
+
+      if (errorNotice) {
+        errorNotice.style.display = 'none';
+        errorNotice.textContent = '';
+      }
+
       if (isNaN(amountVal) || amountVal < 60) {
-        if (errorNotice) {
-          errorNotice.textContent = 'Минимальная сумма вывода — 60 UC.';
-          errorNotice.style.display = 'block';
-        }
+        showError('Минимальная сумма вывода — 60 UC.');
         return;
       }
 
+      if (amountVal % 1 !== 0) {
+        showError('Сумма вывода должна быть целым числом UC.');
+        return;
+      }
+
+      const currentBal = getUserBalance();
+      if (amountVal > currentBal) {
+        showError(`Недостаточно средств. Ваш баланс: ${Math.floor(currentBal)} UC, запрошено: ${amountVal} UC.`);
+        return;
+      }
+
+      if (!detailsInput || !detailsInput.value.trim()) {
+        showError('Пожалуйста, укажите ваши реквизиты.');
+        return;
+      }
+
+      if (confirmAmountDisplay) {
+        confirmAmountDisplay.textContent = amountVal;
+      }
+      form.style.display = 'none';
+      if (confirmStep) confirmStep.style.display = 'block';
+    });
+  }
+
+  // Confirmation Step: Cancel
+  if (cancelConfirmBtn) {
+    cancelConfirmBtn.addEventListener('click', () => {
+      if (confirmStep) confirmStep.style.display = 'none';
+      if (form) form.style.display = 'flex';
+      checkAmountValidity();
+    });
+  }
+
+  // Confirmation Step: Final Submit -> Deduct immediately
+  if (finalSubmitBtn) {
+    finalSubmitBtn.addEventListener('click', async () => {
       if (errorNotice) errorNotice.style.display = 'none';
-      submitBtn.disabled = true;
-      submitBtn.style.opacity = '0.7';
-      submitBtn.innerHTML = 'Создание заявки...';
+      finalSubmitBtn.disabled = true;
+      finalSubmitBtn.style.opacity = '0.7';
+      finalSubmitBtn.textContent = 'Списание UC...';
 
       try {
         const formData = new FormData(form);
@@ -346,30 +403,34 @@ function initWithdrawalModal() {
         if (data.success && data.telegram_url) {
           if (createdIdSpan) createdIdSpan.textContent = data.withdrawal_id;
           if (tgLink) tgLink.href = data.telegram_url;
+
+          // Update header and profile balance elements immediately
+          if (data.balance_after !== undefined) {
+            updateUserBalance(data.balance_after);
+          }
+
+          if (confirmStep) confirmStep.style.display = 'none';
           if (form) form.style.display = 'none';
           if (successNotice) successNotice.style.display = 'block';
 
-          // Try opening Telegram deep link in new tab
+          // Open Telegram deep link in new tab or fallback to redirect
           const tgWindow = window.open(data.telegram_url, '_blank');
           if (!tgWindow || tgWindow.closed || typeof tgWindow.closed === 'undefined') {
-            // Fallback
             window.location.href = data.telegram_url;
           }
         } else {
-          if (errorNotice) {
-            errorNotice.textContent = data.error || 'Ошибка при создании заявки';
-            errorNotice.style.display = 'block';
-          }
+          if (confirmStep) confirmStep.style.display = 'none';
+          if (form) form.style.display = 'flex';
+          showError(data.error || 'Ошибка при создании заявки');
         }
       } catch (err) {
-        if (errorNotice) {
-          errorNotice.textContent = 'Ошибка соединения с сервером. Попробуйте позже.';
-          errorNotice.style.display = 'block';
-        }
+        if (confirmStep) confirmStep.style.display = 'none';
+        if (form) form.style.display = 'flex';
+        showError('Ошибка соединения с сервером. Попробуйте позже.');
       } finally {
-        submitBtn.disabled = false;
-        submitBtn.style.opacity = '1';
-        submitBtn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" style="margin-right: 8px;"><use href="#icon-telegram"></use></svg> ВЫВЕСТИ ЧЕРЕЗ TELEGRAM';
+        finalSubmitBtn.disabled = false;
+        finalSubmitBtn.style.opacity = '1';
+        finalSubmitBtn.textContent = 'ПОДТВЕРДИТЬ ВЫВОД';
       }
     });
   }
