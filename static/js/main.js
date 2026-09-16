@@ -318,9 +318,9 @@ function initWithdrawalModal() {
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
       const amountVal = parseFloat(amountInput.value);
-      if (isNaN(amountVal) || amountVal < 10) {
+      if (isNaN(amountVal) || amountVal < 60) {
         if (errorNotice) {
-          errorNotice.textContent = 'Минимальная сумма вывода — 10 UC.';
+          errorNotice.textContent = 'Минимальная сумма вывода — 60 UC.';
           errorNotice.style.display = 'block';
         }
         return;

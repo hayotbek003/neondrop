@@ -102,8 +102,8 @@ def create_withdrawal_request_api(request):
 
     try:
         amount = Decimal(amount_raw)
-        if amount < Decimal('10.00'):
-            return JsonResponse({'success': False, 'error': 'Минимальная сумма вывода — 10 UC.'}, status=400)
+        if amount < Decimal('60.00'):
+            return JsonResponse({'success': False, 'error': 'Минимальная сумма вывода — 60 UC.'}, status=400)
     except Exception:
         return JsonResponse({'success': False, 'error': 'Некорректная сумма вывода.'}, status=400)
 

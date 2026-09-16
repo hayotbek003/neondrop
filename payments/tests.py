@@ -16,7 +16,7 @@ class WithdrawalSystemTestCase(TestCase):
     3. Creation of withdrawal request creates pending Withdrawal record.
     4. Balance is NOT deducted upon creation of withdrawal request.
     5. Telegram URL contains username, user ID, email, amount, withdrawal ID and is properly url-encoded.
-    6. Amount validation (minimum 10 UC, cannot exceed user balance).
+    6. Amount validation (minimum 60 UC, cannot exceed user balance).
     7. Admin can approve withdrawal request.
     8. Upon admin approval, balance is deducted exactly once and Transaction record is created.
     9. Repeated approval is blocked.
@@ -71,7 +71,7 @@ class WithdrawalSystemTestCase(TestCase):
         """3. Создание заявки со статусом pending."""
         self.client.login(username='player_one', password='password123')
         payload = {
-            'amount': '50.00',
+            'amount': '75.00',
             'method': 'PUBG Mobile (Player ID)',
             'details': 'ID: 5123456789, Nick: NeonSniper'
         }
@@ -85,7 +85,7 @@ class WithdrawalSystemTestCase(TestCase):
         self.assertEqual(w.user, self.user)
         self.assertEqual(w.username, 'player_one')
         self.assertEqual(w.user_id_val, self.user.id)
-        self.assertEqual(w.amount, Decimal('50.00'))
+        self.assertEqual(w.amount, Decimal('75.00'))
         self.assertEqual(w.method, 'PUBG Mobile (Player ID)')
         self.assertEqual(w.details, 'ID: 5123456789, Nick: NeonSniper')
         self.assertEqual(w.status, 'pending')
@@ -98,7 +98,7 @@ class WithdrawalSystemTestCase(TestCase):
         self.assertEqual(self.profile.balance, initial_balance)
 
         payload = {
-            'amount': '50.00',
+            'amount': '60.00',
             'method': 'Банковская карта (UZS: Uzcard / Humo)',
             'details': '8600 0000 1111 2222'
         }
@@ -114,7 +114,7 @@ class WithdrawalSystemTestCase(TestCase):
         """5. Telegram URL содержит username, user ID и правильный URL encoding."""
         self.client.login(username='player_one', password='password123')
         payload = {
-            'amount': '35.00',
+            'amount': '65.00',
             'method': 'USDT TRC20',
             'details': 'TX9xyz123456789trc20address'
         }
@@ -135,19 +135,19 @@ class WithdrawalSystemTestCase(TestCase):
         self.assertIn(f'Пользователь: {self.user.username}', decoded_text)
         self.assertIn(f'ID: {self.user.id}', decoded_text)
         self.assertIn('Email: player_one@neondrop.gg', decoded_text)
-        self.assertIn('Сумма: 35 UC', decoded_text)
+        self.assertIn('Сумма: 65 UC', decoded_text)
         self.assertIn('Способ получения: USDT TRC20', decoded_text)
         self.assertIn('Реквизиты: TX9xyz123456789trc20address', decoded_text)
         self.assertIn(f'Заявка №: {data["withdrawal_id"]}', decoded_text)
         self.assertIn('Просьба проверить заявку и подтвердить вывод.', decoded_text)
 
     def test_06_amount_validation(self):
-        """6. Валидация суммы: минимум 10 UC и не больше баланса."""
+        """6. Валидация суммы: минимум 60 UC и не больше баланса."""
         self.client.login(username='player_one', password='password123')
 
-        # Test less than 10 UC
+        # Test less than 60 UC
         resp_too_small = self.client.post(reverse('payments:create_withdrawal'), data={
-            'amount': '9.99',
+            'amount': '59.99',
             'method': 'Card',
             'details': 'Card details'
         })
