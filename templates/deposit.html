@@ -19,6 +19,19 @@
 
   <!-- Deposit Form Card -->
   <div class="panel-card" style="padding: 30px; margin-bottom: 35px;">
+
+    {% if has_blogger_discount %}
+    <div style="background: rgba(168, 85, 247, 0.12); border: 1px solid #a855f7; border-radius: 12px; padding: 14px 18px; margin-bottom: 22px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
+      <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+        <span style="background: #a855f7; color: #fff; padding: 4px 10px; border-radius: 6px; font-weight: 800; font-size: 12px; letter-spacing: 0.5px;">ПРОМОКОД: {{ blogger_code }}</span>
+        <span style="color: #e2e8f0; font-size: 13.5px;">
+          Вам доступна специальная цена блогера: <strong style="color: #38bdf8; font-size: 15px;">60 UC = 13 000 UZS</strong>
+          <span style="text-decoration: line-through; color: #94a3b8; font-size: 12px; margin-left: 4px;">15 000 UZS</span>
+        </span>
+      </div>
+      <span style="background: rgba(34, 197, 94, 0.15); color: #4ade80; border: 1px solid #22c55e; padding: 3px 10px; border-radius: 6px; font-size: 11px; font-weight: 700;">✓ БЕССРОЧНО</span>
+    </div>
+    {% endif %}
     
     <div style="background: rgba(6, 182, 212, 0.1); border: 1px solid rgba(6, 182, 212, 0.3); border-radius: 12px; padding: 18px 20px; margin-bottom: 25px;">
       <h4 style="font-family: var(--font-display); font-size: 15px; color: #38bdf8; margin-bottom: 8px; display: flex; align-items: center; gap: 8px;">
@@ -39,9 +52,13 @@
         ВЫБЕРИТЕ ПАКЕТ UC:
       </label>
       <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px;">
-        <button type="button" class="filter-chip preset-amt" data-val="60" style="display: flex; flex-direction: column; align-items: center; padding: 10px 8px; gap: 2px;">
+        <button type="button" class="filter-chip preset-amt" data-val="60" style="display: flex; flex-direction: column; align-items: center; padding: 10px 8px; gap: 2px; {% if has_blogger_discount %}border-color: #a855f7; background: rgba(168, 85, 247, 0.08);{% endif %}">
           <span style="font-weight: 800; display: flex; align-items: center; gap: 4px;"><img src="{% static 'images/uc_icon.png' %}" class="uc-icon-sm" alt="UC"> 60 UC</span>
-          <span style="font-size: 10px; color: #94a3b8;">≈ 15 000 UZS / $1.25</span>
+          {% if has_blogger_discount %}
+            <span style="font-size: 10px; color: #38bdf8; font-weight: bold;">13 000 UZS <span style="text-decoration: line-through; color: #94a3b8; font-weight: normal;">15 000</span></span>
+          {% else %}
+            <span style="font-size: 10px; color: #94a3b8;">≈ 15 000 UZS / $1.25</span>
+          {% endif %}
         </button>
         <button type="button" class="filter-chip preset-amt active" data-val="325" style="display: flex; flex-direction: column; align-items: center; padding: 10px 8px; gap: 2px;">
           <span style="font-weight: 800; display: flex; align-items: center; gap: 4px;"><img src="{% static 'images/uc_icon.png' %}" class="uc-icon-sm" alt="UC"> 325 UC</span>
@@ -160,15 +177,21 @@ document.addEventListener('DOMContentLoaded', () => {
   const approxUzs = document.getElementById('approxUzs');
   const approxUsd = document.getElementById('approxUsd');
 
+  const hasBloggerDiscount = {% if has_blogger_discount %}true{% else %}false{% endif %};
+
   function updateApproximations() {
     const amt = parseFloat(amountInput.value) || 0;
     const ucToUzs = (window.NEONDROP_CURRENCY && window.NEONDROP_CURRENCY.ucToUzsRate) ? window.NEONDROP_CURRENCY.ucToUzsRate : 250.0;
     const ucToUsd = (window.NEONDROP_CURRENCY && window.NEONDROP_CURRENCY.ucToUsdRate) ? window.NEONDROP_CURRENCY.ucToUsdRate : (250.0 / 12000.0);
 
-    const uzsVal = Math.round(amt * ucToUzs);
+    let uzsVal = Math.round(amt * ucToUzs);
     const usdVal = (amt * ucToUsd).toFixed(2);
 
-    if (approxUzs) approxUzs.textContent = `≈ ${uzsVal.toLocaleString('ru-RU')} UZS`;
+    if (hasBloggerDiscount && amt === 60) {
+      if (approxUzs) approxUzs.innerHTML = '<strong style="color: #38bdf8;">13 000 UZS</strong> <span style="text-decoration: line-through; color: #94a3b8; font-size: 11px;">15 000 UZS</span> <span style="background: rgba(168, 85, 247, 0.2); color: #c084fc; border: 1px solid #a855f7; border-radius: 4px; padding: 1px 5px; font-size: 10px; margin-left: 4px;">Спеццена блогера</span>';
+    } else {
+      if (approxUzs) approxUzs.textContent = `≈ ${uzsVal.toLocaleString('ru-RU')} UZS`;
+    }
     if (approxUsd) approxUsd.textContent = `≈ $${usdVal}`;
   }
 

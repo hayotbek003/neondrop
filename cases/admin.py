@@ -5,7 +5,7 @@ from django.utils import timezone
 from users.models import has_admin_perm
 from .models import (
     Category, Item, Case, CaseItem, Opening,
-    PersonalCaseChance, PersonalRtpBonus, PromoCode, PromoCodeUse, UserFreeOpening,
+    PersonalCaseChance, PersonalRtpBonus, PromoCode, BloggerPromoCode, PromoCodeUse, UserFreeOpening,
     BloggerPayout
 )
 
@@ -750,6 +750,151 @@ class PromoCodeAdmin(admin.ModelAdmin):
 
         </div>
         """)
+
+
+@admin.register(BloggerPromoCode)
+class BloggerPromoCodeAdmin(admin.ModelAdmin):
+    list_display = (
+        'blogger_name_col',
+        'code_col',
+        'users_count_col',
+        'user_deposits_col',
+        'openings_spent_col',
+        'items_won_col',
+        'net_loss_col',
+        'blogger_percent_col',
+        'blogger_earnings_col',
+        'price_col',
+        'duration_col',
+        'status_col',
+    )
+    list_filter = ('is_active',)
+    search_fields = ('code', 'blogger_name')
+    ordering = ('-created_at',)
+    readonly_fields = ('fixed_price_display', 'duration_display', 'blogger_analytics_dashboard', 'created_at', 'updated_at')
+
+    fields = (
+        'code',
+        'blogger_name',
+        'blogger_percentage',
+        'is_active',
+        'fixed_price_display',
+        'duration_display',
+        'blogger_analytics_dashboard',
+    )
+
+    def has_view_permission(self, request, obj=None):
+        return has_admin_perm(request.user, 'can_manage_promocodes') or has_admin_perm(request.user, 'can_view_blogger_stats')
+
+    def has_add_permission(self, request):
+        return has_admin_perm(request.user, 'can_manage_promocodes')
+
+    def has_change_permission(self, request, obj=None):
+        return has_admin_perm(request.user, 'can_manage_promocodes') or has_admin_perm(request.user, 'can_edit_blogger_percent')
+
+    def has_delete_permission(self, request, obj=None):
+        return has_admin_perm(request.user, 'can_manage_promocodes')
+
+    def changeform_view(self, request, object_id=None, form_url='', extra_context=None):
+        self.current_request = request
+        return super().changeform_view(request, object_id, form_url, extra_context=extra_context)
+
+    def save_model(self, request, obj, form, change):
+        obj.bonus_type = 'blogger'
+        obj.bonus_value = Decimal('13000.00')
+        from django.utils import timezone
+        from datetime import datetime, timedelta
+        if not obj.starts_at:
+            obj.starts_at = timezone.now() - timedelta(days=1)
+        if not obj.expires_at:
+            obj.expires_at = timezone.make_aware(datetime(2099, 12, 31, 23, 59, 59))
+        if not obj.max_uses:
+            obj.max_uses = 9999999
+        super().save_model(request, obj, form, change)
+
+    @admin.display(description="Блогер")
+    def blogger_name_col(self, obj):
+        return format_html('<strong style="color: #f8fafc; font-size: 13px;">{}</strong>', obj.blogger_name or '—')
+
+    @admin.display(description="Промокод")
+    def code_col(self, obj):
+        return format_html('<code style="background: #1e293b; color: #38bdf8; padding: 3px 8px; border-radius: 4px; font-size: 13px; font-weight: bold;">{}</code>', obj.code)
+
+    @admin.display(description="Привлечённых пользователей")
+    def users_count_col(self, obj):
+        stats = obj.get_stats_all_time()
+        return format_html('<strong style="font-size: 13px;">{}</strong>', stats['users_count'])
+
+    @admin.display(description="Депозиты пользователей")
+    def user_deposits_col(self, obj):
+        stats = obj.get_stats_all_time()
+        return format_html('<span style="color: #94a3b8; font-weight: 600;">{} UC</span>', f"{stats['total_deposits']:.2f}")
+
+    @admin.display(description="Потрачено на кейсы")
+    def openings_spent_col(self, obj):
+        stats = obj.get_stats_all_time()
+        return format_html('<span style="color: #cbd5e1; font-weight: 600;">{} UC</span>', f"{stats['total_spent']:.2f}")
+
+    @admin.display(description="Выиграно предметов")
+    def items_won_col(self, obj):
+        stats = obj.get_stats_all_time()
+        return format_html('<span style="color: #38bdf8; font-weight: 600;">{} UC</span>', f"{stats['total_won']:.2f}")
+
+    @admin.display(description="Чистый проигрыш")
+    def net_loss_col(self, obj):
+        stats = obj.get_stats_all_time()
+        return format_html('<strong style="color: #f87171; font-size: 13px;">{} UC</strong>', f"{stats['net_loss']:.2f}")
+
+    @admin.display(description="Процент блогера")
+    def blogger_percent_col(self, obj):
+        pct = obj.blogger_percentage or Decimal('0.00')
+        return format_html('<strong style="color: #eab308; font-size: 13px;">{}%</strong>', pct)
+
+    @admin.display(description="Заработок блогера")
+    def blogger_earnings_col(self, obj):
+        stats = obj.get_stats_all_time()
+        return format_html('<strong style="color: #22c55e; font-size: 14px;">{} UC</strong>', f"{stats['blogger_payout']:.2f}")
+
+    @admin.display(description="Цена для пользователя")
+    def price_col(self, obj):
+        return format_html('<span style="background: rgba(56, 189, 248, 0.15); color: #38bdf8; border: 1px solid #38bdf8; padding: 2px 6px; border-radius: 4px; font-weight: 700; font-size: 11px;">60 UC = 13 000 UZS</span>')
+
+    @admin.display(description="Срок действия")
+    def duration_col(self, obj):
+        return format_html('<span style="color: #4ade80; font-weight: bold; font-size: 12px;">✓ Бессрочно</span>')
+
+    @admin.display(description="Статус")
+    def status_col(self, obj):
+        if obj.is_active:
+            return format_html('<span style="color: #22c55e; font-weight: bold;">● Активен</span>')
+        return format_html('<span style="color: #94a3b8; font-weight: bold;">○ Выключен</span>')
+
+    @admin.display(description="Фиксированная цена для пользователя (неизменяемо)")
+    def fixed_price_display(self, obj):
+        return format_html(
+            '<div style="background: #0f172a; border: 1px solid #38bdf8; border-radius: 8px; padding: 12px 16px; max-width: 500px;">'
+            '<div style="color: #38bdf8; font-weight: 800; font-size: 15px;">60 UC = 13 000 UZS</div>'
+            '<div style="color: #94a3b8; font-size: 12px; margin-top: 4px;">Обычная цена: 60 UC = 15 000 UZS. Пользователь получает скидку на покупку, цена зафиксирована навсегда.</div>'
+            '</div>'
+        )
+
+    @admin.display(description="Срок действия промокода")
+    def duration_display(self, obj):
+        return format_html(
+            '<div style="background: #0f172a; border: 1px solid #22c55e; border-radius: 8px; padding: 12px 16px; max-width: 500px;">'
+            '<div style="color: #4ade80; font-weight: 800; font-size: 15px;">Бессрочно</div>'
+            '<div style="color: #94a3b8; font-size: 12px; margin-top: 4px;">Промокод не имеет даты окончания и количества ограничений. Действует непрерывно.</div>'
+            '</div>'
+        )
+
+    @admin.display(description="Панель аналитики блогера")
+    def blogger_analytics_dashboard(self, obj):
+        if not obj or not obj.pk:
+            return format_html('<p style="color: #64748b;">Сохраните промокод для отображения аналитики.</p>')
+        pca = PromoCodeAdmin(PromoCode, self.admin_site)
+        pca.current_request = getattr(self, 'current_request', None)
+        return pca.blogger_analytics_dashboard(obj)
+
 
 @admin.register(PromoCodeUse)
 class PromoCodeUseAdmin(admin.ModelAdmin):

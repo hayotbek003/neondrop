@@ -23,11 +23,32 @@ def deposit_view(request):
     tg_admin = getattr(settings, 'TELEGRAM_BOT_USERNAME', 'neondrop_admin').lstrip('@')
     transactions = Transaction.objects.filter(user=request.user, transaction_type='deposit').order_by('-created_at')[:20]
     rates = get_currency_rates()
+
+    # Check for active blogger promo discount
+    from cases.models import PromoCodeUse
+    blogger_use = PromoCodeUse.objects.filter(
+        user=request.user
+    ).select_related('promo_code').filter(
+        promo_code__bonus_type='blogger'
+    ).first()
+    if not blogger_use:
+        blogger_use = PromoCodeUse.objects.filter(
+            user=request.user,
+            promo_code__blogger_percentage__gt=0
+        ).select_related('promo_code').first()
+
+    has_blogger_discount = bool(blogger_use and blogger_use.promo_code.is_active)
+    blogger_code = blogger_use.promo_code.code if has_blogger_discount else ''
+    blogger_name = blogger_use.promo_code.blogger_name if has_blogger_discount else ''
+
     return render(request, 'deposit.html', {
         'transactions': transactions,
         'active_tab': 'deposit',
         'telegram_admin': tg_admin,
         'currency_rates': rates,
+        'has_blogger_discount': has_blogger_discount,
+        'blogger_code': blogger_code,
+        'blogger_name': blogger_name,
     })
 
 @rate_limit(key_prefix='deposit_req', limit=10, period=60, by_user=True)
@@ -44,9 +65,35 @@ def create_deposit_request_api(request):
     except Exception:
         return JsonResponse({'success': False, 'error': 'Некорректная сумма пополнения.'}, status=400)
 
+    # Check for active blogger promo discount
+    from cases.models import PromoCodeUse
+    blogger_use = PromoCodeUse.objects.filter(
+        user=request.user
+    ).select_related('promo_code').filter(
+        promo_code__bonus_type='blogger'
+    ).first()
+    if not blogger_use:
+        blogger_use = PromoCodeUse.objects.filter(
+            user=request.user,
+            promo_code__blogger_percentage__gt=0
+        ).select_related('promo_code').first()
+
+    has_blogger_discount = bool(blogger_use and blogger_use.promo_code.is_active)
+    blogger_code = blogger_use.promo_code.code if has_blogger_discount else ''
+
     amount_display = format_uc(amount)
     usd_display = format_usd_approx(amount)
     uzs_display = format_uzs_approx(amount)
+
+    promo_for_tx = None
+    if has_blogger_discount:
+        promo_for_tx = blogger_use.promo_code
+        if amount == Decimal('60.00'):
+            uzs_display = "13 000 UZS"
+
+    desc = f"Заявка на пополнение через Telegram на сумму {amount_display} ({uzs_display} / {usd_display})"
+    if has_blogger_discount and amount == Decimal('60.00'):
+        desc += f" [Спеццена блогера: {blogger_code}]"
 
     # Create pending transaction record (NO AUTOMATIC BALANCE CREDIT)
     tx = Transaction.objects.create(
@@ -59,7 +106,8 @@ def create_deposit_request_api(request):
         payment_method='telegram',
         telegram_username=request.user.profile.telegram_username,
         ip_address=ip,
-        description=f"Заявка на пополнение через Telegram на сумму {amount_display} ({uzs_display} / {usd_display})"
+        promo_code=promo_for_tx,
+        description=desc
     )
 
     audit_logger.info(
@@ -70,11 +118,15 @@ def create_deposit_request_api(request):
     # Format Telegram administrator direct link with exact required pre-filled text
     tg_admin = getattr(settings, 'TELEGRAM_BOT_USERNAME', 'neondrop_admin').lstrip('@')
     
+    price_note = f"{uzs_display} / {usd_display}"
+    if has_blogger_discount and amount == Decimal('60.00'):
+        price_note = f"13 000 UZS (Спеццена по промокоду блогера: {blogger_code})"
+
     msg_template = (
         f"Здравствуйте! Хочу пополнить баланс NEONDROP.\n\n"
         f"Мой логин: {request.user.username}\n"
         f"Мой ID: {request.user.id}\n"
-        f"Сумма пополнения: {amount_display} ({uzs_display} / {usd_display})"
+        f"Сумма пополнения: {amount_display} ({price_note})"
     )
     encoded_msg = urllib.parse.quote(msg_template)
     telegram_url = f"https://t.me/{tg_admin}?text={encoded_msg}"

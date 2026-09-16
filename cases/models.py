@@ -345,13 +345,14 @@ class PromoCode(models.Model):
         ('coins', 'UC / Баланс (UC)'),
         ('percentage', 'Процент к депозиту (%)'),
         ('free_case_opens', 'Бесплатные открытия кейса'),
+        ('blogger', 'Промокод блогера (60 UC = 13 000 UZS)'),
     ]
 
     code = models.CharField(max_length=50, unique=True, db_index=True, verbose_name="Промокод")
     blogger_name = models.CharField(max_length=150, blank=True, null=True, verbose_name="Имя / Канал блогера", help_text="Например: YouTube @BloggerName или Telegram @channel")
     blogger_percentage = models.DecimalField(max_digits=5, decimal_places=2, default=Decimal('0.00'), verbose_name="Процент блогера (%)", help_text="Процент от чистого проигрыша привлеченных пользователей (например: 10.00 = 10%)")
     bonus_type = models.CharField(max_length=30, choices=BONUS_TYPE_CHOICES, default='coins', verbose_name="Тип бонуса")
-    bonus_value = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="Значение бонуса (UC / % / Кол-во)")
+    bonus_value = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal('0.00'), verbose_name="Значение бонуса (UC / % / Кол-во)")
     max_uses = models.PositiveIntegerField(default=100, verbose_name="Максимум использований (всего)")
     used_count = models.PositiveIntegerField(default=0, verbose_name="Количество использований")
     starts_at = models.DateTimeField(verbose_name="Дата начала")
@@ -372,11 +373,31 @@ class PromoCode(models.Model):
         blogger_str = f" [{self.blogger_percentage}%]" if self.blogger_percentage and self.blogger_percentage > 0 else ""
         return f"{self.code or '---'}{blogger_str} ({self.get_bonus_type_display()}: {self.bonus_value})"
 
+    @property
+    def is_blogger_promo(self):
+        return self.bonus_type == 'blogger' or bool(self.blogger_name and self.blogger_percentage and self.blogger_percentage > 0)
+
     def clean(self):
         from django.core.exceptions import ValidationError
+        from django.utils import timezone
+        from datetime import datetime, timedelta
+
         if self.code:
             self.code = self.code.strip().upper()
-        if self.bonus_value is not None and self.bonus_value <= Decimal('0.00'):
+
+        # Automatic setup for blogger promo codes
+        if self.bonus_type == 'blogger' or (self.blogger_name and self.blogger_percentage and self.blogger_percentage > 0):
+            # Fixed immutable price for users: 60 UC = 13 000 UZS
+            self.bonus_value = Decimal('13000.00')
+            if not self.starts_at:
+                self.starts_at = timezone.now() - timedelta(days=1)
+            if not self.expires_at or self.expires_at.year < 2099:
+                self.expires_at = timezone.make_aware(datetime(2099, 12, 31, 23, 59, 59))
+            self.max_uses = 9999999
+            if self.blogger_percentage is None:
+                self.blogger_percentage = Decimal('10.00')
+
+        if self.bonus_value is not None and self.bonus_value <= Decimal('0.00') and self.bonus_type != 'blogger':
             raise ValidationError({'bonus_value': "Значение бонуса должно быть больше 0."})
         if self.blogger_percentage is not None and (self.blogger_percentage < Decimal('0.00') or self.blogger_percentage > Decimal('100.00')):
             raise ValidationError({'blogger_percentage': "Процент блогера должен быть от 0.00% до 100.00%."})
@@ -390,23 +411,41 @@ class PromoCode(models.Model):
             raise ValidationError({'max_bonus': "Максимальная сумма бонуса должна быть больше 0."})
 
     def save(self, *args, **kwargs):
+        from django.utils import timezone
+        from datetime import datetime, timedelta
+
         if self.code:
             self.code = self.code.strip().upper()
+
+        if self.bonus_type == 'blogger' or (self.blogger_name and self.blogger_percentage and self.blogger_percentage > 0):
+            self.bonus_value = Decimal('13000.00')
+            if not self.starts_at:
+                self.starts_at = timezone.now() - timedelta(days=1)
+            if not self.expires_at or self.expires_at.year < 2099:
+                self.expires_at = timezone.make_aware(datetime(2099, 12, 31, 23, 59, 59))
+            self.max_uses = 9999999
+
         super().save(*args, **kwargs)
 
     @property
     def is_valid_now(self):
+        if self.is_blogger_promo:
+            return self.is_active
         from django.utils import timezone
         now = timezone.now()
         return self.is_active and (self.used_count < self.max_uses) and (self.starts_at <= now <= self.expires_at)
 
     @property
     def is_expired(self):
+        if self.is_blogger_promo:
+            return False
         from django.utils import timezone
         return timezone.now() > self.expires_at
 
     @property
     def is_limit_reached(self):
+        if self.is_blogger_promo:
+            return False
         return self.used_count >= self.max_uses
 
     def get_stats_for_period(self, date_from=None, date_to=None):
@@ -757,6 +796,47 @@ class BloggerPayout(models.Model):
 
     def __str__(self):
         return f"Выплата {self.amount} UC блогеру {self.promo_code.blogger_name or self.promo_code.code} за {self.period}"
+
+
+class BloggerPromoCodeManager(models.Manager):
+    def get_queryset(self):
+        return super().get_queryset().filter(
+            models.Q(bonus_type='blogger') |
+            (models.Q(blogger_name__isnull=False) & ~models.Q(blogger_name='') & models.Q(blogger_percentage__gt=0))
+        )
+
+
+class BloggerPromoCode(PromoCode):
+    objects = BloggerPromoCodeManager()
+
+    class Meta:
+        proxy = True
+        verbose_name = "Промокод блогера"
+        verbose_name_plural = "Промокоды блогеров"
+
+    def clean(self):
+        self.bonus_type = 'blogger'
+        self.bonus_value = Decimal('13000.00')
+        from django.utils import timezone
+        from datetime import datetime, timedelta
+        if not self.starts_at:
+            self.starts_at = timezone.now() - timedelta(days=1)
+        if not self.expires_at or self.expires_at.year < 2099:
+            self.expires_at = timezone.make_aware(datetime(2099, 12, 31, 23, 59, 59))
+        self.max_uses = 9999999
+        super().clean()
+
+    def save(self, *args, **kwargs):
+        self.bonus_type = 'blogger'
+        self.bonus_value = Decimal('13000.00')
+        from django.utils import timezone
+        from datetime import datetime, timedelta
+        if not self.starts_at:
+            self.starts_at = timezone.now() - timedelta(days=1)
+        if not self.expires_at or self.expires_at.year < 2099:
+            self.expires_at = timezone.make_aware(datetime(2099, 12, 31, 23, 59, 59))
+        self.max_uses = 9999999
+        super().save(*args, **kwargs)
 
 
 class RngSimulationRun(models.Model):

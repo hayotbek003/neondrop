@@ -391,14 +391,15 @@ def redeem_promocode_api(request):
     if not promo.is_active:
         return JsonResponse({'success': False, 'error': '✕ Данный промокод выключен.'}, status=400)
 
-    if promo.starts_at > now:
-        return JsonResponse({'success': False, 'error': '✕ Срок действия промокода еще не начался.'}, status=400)
+    if not promo.is_blogger_promo:
+        if promo.starts_at > now:
+            return JsonResponse({'success': False, 'error': '✕ Срок действия промокода еще не начался.'}, status=400)
 
-    if promo.expires_at < now:
-        return JsonResponse({'success': False, 'error': '✕ Срок действия промокода истёк.'}, status=400)
+        if promo.expires_at < now:
+            return JsonResponse({'success': False, 'error': '✕ Срок действия промокода истёк.'}, status=400)
 
-    if promo.used_count >= promo.max_uses:
-        return JsonResponse({'success': False, 'error': '✕ Лимит использований промокода исчерпан.'}, status=400)
+        if promo.used_count >= promo.max_uses:
+            return JsonResponse({'success': False, 'error': '✕ Лимит использований промокода исчерпан.'}, status=400)
 
     # 3. Check unique usage
     if PromoCodeUse.objects.filter(user=request.user, promo_code=promo).exists():
@@ -454,6 +455,10 @@ def redeem_promocode_api(request):
         bonus_pct = promo.bonus_value
         bonus_amount_applied = bonus_pct
         msg = f"✓ Промокод активирован! Бонус +{bonus_pct}% будет применен к следующему пополнению."
+
+    elif promo.bonus_type == 'blogger' or promo.is_blogger_promo:
+        bonus_amount_applied = Decimal('0.00')
+        msg = "✓ Промокод блогера активирован! Специальная цена: 60 UC = 13 000 UZS (вместо 15 000 UZS)."
 
     # 6. Record PromoCodeUse & increment counter
     PromoCodeUse.objects.create(

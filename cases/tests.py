@@ -10,8 +10,8 @@ import os
 from pathlib import Path
 
 from cases.models import (
-    Case, Item, CaseItem, Opening,
-    PersonalCaseChance, PromoCode, PromoCodeUse, UserFreeOpening
+    Category, Case, Item, CaseItem, Opening,
+    PersonalCaseChance, PromoCode, BloggerPromoCode, PromoCodeUse, UserFreeOpening
 )
 from inventory.models import InventoryItem
 from payments.models import Transaction
@@ -1292,6 +1292,148 @@ class NeonDropComprehensiveTests(TestCase):
         self.assertEqual(res2.status_code, 200)
         self.assertTrue(res2.context['user'].is_authenticated)
         self.assertEqual(res2.context['user'].username, 'Smoke')
+
+
+class BloggerPromoCodeSystemTests(TestCase):
+    def setUp(self):
+        from django.core.cache import cache
+        from users.models import Profile
+        from cases.models import BloggerPromoCode
+        cache.clear()
+        self.user = User.objects.create_user(username='test_blogger_fan', password='TestPassword123!', email='fan@example.com')
+        Profile.objects.filter(user=self.user).update(balance=Decimal('500.00'))
+        self.client.force_login(self.user)
+
+        self.category = Category.objects.create(name='Test Cat', slug='test-cat-blogger')
+        self.case = Case.objects.create(name='Test Case', slug='test-case-blogger', category=self.category, price=Decimal('100.00'))
+        self.item_cheap = Item.objects.create(name='Cheap Skin', value=Decimal('20.00'), rarity='common')
+        self.item_expensive = Item.objects.create(name='Rare Skin', value=Decimal('500.00'), rarity='legendary')
+        CaseItem.objects.create(case=self.case, item=self.item_cheap, weight=90)
+        CaseItem.objects.create(case=self.case, item=self.item_expensive, weight=10)
+
+    def test_blogger_promocode_auto_configuration(self):
+        """Blogger promo code automatically sets 60 UC = 13 000 UZS price, perpetual validity, and unlimited uses."""
+        promo = BloggerPromoCode.objects.create(
+            code='CAMONIM',
+            blogger_name='@CAMONIM',
+            blogger_percentage=Decimal('15.00')
+        )
+        self.assertEqual(promo.bonus_type, 'blogger')
+        self.assertEqual(promo.bonus_value, Decimal('13000.00'))
+        self.assertEqual(promo.max_uses, 9999999)
+        self.assertTrue(promo.is_valid_now)
+        self.assertFalse(promo.is_expired)
+        self.assertFalse(promo.is_limit_reached)
+        self.assertTrue(promo.is_blogger_promo)
+
+    def test_blogger_promocode_redemption_and_price_discount(self):
+        """Redeeming blogger promo code permanently binds user without changing balance, and grants 60 UC = 13 000 UZS."""
+        promo = BloggerPromoCode.objects.create(
+            code='BLOGGER1',
+            blogger_name='Cool Streamer',
+            blogger_percentage=Decimal('10.00')
+        )
+        initial_balance = self.user.profile.balance
+
+        # 1. Redeem promo code
+        res = self.client.post(reverse('cases:api_redeem_promocode'), {'code': 'BLOGGER1'})
+        self.assertEqual(res.status_code, 200)
+        data = res.json()
+        self.assertTrue(data['success'])
+        self.assertIn('60 UC = 13 000 UZS', data['message'])
+
+        # Balance remains unchanged (discount on deposit, not free balance)
+        self.user.profile.refresh_from_db()
+        self.assertEqual(self.user.profile.balance, initial_balance)
+
+        # Usage record created
+        self.assertTrue(PromoCodeUse.objects.filter(user=self.user, promo_code=promo).exists())
+
+        # 2. Check deposit page UI
+        res_dep = self.client.get(reverse('payments:deposit'))
+        self.assertEqual(res_dep.status_code, 200)
+        self.assertTrue(res_dep.context['has_blogger_discount'])
+        self.assertEqual(res_dep.context['blogger_code'], 'BLOGGER1')
+        self.assertContains(res_dep, '13 000 UZS')
+
+        # 3. Create 60 UC deposit request -> displays 13 000 UZS
+        res_req = self.client.post(reverse('payments:create_request'), {'amount': '60'})
+        self.assertEqual(res_req.status_code, 200)
+        tx = Transaction.objects.filter(user=self.user, transaction_type='deposit').latest('id')
+        self.assertEqual(tx.amount, Decimal('60.00'))
+        self.assertIn('13 000 UZS', tx.description)
+        self.assertEqual(tx.promo_code, promo)
+
+    def test_blogger_net_loss_statistics(self):
+        """Blogger earnings are calculated strictly from Net Loss = Total Spent - Total Won."""
+        promo = BloggerPromoCode.objects.create(
+            code='REVENUE10',
+            blogger_name='Gamer Pro',
+            blogger_percentage=Decimal('10.00')
+        )
+        PromoCodeUse.objects.create(user=self.user, promo_code=promo, bonus_amount=Decimal('0.00'))
+
+        # User deposits 1000 UC (blogger gets 0% from deposits)
+        Transaction.objects.create(
+            user=self.user,
+            amount=Decimal('1000.00'),
+            transaction_type='deposit',
+            status='completed',
+            promo_code=promo
+        )
+
+        # User opens 2 cases: spent 200 UC (100 each), won 2 x item_cheap (20 UC each = 40 UC)
+        # Net loss = 200 - 40 = 160 UC
+        # Blogger payout = 160 * 10% = 16.00 UC
+        Opening.objects.create(user=self.user, case=self.case, item=self.item_cheap, price=Decimal('100.00'))
+        Opening.objects.create(user=self.user, case=self.case, item=self.item_cheap, price=Decimal('100.00'))
+
+        stats = promo.get_stats_all_time()
+        self.assertEqual(stats['users_count'], 1)
+        self.assertEqual(stats['total_spent'], Decimal('200.00'))
+        self.assertEqual(stats['total_won'], Decimal('40.00'))
+        self.assertEqual(stats['net_loss'], Decimal('160.00'))
+        self.assertEqual(stats['blogger_payout'], Decimal('16.00'))
+        self.assertEqual(stats['site_revenue'], Decimal('144.00'))
+
+    def test_blogger_promocode_admin_save_model(self):
+        """Admin save_model automatically enforces blogger type, 13 000 UZS, and perpetual validity."""
+        from django.contrib.admin.sites import AdminSite
+        from cases.admin import BloggerPromoCodeAdmin
+        site = AdminSite()
+        admin_obj = BloggerPromoCodeAdmin(BloggerPromoCode, site)
+        
+        instance = BloggerPromoCode(code='ADMINTEST', blogger_name='Admin Blogger', blogger_percentage=Decimal('12.00'))
+        admin_obj.save_model(request=None, obj=instance, form=None, change=False)
+
+        instance.refresh_from_db()
+        self.assertEqual(instance.bonus_type, 'blogger')
+        self.assertEqual(instance.bonus_value, Decimal('13000.00'))
+        self.assertEqual(instance.max_uses, 9999999)
+        self.assertTrue(instance.is_valid_now)
+
+    def test_provably_fair_rtp_unaffected_by_blogger_promo(self):
+        """Case opening chances and algorithm are completely identical for users with blogger promo codes."""
+        promo = BloggerPromoCode.objects.create(
+            code='FAIRTEST',
+            blogger_name='Fair Streamer',
+            blogger_percentage=Decimal('10.00')
+        )
+        PromoCodeUse.objects.create(user=self.user, promo_code=promo, bonus_amount=Decimal('0.00'))
+
+        # Another user without promo
+        other_user = User.objects.create_user(username='normal_user', password='TestPassword123!', email='norm@example.com')
+
+        # Effective case chances must be identical
+        chances_referred = get_effective_case_chances(self.case, user=self.user)
+        chances_normal = get_effective_case_chances(self.case, user=other_user)
+
+        self.assertEqual(len(chances_referred), len(chances_normal))
+        for c1, c2 in zip(chances_referred, chances_normal):
+            self.assertEqual(c1['item'].id, c2['item'].id)
+            self.assertEqual(c1['probability'], c2['probability'])
+
+
 
 
 
