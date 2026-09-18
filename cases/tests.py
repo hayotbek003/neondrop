@@ -1364,6 +1364,14 @@ class BloggerPromoCodeSystemTests(TestCase):
         self.assertIn('13 000 UZS', tx.description)
         self.assertEqual(tx.promo_code, promo)
 
+        # 4. Create 325 UC deposit request -> displays 70 417 UZS (rate 60 UC = 13 000 UZS)
+        res_req_325 = self.client.post(reverse('payments:create_request'), {'amount': '325'})
+        self.assertEqual(res_req_325.status_code, 200)
+        tx_325 = Transaction.objects.filter(user=self.user, transaction_type='deposit').latest('id')
+        self.assertEqual(tx_325.amount, Decimal('325.00'))
+        self.assertIn('70 417 UZS', tx_325.description)
+        self.assertEqual(tx_325.promo_code, promo)
+
     def test_blogger_net_loss_statistics(self):
         """Blogger earnings are calculated strictly from Net Loss = Total Spent - Total Won."""
         promo = BloggerPromoCode.objects.create(

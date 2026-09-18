@@ -32,6 +32,8 @@ backup/
 *.zip
 !cases/resources/*.zip
 media_backup/
+static/items_original_backup/
+neondrop_items_original_export/
 
 # IDE & OS
 .vscode/

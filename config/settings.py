@@ -393,3 +393,12 @@ LOGGING = {
 SITE_DOMAIN = os.environ.get('SITE_DOMAIN', 'neondrop-ujly.onrender.com')
 GOOGLE_SITE_VERIFICATION = os.environ.get('GOOGLE_SITE_VERIFICATION', '')
 
+# Uzum Checkout Integration Settings
+UZUM_MERCHANT_ID = os.environ.get('UZUM_MERCHANT_ID', '').strip()
+UZUM_SECRET_KEY = os.environ.get('UZUM_SECRET_KEY', '').strip()
+UZUM_TERMINAL_ID = os.environ.get('UZUM_TERMINAL_ID', '').strip() or UZUM_MERCHANT_ID
+UZUM_API_URL = os.environ.get('UZUM_API_URL', 'https://checkout-api.ipt-merch.com').strip().rstrip('/')
+UZUM_RETURN_URL = os.environ.get('UZUM_RETURN_URL', '').strip()
+UZUM_WEBHOOK_URL = os.environ.get('UZUM_WEBHOOK_URL', '').strip()
+UZUM_TEST_MODE = os.environ.get('UZUM_TEST_MODE', 'False').strip().lower() in ('true', '1', 'yes')
+

@@ -1,6 +1,6 @@
 import logging
 import urllib.parse
-from decimal import Decimal
+from decimal import Decimal, ROUND_HALF_UP
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_POST
@@ -9,7 +9,7 @@ from django.http import JsonResponse
 from django.conf import settings
 from django.db import transaction
 
-from .models import Transaction, Withdrawal
+from .models import Transaction, Withdrawal, UCPackage, UzumPayment
 from .currency import format_uc, format_usd_approx, format_uzs_approx, get_currency_rates
 from config.security import rate_limit, get_client_ip
 from users.models import Profile
@@ -41,6 +41,9 @@ def deposit_view(request):
     blogger_code = blogger_use.promo_code.code if has_blogger_discount else ''
     blogger_name = blogger_use.promo_code.blogger_name if has_blogger_discount else ''
 
+    # Get authoritative UC packages for user
+    packages = UCPackage.get_active_packages_for_user(request.user)
+
     return render(request, 'deposit.html', {
         'transactions': transactions,
         'active_tab': 'deposit',
@@ -49,6 +52,7 @@ def deposit_view(request):
         'has_blogger_discount': has_blogger_discount,
         'blogger_code': blogger_code,
         'blogger_name': blogger_name,
+        'packages': packages,
     })
 
 @rate_limit(key_prefix='deposit_req', limit=10, period=60, by_user=True)
@@ -83,17 +87,19 @@ def create_deposit_request_api(request):
 
     amount_display = format_uc(amount)
     usd_display = format_usd_approx(amount)
-    uzs_display = format_uzs_approx(amount)
 
     promo_for_tx = None
     if has_blogger_discount:
         promo_for_tx = blogger_use.promo_code
-        if amount == Decimal('60.00'):
-            uzs_display = "13 000 UZS"
-
-    desc = f"Заявка на пополнение через Telegram на сумму {amount_display} ({uzs_display} / {usd_display})"
-    if has_blogger_discount and amount == Decimal('60.00'):
-        desc += f" [Спеццена блогера: {blogger_code}]"
+        # Apply special blogger exchange rate: 60 UC = 13 000 UZS (amount * 13000 / 60)
+        uzs_val = (amount * Decimal('13000') / Decimal('60')).quantize(Decimal('1'), rounding=ROUND_HALF_UP)
+        uzs_display = f"{int(uzs_val):,} UZS".replace(',', ' ')
+        desc = f"Заявка на пополнение через Telegram на сумму {amount_display} ({uzs_display} / {usd_display}) [Курс блогера 60 UC = 13 000 UZS: {blogger_code}]"
+        price_note = f"{uzs_display} (Курс по промокоду блогера: {blogger_code} — 60 UC = 13 000 UZS) / {usd_display}"
+    else:
+        uzs_display = format_uzs_approx(amount)
+        desc = f"Заявка на пополнение через Telegram на сумму {amount_display} ({uzs_display} / {usd_display})"
+        price_note = f"{uzs_display} / {usd_display}"
 
     # Create pending transaction record (NO AUTOMATIC BALANCE CREDIT)
     tx = Transaction.objects.create(
@@ -118,10 +124,6 @@ def create_deposit_request_api(request):
     # Format Telegram administrator direct link with exact required pre-filled text
     tg_admin = getattr(settings, 'TELEGRAM_BOT_USERNAME', 'neondrop_admin').lstrip('@')
     
-    price_note = f"{uzs_display} / {usd_display}"
-    if has_blogger_discount and amount == Decimal('60.00'):
-        price_note = f"13 000 UZS (Спеццена по промокоду блогера: {blogger_code})"
-
     msg_template = (
         f"Здравствуйте! Хочу пополнить баланс NEONDROP.\n\n"
         f"Мой логин: {request.user.username}\n"

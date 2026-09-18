@@ -176,3 +176,151 @@ class Withdrawal(models.Model):
     def __str__(self):
         return f"Заявка #{self.id} | {self.username} | {self.amount} UC ({self.get_status_display()})"
 
+
+class UCPackage(models.Model):
+    uc_amount = models.PositiveIntegerField(unique=True, verbose_name="Количество UC")
+    price_uzs = models.DecimalField(max_digits=12, decimal_places=2, verbose_name="Базовая цена (UZS)")
+    discount_badge = models.CharField(
+        max_length=50,
+        blank=True,
+        null=True,
+        verbose_name="Бейдж скидки / акции",
+        help_text="Например: 'Хит', '+10%', 'Популярный'"
+    )
+    order = models.PositiveIntegerField(default=0, verbose_name="Порядок отображения")
+    is_active = models.BooleanField(default=True, verbose_name="Активен")
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Дата создания")
+    updated_at = models.DateTimeField(auto_now=True, verbose_name="Дата обновления")
+
+    class Meta:
+        verbose_name = "Пакет UC"
+        verbose_name_plural = "Пакеты UC (Uzum Checkout)"
+        ordering = ['order', 'uc_amount']
+
+    def __str__(self):
+        return f"{self.uc_amount} UC — {int(self.price_uzs):,} UZS".replace(',', ' ')
+
+    def get_actual_price_uzs(self, user=None):
+        """
+        Calculates authoritative UZS price for this package.
+        If user has an active blogger promo code, applies special blogger exchange rate:
+        60 UC = 13 000 UZS (round(uc_amount * 13000 / 60)).
+        Otherwise returns base price_uzs.
+        """
+        if user and user.is_authenticated:
+            from cases.models import PromoCodeUse
+            blogger_use = PromoCodeUse.objects.filter(
+                user=user
+            ).select_related('promo_code').filter(
+                promo_code__bonus_type='blogger',
+                promo_code__is_active=True
+            ).first()
+            if not blogger_use:
+                blogger_use = PromoCodeUse.objects.filter(
+                    user=user,
+                    promo_code__blogger_percentage__gt=0,
+                    promo_code__is_active=True
+                ).select_related('promo_code').first()
+
+            if blogger_use:
+                from decimal import ROUND_HALF_UP
+                val = (Decimal(self.uc_amount) * Decimal('13000') / Decimal('60')).quantize(Decimal('1'), rounding=ROUND_HALF_UP)
+                return val
+
+        return self.price_uzs
+
+    @classmethod
+    def ensure_default_packages(cls):
+        """Seeds default packages if table is empty."""
+        defaults = [
+            (60, Decimal('15000.00'), 'Старт', 1),
+            (120, Decimal('30000.00'), '', 2),
+            (325, Decimal('81250.00'), 'Популярный', 3),
+            (660, Decimal('165000.00'), 'Выгода', 4),
+            (1800, Decimal('450000.00'), '+10% Бонус', 5),
+            (3850, Decimal('962500.00'), 'Хит', 6),
+            (8100, Decimal('2025000.00'), 'VIP', 7),
+        ]
+        for uc, price, badge, order in defaults:
+            cls.objects.get_or_create(
+                uc_amount=uc,
+                defaults={
+                    'price_uzs': price,
+                    'discount_badge': badge,
+                    'order': order,
+                    'is_active': True
+                }
+            )
+
+    @classmethod
+    def get_active_packages_for_user(cls, user=None):
+        if not cls.objects.filter(is_active=True).exists():
+            cls.ensure_default_packages()
+        packages = cls.objects.filter(is_active=True).order_by('order', 'uc_amount')
+        result = []
+        for pkg in packages:
+            result.append({
+                'id': pkg.id,
+                'uc_amount': pkg.uc_amount,
+                'price_uzs': pkg.get_actual_price_uzs(user),
+                'base_price_uzs': pkg.price_uzs,
+                'discount_badge': pkg.discount_badge,
+            })
+        return result
+
+
+
+class UzumPayment(models.Model):
+    STATUS_CHOICES = [
+        ('pending', 'Ожидает оплаты'),
+        ('paid', 'Оплачен'),
+        ('failed', 'Ошибка оплаты'),
+        ('cancelled', 'Отменен'),
+        ('refunded', 'Возвращен'),
+    ]
+
+    order_number = models.CharField(max_length=64, unique=True, db_index=True, verbose_name="Номер заказа (NEONDROP)")
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='uzum_payments', verbose_name="Пользователь")
+    package = models.ForeignKey(UCPackage, null=True, blank=True, on_delete=models.SET_NULL, related_name='payments', verbose_name="Пакет UC")
+    uc_amount = models.DecimalField(max_digits=12, decimal_places=2, verbose_name="Количество UC")
+    amount_uzs = models.DecimalField(max_digits=12, decimal_places=2, verbose_name="Сумма к оплате (UZS)")
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending', db_index=True, verbose_name="Статус платежа")
+    
+    uzum_order_id = models.CharField(max_length=100, blank=True, null=True, db_index=True, verbose_name="ID заказа в Uzum (orderId)")
+    payment_redirect_url = models.TextField(blank=True, null=True, verbose_name="Ссылка на оплату Uzum")
+    idempotency_key = models.CharField(max_length=64, blank=True, null=True, db_index=True, verbose_name="Ключ идемпотентности")
+    ip_address = models.GenericIPAddressField(blank=True, null=True, verbose_name="IP-адрес инициатора")
+    
+    promo_code = models.ForeignKey(
+        'cases.PromoCode',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='uzum_payments',
+        verbose_name="Промокод блогера"
+    )
+    related_transaction = models.ForeignKey(
+        Transaction,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name='uzum_payment_record',
+        verbose_name="Связанная транзакция в Ledger"
+    )
+    
+    raw_callback_data = models.JSONField(blank=True, null=True, verbose_name="Сырые данные callback/webhook")
+    error_message = models.TextField(blank=True, null=True, verbose_name="Текст ошибки / причина отмены")
+    
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Дата создания")
+    paid_at = models.DateTimeField(blank=True, null=True, verbose_name="Дата успешной оплаты")
+    updated_at = models.DateTimeField(auto_now=True, verbose_name="Дата обновления")
+
+    class Meta:
+        verbose_name = "Платеж Uzum Checkout"
+        verbose_name_plural = "Платежи Uzum Checkout"
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"Uzum #{self.order_number} | {self.user.username} | {self.uc_amount} UC ({self.amount_uzs} UZS) - {self.get_status_display()}"
+
+

@@ -7,7 +7,7 @@ from django.urls import path, reverse
 from django.utils.html import format_html
 from django.contrib.admin.views.decorators import staff_member_required
 
-from .models import Transaction, CurrencySetting, Withdrawal
+from .models import Transaction, CurrencySetting, Withdrawal, UCPackage, UzumPayment
 from .services import modify_user_balance
 from users.models import has_admin_perm, Profile
 
@@ -565,4 +565,89 @@ class WithdrawalAdmin(admin.ModelAdmin):
             messages.error(request, f"Ошибка при отклонении заявки #{withdrawal_id}: {e}")
 
         return redirect('admin:payments_withdrawal_changelist')
+
+
+@admin.register(UCPackage)
+class UCPackageAdmin(admin.ModelAdmin):
+    list_display = ('uc_amount', 'price_uzs_display', 'discount_badge', 'order', 'is_active', 'created_at')
+    list_editable = ('order', 'is_active')
+    ordering = ('order', 'uc_amount')
+
+    @admin.display(description="Базовая цена")
+    def price_uzs_display(self, obj):
+        return format_html('<strong style="color: #38bdf8;">{} UZS</strong>', f"{int(obj.price_uzs):,}".replace(',', ' '))
+
+
+@admin.register(UzumPayment)
+class UzumPaymentAdmin(admin.ModelAdmin):
+    list_display = (
+        'order_number',
+        'user_link',
+        'uc_amount_display',
+        'amount_uzs_display',
+        'status_badge',
+        'uzum_order_id',
+        'created_at',
+        'paid_at',
+    )
+    list_filter = ('status', 'created_at', 'paid_at')
+    search_fields = ('order_number', 'uzum_order_id', 'user__username', 'user__id')
+    readonly_fields = (
+        'order_number',
+        'user',
+        'package',
+        'uc_amount',
+        'amount_uzs',
+        'status',
+        'uzum_order_id',
+        'payment_redirect_url',
+        'idempotency_key',
+        'ip_address',
+        'promo_code',
+        'related_transaction',
+        'raw_callback_data',
+        'error_message',
+        'created_at',
+        'paid_at',
+        'updated_at',
+    )
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+    @admin.display(description="Пользователь", ordering='user__username')
+    def user_link(self, obj):
+        return format_html(
+            '<a href="{}" style="font-weight: 700; color: #38bdf8;">{} (ID: {})</a>',
+            reverse('admin:auth_user_change', args=[obj.user_id]),
+            obj.user.username,
+            obj.user_id
+        )
+
+    @admin.display(description="Сумма UC", ordering='uc_amount')
+    def uc_amount_display(self, obj):
+        return format_html('<strong style="color: #ffd700;">+{} UC</strong>', int(obj.uc_amount) if obj.uc_amount % 1 == 0 else obj.uc_amount)
+
+    @admin.display(description="К оплате (UZS)", ordering='amount_uzs')
+    def amount_uzs_display(self, obj):
+        return format_html('<strong style="color: #4ade80;">{} UZS</strong>', f"{int(obj.amount_uzs):,}".replace(',', ' '))
+
+    @admin.display(description="Статус", ordering='status')
+    def status_badge(self, obj):
+        colors = {
+            'paid': ('#22c55e', 'rgba(34, 197, 94, 0.15)', '✓ Оплачен'),
+            'pending': ('#eab308', 'rgba(234, 179, 8, 0.15)', '⏳ Ожидает'),
+            'failed': ('#ef4444', 'rgba(239, 68, 68, 0.15)', '✗ Ошибка'),
+            'cancelled': ('#94a3b8', 'rgba(148, 163, 184, 0.15)', '⊘ Отменен'),
+            'refunded': ('#c084fc', 'rgba(192, 132, 252, 0.15)', '↺ Возврат'),
+        }
+        color, bg, label = colors.get(obj.status, ('#94a3b8', 'rgba(148, 163, 184, 0.15)', obj.status))
+        return format_html(
+            '<span style="background: {}; color: {}; border: 1px solid {}; padding: 3px 10px; border-radius: 12px; font-weight: 700; font-size: 11px;">{}</span>',
+            bg, color, color, label
+        )
+
 

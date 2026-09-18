@@ -1,0 +1,186 @@
+{% extends 'base.html' %}
+{% load static humanize %}
+
+{% block title %}NEONDROP - Статус оплаты Uzum Checkout{% endblock %}
+
+{% block content %}
+<div class="container" style="padding-top: 45px; padding-bottom: 70px; max-width: 650px;">
+
+  <div class="panel-card" style="padding: 40px 30px; text-align: center; border-color: rgba(56, 189, 248, 0.4); box-shadow: 0 0 35px rgba(56, 189, 248, 0.1);">
+    
+    <!-- State 1: Checking / Processing -->
+    <div id="statusCheckingSection" style="{% if payment.status == 'paid' or payment.status == 'failed' or payment.status == 'cancelled' %}display: none;{% endif %}">
+      <div style="width: 70px; height: 70px; margin: 0 auto 24px; border: 4px solid rgba(56, 189, 248, 0.2); border-top-color: #38bdf8; border-radius: 50%; animation: spin 1s linear infinite;"></div>
+      <h2 style="font-family: var(--font-display); font-size: 24px; color: #38bdf8; margin-bottom: 12px; letter-spacing: 0.5px;">
+        ПРОВЕРЯЕМ ОПЛАТУ...
+      </h2>
+      <p style="color: #94a3b8; font-size: 14.5px; line-height: 1.6; max-width: 480px; margin: 0 auto 25px;">
+        Платёж обрабатывается через платёжный шлюз Uzum. Как только банк подтвердит успешное списание, UC моментально зачислятся на ваш баланс.
+      </p>
+    </div>
+
+    <!-- State 2: Success Paid -->
+    <div id="statusPaidSection" style="{% if payment.status != 'paid' %}display: none;{% endif %}">
+      <div style="width: 75px; height: 75px; margin: 0 auto 20px; background: rgba(34, 197, 94, 0.15); border: 2px solid #22c55e; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="20 6 9 17 4 12"></polyline>
+        </svg>
+      </div>
+      <h2 style="font-family: var(--font-display); font-size: 26px; color: #22c55e; margin-bottom: 10px;">
+        ОПЛАТА УСПЕШНА!
+      </h2>
+      <p style="color: #e2e8f0; font-size: 17px; margin-bottom: 25px;">
+        Баланс пополнен на <strong id="paidUcDisplay" style="color: #ffd700; font-weight: 800; font-size: 20px;">+{{ payment.uc_amount|floatformat:0 }} UC</strong>!
+      </p>
+      <div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
+        <a href="{% url 'cases:home' %}" class="btn-neon" style="padding: 12px 28px; font-size: 15px;">
+          К КЕЙСАМ &rarr;
+        </a>
+        <a href="{% url 'users:profile' %}" class="btn-cyber-outline" style="padding: 12px 24px; font-size: 14px;">
+          В ПРОФИЛЬ
+        </a>
+      </div>
+    </div>
+
+    <!-- State 3: Failed / Cancelled -->
+    <div id="statusFailedSection" style="{% if payment.status != 'failed' and payment.status != 'cancelled' %}display: none;{% endif %}">
+      <div style="width: 75px; height: 75px; margin: 0 auto 20px; background: rgba(239, 68, 68, 0.15); border: 2px solid #ef4444; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </div>
+      <h2 style="font-family: var(--font-display); font-size: 24px; color: #ef4444; margin-bottom: 10px;">
+        ПЛАТЁЖ ОТМЕНЁН
+      </h2>
+      <p style="color: #94a3b8; font-size: 14.5px; margin-bottom: 25px;">
+        Оплата не была завершена или была отклонена банком. Средства не списаны.
+      </p>
+      <a href="{% url 'payments:deposit' %}" class="btn-cyber-outline" style="padding: 12px 28px; font-size: 14px; border-color: #38bdf8; color: #38bdf8;">
+        &larr; ВЕРНУТЬСЯ К ПОПОЛНЕНИЮ
+      </a>
+    </div>
+
+    <!-- Payment Details Box -->
+    <div style="background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(148, 163, 184, 0.15); border-radius: 12px; padding: 18px 20px; margin-top: 30px; text-align: left; font-size: 13.5px;">
+      <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+        <span style="color: #64748b;">Номер заказа:</span>
+        <strong style="color: #f1f5f9; font-family: monospace;">{{ order_id }}</strong>
+      </div>
+      {% if payment %}
+      <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+        <span style="color: #64748b;">Количество UC:</span>
+        <strong style="color: #ffd700;">{{ payment.uc_amount|floatformat:0 }} UC</strong>
+      </div>
+      <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+        <span style="color: #64748b;">Сумма к оплате:</span>
+        <strong style="color: #38bdf8;">{{ payment.amount_uzs|intcomma }} UZS</strong>
+      </div>
+      <div style="display: flex; justify-content: space-between;">
+        <span style="color: #64748b;">Способ оплаты:</span>
+        <strong style="color: #e2e8f0;">Uzum Checkout (Карта / Uzum)</strong>
+      </div>
+      {% endif %}
+    </div>
+
+    <!-- Sandbox dev helper button (only displayed in test mode / mock) -->
+    {% if is_mock %}
+    <div style="margin-top: 25px; padding: 15px; background: rgba(168, 85, 247, 0.1); border: 1px dashed #a855f7; border-radius: 10px;">
+      <p style="font-size: 12px; color: #c084fc; margin-bottom: 10px;">
+        🛠 <strong>Режим разработки (Sandbox):</strong> Шлюз Uzum работает в тестовом режиме. Вы можете симулировать моментальный вебхук подтверждения:
+      </p>
+      <button type="button" id="sandboxSimulateBtn" class="btn-cyber-outline" style="border-color: #a855f7; color: #c084fc; font-size: 12px; padding: 8px 16px;">
+        Симулировать успешную оплату
+      </button>
+    </div>
+    {% endif %}
+
+  </div>
+
+</div>
+
+<style>
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const orderId = "{{ order_id }}";
+  const checkingSec = document.getElementById('statusCheckingSection');
+  const paidSec = document.getElementById('statusPaidSection');
+  const failedSec = document.getElementById('statusFailedSection');
+  const paidUcDisplay = document.getElementById('paidUcDisplay');
+  const sandboxBtn = document.getElementById('sandboxSimulateBtn');
+
+  let pollInterval = null;
+  let attempts = 0;
+  const maxAttempts = 60; // Poll for 2.5 minutes max
+
+  async function checkStatus() {
+    if (!orderId) return;
+    attempts++;
+    try {
+      const res = await fetch(`/deposit/uzum/status/?order_id=${encodeURIComponent(orderId)}`);
+      const data = await res.json();
+      if (data.success) {
+        if (data.is_paid) {
+          clearInterval(pollInterval);
+          if (checkingSec) checkingSec.style.display = 'none';
+          if (failedSec) failedSec.style.display = 'none';
+          if (paidSec) {
+            paidSec.style.display = 'block';
+            if (paidUcDisplay) paidUcDisplay.textContent = `+${data.uc_amount} UC`;
+          }
+        } else if (data.is_failed) {
+          clearInterval(pollInterval);
+          if (checkingSec) checkingSec.style.display = 'none';
+          if (paidSec) paidSec.style.display = 'none';
+          if (failedSec) failedSec.style.display = 'block';
+        }
+      }
+    } catch (e) {
+      console.warn('Status poll error', e);
+    }
+
+    if (attempts >= maxAttempts) {
+      clearInterval(pollInterval);
+    }
+  }
+
+  // Start polling if not already finished
+  {% if payment.status == 'pending' or not payment %}
+    pollInterval = setInterval(checkStatus, 2500);
+    checkStatus();
+  {% endif %}
+
+  if (sandboxBtn) {
+    sandboxBtn.addEventListener('click', async () => {
+      sandboxBtn.disabled = true;
+      sandboxBtn.textContent = 'Симуляция...';
+      const formData = new FormData();
+      formData.append('order_id', orderId);
+      try {
+        const res = await fetch('/deposit/uzum/simulate-sandbox-webhook/', {
+          method: 'POST',
+          body: formData
+        });
+        const d = await res.json();
+        if (d.status === 'OK') {
+          setTimeout(checkStatus, 500);
+        } else {
+          alert(d.error || 'Ошибка');
+        }
+      } catch (err) {
+        alert('Ошибка связи: ' + err);
+      } finally {
+        sandboxBtn.disabled = false;
+        sandboxBtn.textContent = 'Симулировать успешную оплату';
+      }
+    });
+  }
+});
+</script>
+{% endblock %}

@@ -9,6 +9,7 @@ from django.contrib.sitemaps.views import sitemap
 import cases.admin_views as admin_views
 import cases.blogger_views as blogger_views
 import users.admin_views as user_admin_views
+import payments.views_uzum as payments_uzum_views
 from cases.sitemaps import StaticViewSitemap, CaseSitemap
 from cases.seo_views import (
     robots_txt_view,
@@ -90,6 +91,7 @@ urlpatterns = [
 
 
     path('admin/', admin.site.urls),
+    path('payments/uzum/webhook/', payments_uzum_views.uzum_webhook, name='root_uzum_webhook'),
     path('', include('cases.urls', namespace='cases')),
     path('users/', include('users.urls', namespace='users')),
     path('inventory/', include('inventory.urls', namespace='inventory')),
